@@ -84,6 +84,7 @@ class Cache : public BaseCache
         void populate_lines(vector<string> filenames_data, vector<string> filenames_addr);
 
         double get_bit_entropy() const;
+        vector<double> * get_per_byte_entropy() const;
         
         ~Cache()
         {

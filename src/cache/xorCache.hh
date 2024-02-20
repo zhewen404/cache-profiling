@@ -286,12 +286,14 @@ class HashXORCache : public BaseCache
         }
     }
 
+    // stats
     double get_bit_entropy() const;
 
     int get_compressed_size() const;
     int get_uncompressed_size() const;
     double get_compression_ratio() const;
     double get_false_positive_rate() const;
+    vector<double> * get_per_byte_entropy() const;
 
     void print() const;
 
@@ -373,6 +375,7 @@ class HashDeltaCache : public BaseCache
     int get_uncompressed_size() const;
     double get_compression_ratio() const;
     double get_false_positive_rate() const;
+    vector<double> * get_per_byte_entropy() const;
 
     void print() const;
 

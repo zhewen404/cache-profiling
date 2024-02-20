@@ -2,6 +2,8 @@
 
 #include "common/bit/bitvec.hh"
 #include "common/vector/vector.hh"
+#include <vector>
+#include <unordered_map>
 
 double
 RandBankXORCache::get_bit_entropy() const
@@ -154,11 +156,46 @@ HashXORCache::get_false_positive_rate() const
     return (double) m_num_false_positive / (double) m_num_xored_lines;
 }
 
+vector<double> * 
+HashXORCache::get_per_byte_entropy() const
+{
+    vector<double> * entropies = new vector<double>();
+    for (int b=0; b < m_lines[0]->m_size; b++) { // for every byte
+        unordered_map<u_int8_t, int> byte_count;
+        for (unsigned i=0; i < m_lines.size(); i++) { // for every line
+            u_int8_t byte = m_lines[i]->m_segs[b];
+            if (byte_count.find(byte) == byte_count.end()) {
+                byte_count[byte] = 1;
+            } else {
+                byte_count[byte]++;
+            }
+        }
+        vector <int> vec;
+        for (auto it = byte_count.begin(); it != byte_count.end(); it++) {
+            vec.push_back(it->second);
+        }
+        double entropy = calculateEntropy(vec);
+        entropies->push_back(entropy);
+    }
+    return entropies;
+}
+
 void 
 HashXORCache::print() const
 {
     printf("HashXORCache [ num_xored_lines: %d, bit_entropy: %f, inter_cr: %f ]\n", 
         m_num_xored_lines, get_bit_entropy(), get_compression_ratio());
+
+    //print per byte entropy
+    vector<double> * entropies = get_per_byte_entropy();
+    printf("[ per byte entropy: ");
+    for (unsigned i=0; i < entropies->size(); i++) {
+        printf("%.2f ", entropies->at(i));
+    }
+    printf(" ]\n");
+    entropies->clear();
+    delete entropies;
+
     for (unsigned i = 0; i < m_lines.size(); i++) {
         m_lines[i]->print();
     }
@@ -206,13 +243,46 @@ HashDeltaCache::get_false_positive_rate() const
 {
     return (double) m_num_false_positive / (double) m_num_delta_lines;
 }
-
+vector<double> * 
+HashDeltaCache::get_per_byte_entropy() const
+{
+    vector<double> * entropies = new vector<double>();
+    for (int b=0; b < m_lines[0]->m_size; b++) { // for every byte
+        unordered_map<u_int8_t, int> byte_count;
+        for (unsigned i=0; i < m_lines.size(); i++) { // for every line
+            u_int8_t byte = m_lines[i]->m_segs[b];
+            if (byte_count.find(byte) == byte_count.end()) {
+                byte_count[byte] = 1;
+            } else {
+                byte_count[byte]++;
+            }
+        }
+        vector <int> vec;
+        for (auto it = byte_count.begin(); it != byte_count.end(); it++) {
+            vec.push_back(it->second);
+        }
+        double entropy = calculateEntropy(vec);
+        entropies->push_back(entropy);
+    }
+    return entropies;
+}
 
 void 
 HashDeltaCache::print() const
 {
     printf("HashDeltaCache [ num_delta_lines: %d, bit_entropy: %f, inter_cr: %f ]\n", 
         m_num_delta_lines, get_bit_entropy(), get_compression_ratio());
+
+    //print per byte entropy
+    vector<double> * entropies = get_per_byte_entropy();
+    printf("[ per byte entropy: ");
+    for (unsigned i=0; i < entropies->size(); i++) {
+        printf("%.2f ", entropies->at(i));
+    }
+    printf(" ]\n");
+    entropies->clear();
+    delete entropies;
+
     for (unsigned i = 0; i < m_lines.size(); i++) {
         m_lines[i]->print();
     }

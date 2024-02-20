@@ -79,6 +79,34 @@ Cache::get_bit_entropy() const
     return entropy;
 }
 
+vector<double> * 
+Cache::get_per_byte_entropy() const
+{
+    vector<double> * entropies = new vector<double>();
+    for (int b=0; b < m_line_size; b++) { // for every byte
+        unordered_map<u_int8_t, int> byte_count;
+        for (int i = 0; i < m_num_banks; i++) {
+            for (int j = 0; j < m_num_sets; j++) {
+                for (long unsigned int k = 0; k < m_lines[i][j].size(); k++) {
+                    u_int8_t byte = m_lines[i][j][k]->m_segs[b];
+                    if (byte_count.find(byte) == byte_count.end()) {
+                        byte_count[byte] = 1;
+                    } else {
+                        byte_count[byte]++;
+                    }
+                }
+            }
+        }
+        vector <int> vec;
+        for (auto it = byte_count.begin(); it != byte_count.end(); it++) {
+            vec.push_back(it->second);
+        }
+        double entropy = calculateEntropy(vec);
+        entropies->push_back(entropy);
+    }
+    return entropies;
+}
+
 int 
 Cache::get_size() const
 {

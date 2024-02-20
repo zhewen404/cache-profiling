@@ -139,6 +139,27 @@ void plot2dx2(std::vector<T> xvector, std::vector<std::vector<T>> yvectors,
     canvas.save(filename);
 }
 
+template <typename T>
+void plot2dx1xn(std::vector<T> xvector, std::vector<std::vector<T>> yvectors, 
+    std::vector<std::string> legends, std::string xlabel, std::string ylabel, 
+    std::string filename)
+{
+    Plot2D plot0;
+    plot_2dxn<T>(&plot0, xvector, yvectors, legends, xlabel, ylabel);
+
+
+    // Create figure to hold plot
+    Figure fig = {{plot0}};
+    // Create canvas to hold figure
+    Canvas canvas = {{fig}};
+
+    // Show the plot in a pop-up window
+    // canvas.show();
+
+    // Save the plot to a PDF file
+    canvas.save(filename);
+}
+
 
 template <typename T>
 void plot2dx2xn(std::vector<T> xvector, std::vector<std::vector<std::vector<T>>> yvectorss, 

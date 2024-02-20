@@ -81,6 +81,12 @@ class XORedLine : public BaseSuperLine
                 printf(", set: x");
             }
 
+            printf(", segs: ");
+
+            for (int i = 0; i < m_size; i++) {
+                printf(" %02x ", m_segs[i]);
+            }
+
             printf(" ]\n");
         }
         void xor_lines(vector<Line*> lines) {

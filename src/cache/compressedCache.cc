@@ -95,3 +95,72 @@ BDICompressedCache::get_compression_ratio() const
     double compression_ratio =  (double)uncompressed_size / (double)compressed_size;
     return compression_ratio;
 }
+
+////////////////////////////////////////////////////////////////////////
+void
+BDICompressedXORCache::print() const
+{
+    printf("BDICompressedXORCache ");
+    printf("[ inter_compression_ratio: %f (%d/%d), intra_compression_ratio: %f (%d/%d), total_compression_ratio: %f (%d/%d) ]\n", 
+        get_inter_compression_ratio(), get_xor_compressed_size(), get_uncompressed_size(), 
+        get_intra_compression_ratio(), get_all_compressed_size(), get_xor_compressed_size(), 
+        get_total_compression_ratio(), get_all_compressed_size(), get_uncompressed_size());
+
+    printf("[ num_banks: %d, KB_per_bank: %d, assoc: %d, numset: %d, line_size: %d, shift_bank: %d, shift_set: %d, bank bits: [%d,%d], set bits: [%d,%d] ]\n", 
+        m_num_banks, m_size_per_bank_KB, m_assoc, m_num_sets, m_line_size, m_shift_bank, m_shift_set, m_bank_start, m_bank_end, m_set_start, m_set_end);
+    
+   
+    m_intraCompressor->print();
+
+    for (long unsigned int k = 0; k < m_intra_lines.size(); k++) {
+        m_intra_lines[k]->print();
+    }
+}
+
+
+int 
+BDICompressedXORCache::get_all_compressed_size() const
+{
+    int size = 0;
+    for (long unsigned int k = 0; k < m_intra_lines.size(); k++) {
+        size += m_intra_lines[k]->get_compressed_size();
+    }
+    return size;
+}
+int 
+BDICompressedXORCache::get_xor_compressed_size() const
+{
+    return m_xor_compress_size;
+}
+
+int
+BDICompressedXORCache::get_uncompressed_size() const
+{
+    return m_uncompressed_size;
+}
+
+double 
+BDICompressedXORCache::get_total_compression_ratio() const
+{
+    int compressed_size = get_all_compressed_size();
+    int uncompressed_size = get_uncompressed_size();
+    double compression_ratio =  (double)uncompressed_size / (double)compressed_size;
+    return compression_ratio;
+}
+
+double 
+BDICompressedXORCache::get_inter_compression_ratio() const
+{
+    int compressed_size = get_xor_compressed_size();
+    int uncompressed_size = get_uncompressed_size();
+    double compression_ratio =  (double)uncompressed_size / (double)compressed_size;
+    return compression_ratio;
+}
+double 
+BDICompressedXORCache::get_intra_compression_ratio() const
+{
+    int compressed_size = get_all_compressed_size();
+    int uncompressed_size = get_xor_compressed_size();
+    double compression_ratio =  (double)uncompressed_size / (double)compressed_size;
+    return compression_ratio;
+}
