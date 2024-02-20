@@ -1,0 +1,6 @@
+*.txt
+test_*
+.vscode
+test.*
+bin/*
+img/*
