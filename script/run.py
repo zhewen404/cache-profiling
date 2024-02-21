@@ -4,6 +4,8 @@ import os
 import sys
 import subprocess
 from glob import glob
+import numpy as np
+from scipy.stats import gmean
 
 def parse_parsec_snapshots(benchname="*"):
     dump_dir = "/home/zhewen/repo/gem5-dev-clean/gem5/m5out/m5out_fs_ruby_parsec_cachedump/anonymous_latency/version0/dump_64kB/c16/simlarge/"
@@ -49,15 +51,19 @@ def launch(dir, num_banks=None, kb_per_bank=None):
 
 def print_avg(dumps, benchname, suitename, schemes_to_plot=None, plot_even_only=False):
     scheme_to_name = {
+        "bdi": "vanila_bdi",
+        "BDI": "vanila_bdi_big_end",
         "shuffle-xorfold": "fbsxf",
         "thesaurus": "thesaurus",
         "bit-sampling": "bs",
-        "bytemap-shuffle-xorfold": "try_shuffledbytemap",
+        "bytemap-shuffle-xorfold": "shuffledbytemap",
         "ternarybytemap-shuffle-xorfold": "try_shuffledtbytemap",
         "lowentropy_8_4": "lowentropy_8_4",
         "lowentropy_8_16(BCD)": "lowentropy_8_16",
     }
     crs_schemes = {
+        "bdi": [],
+        "BDI": [],
         "shuffle-xorfold": [],
         "thesaurus": [],
         "bit-sampling": [],
@@ -70,6 +76,8 @@ def print_avg(dumps, benchname, suitename, schemes_to_plot=None, plot_even_only=
     }
 
     ers_schemes = {
+        "bdi": [],
+        "BDI": [],
         "shuffle-xorfold": [],
         "thesaurus": [],
         "bit-sampling": [],
@@ -82,6 +90,21 @@ def print_avg(dumps, benchname, suitename, schemes_to_plot=None, plot_even_only=
     }
 
     frs_schemes = {
+        "bdi": [],
+        "BDI": [],
+        "shuffle-xorfold": [],
+        "thesaurus": [],
+        "bit-sampling": [],
+        "bytemap-shuffle-xorfold": [],
+        "ternarybytemap-shuffle-xorfold": [],
+        "twobytemap-shuffle-xorfold": [],
+        "shuffledbytemap-shuffle-xorfold": [],
+        "lowentropy_8_4": [],
+        "lowentropy_8_16(BCD)": [],
+    }
+    intras_schemes = {
+        "bdi": [],
+        "BDI": [],
         "shuffle-xorfold": [],
         "thesaurus": [],
         "bit-sampling": [],
@@ -105,26 +128,43 @@ def print_avg(dumps, benchname, suitename, schemes_to_plot=None, plot_even_only=
                 assert len(lines) == 1
                 l = lines[0]
                 scheme_vector = list(map(float, l.split()))
+                if len(scheme_vector) == 1:
+                    scheme_vector = [np.nan] * 60
                 num_points = len(scheme_vector)
                 crs_schemes[scheme].append(scheme_vector)
 
-                # Repeat for ERS
-                file_path = f"{d}erss-{scheme_name}.txt"
-                with open(file_path, "r") as file:
-                    lines = file.readlines()
-                    assert len(lines) == 1
-                    l = lines[0]
-                    scheme_vector = list(map(float, l.split()))
-                    ers_schemes[scheme].append(scheme_vector)
+            # Repeat for ERS
+            file_path = f"{d}erss-{scheme_name}.txt"
+            with open(file_path, "r") as file:
+                lines = file.readlines()
+                assert len(lines) == 1
+                l = lines[0]
+                scheme_vector = list(map(float, l.split()))
+                if len(scheme_vector) == 1:
+                    scheme_vector = [np.nan] * 60
+                ers_schemes[scheme].append(scheme_vector)
 
-                # Repeat for FRS
-                file_path = f"{d}frss-{scheme_name}.txt"
-                with open(file_path, "r") as file:
-                    lines = file.readlines()
-                    assert len(lines) == 1
-                    l = lines[0]
-                    scheme_vector = list(map(float, l.split()))
-                    frs_schemes[scheme].append(scheme_vector)
+            # Repeat for FRS
+            file_path = f"{d}frss-{scheme_name}.txt"
+            with open(file_path, "r") as file:
+                lines = file.readlines()
+                assert len(lines) == 1
+                l = lines[0]
+                scheme_vector = list(map(float, l.split()))
+                if len(scheme_vector) == 1:
+                    scheme_vector = [np.nan] * 60
+                frs_schemes[scheme].append(scheme_vector)
+
+            # Repeat for INTRAS
+            file_path = f"{d}intras-{scheme_name}.txt"
+            with open(file_path, "r") as file:
+                lines = file.readlines()
+                assert len(lines) == 1
+                l = lines[0]
+                scheme_vector = list(map(float, l.split()))
+                if len(scheme_vector) == 1:
+                    scheme_vector = [scheme_vector[0]] * 60
+                intras_schemes[scheme].append(scheme_vector)
 
     # Remaining code for processing and plotting the averages...
     print(len(crs_schemes[schemes_to_plot[0]]))
@@ -133,20 +173,27 @@ def print_avg(dumps, benchname, suitename, schemes_to_plot=None, plot_even_only=
     crs_scheme_vs_avg = {}
     ers_scheme_vs_avg = {}
     frs_scheme_vs_avg = {}
+    intras_scheme_vs_avg = {}
 
     for scheme, data in crs_schemes.items():
         if len(data) == 0: continue
-        crs_scheme_vs_avg[scheme] = [sum(x) / len(x) for x in zip(*data)]
+        crs_scheme_vs_avg[scheme] = [gmean(x) for x in zip(*data)]
         
 
     for scheme, data in ers_schemes.items():
         if len(data) == 0: continue
-        ers_scheme_vs_avg[scheme] = [sum(x) / len(x) for x in zip(*data)]
+        # ers_scheme_vs_avg[scheme] = [gmean(x) for x in zip(*data)]
+        ers_scheme_vs_avg[scheme] = [sum(x)/len(x) for x in zip(*data)]
         
 
     for scheme, data in frs_schemes.items():
         if len(data) == 0: continue
-        frs_scheme_vs_avg[scheme] = [sum(x) / len(x) for x in zip(*data)]
+        # frs_scheme_vs_avg[scheme] = [gmean(x) for x in zip(*data)]
+        frs_scheme_vs_avg[scheme] = [sum(x)/len(x) for x in zip(*data)]
+
+    for scheme, data in intras_schemes.items():
+        if len(data) == 0: continue
+        intras_scheme_vs_avg[scheme] = [gmean(x) for x in zip(*data)]
 
     if plot_even_only:
         xaxis = xaxis[1::2]
@@ -159,16 +206,19 @@ def print_avg(dumps, benchname, suitename, schemes_to_plot=None, plot_even_only=
         for scheme in frs_scheme_vs_avg:
             frs_scheme_vs_avg[scheme] = frs_scheme_vs_avg[scheme][1::2]
 
+        for scheme in intras_scheme_vs_avg:
+            intras_scheme_vs_avg[scheme] = intras_scheme_vs_avg[scheme][1::2]
+
     import plotly.graph_objects as go
     import plotly.subplots as sp
     import pandas as pd
     import plotly.io as pio
     pio.kaleido.scope.mathjax = None
 
-    fig = sp.make_subplots(rows=1, cols=3, 
+    fig = sp.make_subplots(rows=1, cols=4, 
                         #    subplot_titles=("Compression Ratio", "Entropy Reduction", "False Positive Rate"),
                            shared_yaxes=False,
-                           horizontal_spacing=0.12,
+                           horizontal_spacing=0.05,
                            vertical_spacing=0,)
 
     color_sequence = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', 
@@ -216,6 +266,21 @@ def print_avg(dumps, benchname, suitename, schemes_to_plot=None, plot_even_only=
         i += 1
     fig.update_yaxes(title="false positive rate", row=1, col=3, title_standoff = 0)
 
+    i=0
+    for scheme, data in intras_scheme_vs_avg.items():
+        fig.add_trace(
+            go.Scatter(x=xaxis,
+                    y=data,
+                    mode='markers+lines',
+                    name=scheme,
+                    legendgroup=scheme,
+                    line=dict(color=color_sequence[i]), 
+                    showlegend=False),
+            row=1, col=4)
+        i += 1
+    fig.update_yaxes(title="intra comp. ratio", row=1, col=4, title_standoff = 0)
+
+
     dpi = 300
     w=3.3115
     h=1.3
@@ -232,7 +297,7 @@ def print_avg(dumps, benchname, suitename, schemes_to_plot=None, plot_even_only=
     ))
     fig.update_layout(
         template="plotly_white",
-        width=w*dpi,
+        width=2*w*dpi,
         height=h*dpi,
         paper_bgcolor='rgba(0,0,0,0)',
         title=None,
@@ -253,7 +318,7 @@ def print_avg(dumps, benchname, suitename, schemes_to_plot=None, plot_even_only=
 
 if __name__ == "__main__":
     benchname = "*"
-    suitename = "parsec"
+    suitename = "allsuite"
 
     num_banks = None
     kb_per_bank = None
@@ -273,15 +338,17 @@ if __name__ == "__main__":
         sys.exit(1)
 
     
-    for d in dumps:
-        launch(d, num_banks, kb_per_bank)
-    print(len(dumps))
+    # for d in dumps:
+    #     launch(d, num_banks, kb_per_bank)
+    # print(len(dumps))
 
-    # if benchname == "*" or suitename == "allsuite": benchname = "all"
-    # print_avg(dumps, benchname, suitename, 
-    #           schemes_to_plot=[
-    #               "bytemap-shuffle-xorfold", 
-    #               "ternarybytemap-shuffle-xorfold",
-    #               "lowentropy_8_4",
-    #               "lowentropy_8_16(BCD)",
-    #               ])
+    if benchname == "*" or suitename == "allsuite": benchname = "all"
+    print_avg(dumps, benchname, suitename, 
+              schemes_to_plot=[
+                  "bdi",
+                  "BDI",
+                  "bytemap-shuffle-xorfold", 
+                #   "ternarybytemap-shuffle-xorfold",
+                #   "lowentropy_8_4",
+                  "lowentropy_8_16(BCD)",
+                  ])

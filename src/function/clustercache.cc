@@ -1,11 +1,12 @@
 #include "function/clustercache.hh"
+#include "cache/compressedCache.hh"
 #include "cache/cache.hh"
 #include "cache/xorCache.hh"
 #include "common/file/file_read.hh"
 #include <stdio.h>
 
 
-void try_bbsxf(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, bool use_xorcache)
+void try_bbsxf(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, bool use_xorcache)
 {
     int line_size = 64;
     int assoc = 16;
@@ -55,8 +56,14 @@ void try_bbsxf(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, 
 
         false_rate = hxorCache->get_false_positive_rate();
 
+        BDICompressedXORCache * bdiXorCache;
+        bdiXorCache = new BDICompressedXORCache(*hxorCache);
+        intra_compression_ratio = bdiXorCache->get_intra_compression_ratio();
+
+
         printf("bbsxf %d-bit bit entropy: %f, cr:%f\n", fp_size_in_bits, bit_entropy, cr);
         // hxorCache->print();
+        delete bdiXorCache;
         delete hxorCache;
 
     } else {
@@ -78,7 +85,7 @@ void try_bbsxf(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, 
 }
 
 
-void try_fbsxf(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, bool use_xorcache)
+void try_fbsxf(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, bool use_xorcache)
 {
     int line_size = 64;
     int assoc = 16;
@@ -126,8 +133,14 @@ void try_fbsxf(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, 
         cr = hxorCache->get_compression_ratio();
         false_rate = hxorCache->get_false_positive_rate();
 
+        BDICompressedXORCache * bdiXorCache;
+        bdiXorCache = new BDICompressedXORCache(*hxorCache);
+        intra_compression_ratio = bdiXorCache->get_intra_compression_ratio();
+
+
         printf("fbsxf %d-bit bit entropy: %f, cr:%f\n", fp_size_in_bits, bit_entropy, cr);
         // hxorCache->print();
+        delete bdiXorCache;
         delete hxorCache;
 
     } else {
@@ -149,7 +162,7 @@ void try_fbsxf(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, 
 }
 
 
-void try_thesaurus(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, bool use_xorcache)
+void try_thesaurus(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, bool use_xorcache)
 {
     int line_size = 64;
     int assoc = 16;
@@ -198,8 +211,14 @@ void try_thesaurus(int num_banks, int KB_per_bank, string dir, int fp_size_in_bi
         cr = hxorCache->get_compression_ratio();
         false_rate = hxorCache->get_false_positive_rate();
 
+        BDICompressedXORCache * bdiXorCache;
+        bdiXorCache = new BDICompressedXORCache(*hxorCache);
+        intra_compression_ratio = bdiXorCache->get_intra_compression_ratio();
+
+
         printf("thesaurus lsh %d-bit bit entropy: %f, cr:%f\n", fp_size_in_bits, bit_entropy, cr);
         // hxorCache->print();
+        delete bdiXorCache;
         delete hxorCache;
 
     } else {
@@ -221,7 +240,7 @@ void try_thesaurus(int num_banks, int KB_per_bank, string dir, int fp_size_in_bi
 }
 
 
-void try_bs(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, bool use_xorcache)
+void try_bs(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, bool use_xorcache)
 {
     int line_size = 64;
     int assoc = 16;
@@ -274,8 +293,14 @@ void try_bs(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, dou
         cr = hxorCache->get_compression_ratio();
         false_rate = hxorCache->get_false_positive_rate();
 
+        BDICompressedXORCache * bdiXorCache;
+        bdiXorCache = new BDICompressedXORCache(*hxorCache);
+        intra_compression_ratio = bdiXorCache->get_intra_compression_ratio();
+
+
         printf("bs lsh %d-bit bit entropy: %f, cr:%f\n", fp_size_in_bits, bit_entropy, cr);
         // hxorCache->print();
+        delete bdiXorCache;
         delete hxorCache;
 
     } else {
@@ -297,7 +322,7 @@ void try_bs(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, dou
 }
 
 
-void try_bytemap(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, bool use_xorcache)
+void try_bytemap(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, bool use_xorcache)
 {
     int line_size = 64;
     int assoc = 16;
@@ -340,8 +365,14 @@ void try_bytemap(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits
         cr = hxorCache->get_compression_ratio();
         false_rate = hxorCache->get_false_positive_rate();
 
+        BDICompressedXORCache * bdiXorCache;
+        bdiXorCache = new BDICompressedXORCache(*hxorCache);
+        intra_compression_ratio = bdiXorCache->get_intra_compression_ratio();
+
+
         printf("bm lsh %d-bit bit entropy: %f, cr:%f\n", fp_size_in_bits, bit_entropy, cr);
         // hxorCache->print();
+        delete bdiXorCache;
         delete hxorCache;
 
     } else {
@@ -363,7 +394,7 @@ void try_bytemap(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits
 }
 
 
-void sparsebytemap(bool shuffle, int everyNByte, int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, bool use_xorcache)
+void sparsebytemap(bool shuffle, int everyNByte, int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, bool use_xorcache)
 {
     int line_size = 64;
     int assoc = 16;
@@ -413,9 +444,14 @@ void sparsebytemap(bool shuffle, int everyNByte, int num_banks, int KB_per_bank,
         cr = hxorCache->get_compression_ratio();
         false_rate = hxorCache->get_false_positive_rate();
 
+        BDICompressedXORCache * bdiXorCache;
+        bdiXorCache = new BDICompressedXORCache(*hxorCache);
+        intra_compression_ratio = bdiXorCache->get_intra_compression_ratio();
+
         printf("sbm lsh (every %d byte) %d-bit bit entropy: %f, cr:%f\n", 
             everyNByte,fp_size_in_bits, bit_entropy, cr);
         // hxorCache->print();
+        delete bdiXorCache;
         delete hxorCache;
 
     } else {
@@ -437,33 +473,33 @@ void sparsebytemap(bool shuffle, int everyNByte, int num_banks, int KB_per_bank,
     delete cache;
 }
 
-void try_sparsebytemap_2(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, bool use_xorcache)
+void try_sparsebytemap_2(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, bool use_xorcache)
 {
-    sparsebytemap(false, 2, num_banks, KB_per_bank, dir, fp_size_in_bits, cr, entropy_reduction, false_rate, use_xorcache);
+    sparsebytemap(false, 2, num_banks, KB_per_bank, dir, fp_size_in_bits, cr, entropy_reduction, false_rate, intra_compression_ratio, use_xorcache);
 }
-void try_sparseshuffledbytemap_2(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, bool use_xorcache)
+void try_sparseshuffledbytemap_2(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, bool use_xorcache)
 {
-    sparsebytemap(true, 2, num_banks, KB_per_bank, dir, fp_size_in_bits, cr, entropy_reduction, false_rate, use_xorcache);
-}
-
-void try_sparsebytemap_4(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, bool use_xorcache)
-{
-    sparsebytemap(false, 4, num_banks, KB_per_bank, dir, fp_size_in_bits, cr, entropy_reduction, false_rate, use_xorcache);
-}
-void try_sparseshuffledbytemap_4(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, bool use_xorcache)
-{
-    sparsebytemap(true, 4, num_banks, KB_per_bank, dir, fp_size_in_bits, cr, entropy_reduction, false_rate, use_xorcache);
-}
-void try_sparsebytemap_8(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, bool use_xorcache)
-{
-    sparsebytemap(false, 8, num_banks, KB_per_bank, dir, fp_size_in_bits, cr, entropy_reduction, false_rate, use_xorcache);
-}
-void try_sparseshuffledbytemap_8(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, bool use_xorcache)
-{
-    sparsebytemap(true, 8, num_banks, KB_per_bank, dir, fp_size_in_bits, cr, entropy_reduction, false_rate, use_xorcache);
+    sparsebytemap(true, 2, num_banks, KB_per_bank, dir, fp_size_in_bits, cr, entropy_reduction, false_rate, intra_compression_ratio, use_xorcache);
 }
 
-void try_2bytemap(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, bool use_xorcache)
+void try_sparsebytemap_4(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, bool use_xorcache)
+{
+    sparsebytemap(false, 4, num_banks, KB_per_bank, dir, fp_size_in_bits, cr, entropy_reduction, false_rate, intra_compression_ratio, use_xorcache);
+}
+void try_sparseshuffledbytemap_4(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, bool use_xorcache)
+{
+    sparsebytemap(true, 4, num_banks, KB_per_bank, dir, fp_size_in_bits, cr, entropy_reduction, false_rate, intra_compression_ratio, use_xorcache);
+}
+void try_sparsebytemap_8(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, bool use_xorcache)
+{
+    sparsebytemap(false, 8, num_banks, KB_per_bank, dir, fp_size_in_bits, cr, entropy_reduction, false_rate, intra_compression_ratio, use_xorcache);
+}
+void try_sparseshuffledbytemap_8(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, bool use_xorcache)
+{
+    sparsebytemap(true, 8, num_banks, KB_per_bank, dir, fp_size_in_bits, cr, entropy_reduction, false_rate, intra_compression_ratio, use_xorcache);
+}
+
+void try_2bytemap(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, bool use_xorcache)
 {
     int line_size = 64;
     int assoc = 16;
@@ -506,8 +542,13 @@ void try_2bytemap(int num_banks, int KB_per_bank, string dir, int fp_size_in_bit
         cr = hxorCache->get_compression_ratio();
         false_rate = hxorCache->get_false_positive_rate();
 
+        BDICompressedXORCache * bdiXorCache;
+        bdiXorCache = new BDICompressedXORCache(*hxorCache);
+        intra_compression_ratio = bdiXorCache->get_intra_compression_ratio();
+
         printf("2bm lsh %d-bit bit entropy: %f, cr:%f\n", fp_size_in_bits, bit_entropy, cr);
         // hxorCache->print();
+        delete bdiXorCache;
         delete hxorCache;
 
     } else {
@@ -529,7 +570,7 @@ void try_2bytemap(int num_banks, int KB_per_bank, string dir, int fp_size_in_bit
 }
 
 
-void try_4bytemap(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, bool use_xorcache)
+void try_4bytemap(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, bool use_xorcache)
 {
     int line_size = 64;
     int assoc = 16;
@@ -572,8 +613,13 @@ void try_4bytemap(int num_banks, int KB_per_bank, string dir, int fp_size_in_bit
         cr = hxorCache->get_compression_ratio();
         false_rate = hxorCache->get_false_positive_rate();
 
+        BDICompressedXORCache * bdiXorCache;
+        bdiXorCache = new BDICompressedXORCache(*hxorCache);
+        intra_compression_ratio = bdiXorCache->get_intra_compression_ratio();
+
         printf("4bm lsh %d-bit bit entropy: %f, cr:%f\n", fp_size_in_bits, bit_entropy, cr);
         // hxorCache->print();
+        delete bdiXorCache;
         delete hxorCache;
 
     } else {
@@ -595,7 +641,7 @@ void try_4bytemap(int num_banks, int KB_per_bank, string dir, int fp_size_in_bit
 }
 
 
-void try_tbytemap(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, bool use_xorcache)
+void try_tbytemap(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, bool use_xorcache)
 {
     int line_size = 64;
     int assoc = 16;
@@ -638,8 +684,13 @@ void try_tbytemap(int num_banks, int KB_per_bank, string dir, int fp_size_in_bit
         cr = hxorCache->get_compression_ratio();
         false_rate = hxorCache->get_false_positive_rate();
 
+        BDICompressedXORCache * bdiXorCache;
+        bdiXorCache = new BDICompressedXORCache(*hxorCache);
+        intra_compression_ratio = bdiXorCache->get_intra_compression_ratio();
+
         printf("tbm lsh %d-bit bit entropy: %f, cr:%f\n", fp_size_in_bits, bit_entropy, cr);
         // hxorCache->print();
+        delete bdiXorCache;
         delete hxorCache;
 
     } else {
@@ -661,7 +712,7 @@ void try_tbytemap(int num_banks, int KB_per_bank, string dir, int fp_size_in_bit
 }
 
 
-void try_shuffledtbytemap(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, bool use_xorcache)
+void try_shuffledtbytemap(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, bool use_xorcache)
 {
     int line_size = 64;
     int assoc = 16;
@@ -704,8 +755,14 @@ void try_shuffledtbytemap(int num_banks, int KB_per_bank, string dir, int fp_siz
         cr = hxorCache->get_compression_ratio();
         false_rate = hxorCache->get_false_positive_rate();
 
+        BDICompressedXORCache * bdiXorCache;
+        bdiXorCache = new BDICompressedXORCache(*hxorCache);
+        intra_compression_ratio = bdiXorCache->get_intra_compression_ratio();
+
+
         printf("stbm lsh %d-bit bit entropy: %f, cr:%f\n", fp_size_in_bits, bit_entropy, cr);
         // hxorCache->print();
+        delete bdiXorCache;
         delete hxorCache;
 
     } else {
@@ -727,7 +784,7 @@ void try_shuffledtbytemap(int num_banks, int KB_per_bank, string dir, int fp_siz
 }
 
 
-void try_shuffledbytemap(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, bool use_xorcache)
+void try_shuffledbytemap(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, bool use_xorcache)
 {
     int line_size = 64;
     int assoc = 16;
@@ -771,8 +828,13 @@ void try_shuffledbytemap(int num_banks, int KB_per_bank, string dir, int fp_size
         cr = hxorCache->get_compression_ratio();
         false_rate = hxorCache->get_false_positive_rate();
 
+        BDICompressedXORCache * bdiXorCache;
+        bdiXorCache = new BDICompressedXORCache(*hxorCache);
+        intra_compression_ratio = bdiXorCache->get_intra_compression_ratio();
+
         printf("shuffled bm lsh %d-bit bit entropy: %f, cr:%f\n", fp_size_in_bits, bit_entropy, cr);
         // hxorCache->print();
+        delete bdiXorCache;
         delete hxorCache;
 
     } else {
@@ -794,46 +856,46 @@ void try_shuffledbytemap(int num_banks, int KB_per_bank, string dir, int fp_size
 }
 
 
-void try_lowentropy_2_8(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, bool use_xorcache)
+void try_lowentropy_2_8(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, bool use_xorcache)
 {
-    lowentropy(2, 8, num_banks, KB_per_bank, dir, fp_size_in_bits, cr, entropy_reduction, false_rate, use_xorcache);
+    lowentropy(2, 8, num_banks, KB_per_bank, dir, fp_size_in_bits, cr, entropy_reduction, false_rate, intra_compression_ratio, use_xorcache);
 }
 
-void try_lowentropy_2_4(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, bool use_xorcache)
+void try_lowentropy_2_4(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, bool use_xorcache)
 {
-    lowentropy(2, 4, num_banks, KB_per_bank, dir, fp_size_in_bits, cr, entropy_reduction, false_rate, use_xorcache);
+    lowentropy(2, 4, num_banks, KB_per_bank, dir, fp_size_in_bits, cr, entropy_reduction, false_rate, intra_compression_ratio, use_xorcache);
 }
-void try_lowentropy_2_2(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, bool use_xorcache)
+void try_lowentropy_2_2(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, bool use_xorcache)
 {
-    lowentropy(2, 2, num_banks, KB_per_bank, dir, fp_size_in_bits, cr, entropy_reduction, false_rate, use_xorcache);
-}
-
-void try_lowentropy_4_4(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, bool use_xorcache)
-{
-    lowentropy(4, 4, num_banks, KB_per_bank, dir, fp_size_in_bits, cr, entropy_reduction, false_rate, use_xorcache);
+    lowentropy(2, 2, num_banks, KB_per_bank, dir, fp_size_in_bits, cr, entropy_reduction, false_rate, intra_compression_ratio, use_xorcache);
 }
 
-void try_lowentropy_4_8(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, bool use_xorcache)
+void try_lowentropy_4_4(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, bool use_xorcache)
 {
-    lowentropy(4, 8, num_banks, KB_per_bank, dir, fp_size_in_bits, cr, entropy_reduction, false_rate, use_xorcache);
+    lowentropy(4, 4, num_banks, KB_per_bank, dir, fp_size_in_bits, cr, entropy_reduction, false_rate, intra_compression_ratio, use_xorcache);
 }
 
-void try_lowentropy_8_16(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, bool use_xorcache)
+void try_lowentropy_4_8(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, bool use_xorcache)
 {
-    lowentropy(8, 16, num_banks, KB_per_bank, dir, fp_size_in_bits, cr, entropy_reduction, false_rate, use_xorcache);
+    lowentropy(4, 8, num_banks, KB_per_bank, dir, fp_size_in_bits, cr, entropy_reduction, false_rate, intra_compression_ratio, use_xorcache);
 }
 
-void try_lowentropy_8_8(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, bool use_xorcache)
+void try_lowentropy_8_16(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, bool use_xorcache)
 {
-    lowentropy(8, 8, num_banks, KB_per_bank, dir, fp_size_in_bits, cr, entropy_reduction, false_rate, use_xorcache);
+    lowentropy(8, 16, num_banks, KB_per_bank, dir, fp_size_in_bits, cr, entropy_reduction, false_rate, intra_compression_ratio, use_xorcache);
 }
 
-void try_lowentropy_8_4(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, bool use_xorcache)
+void try_lowentropy_8_8(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, bool use_xorcache)
 {
-    lowentropy(8, 4, num_banks, KB_per_bank, dir, fp_size_in_bits, cr, entropy_reduction, false_rate, use_xorcache);
+    lowentropy(8, 8, num_banks, KB_per_bank, dir, fp_size_in_bits, cr, entropy_reduction, false_rate, intra_compression_ratio, use_xorcache);
 }
 
-void lowentropy(int seg_size, int bits_to_take, int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, bool use_xorcache)
+void try_lowentropy_8_4(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, bool use_xorcache)
+{
+    lowentropy(8, 4, num_banks, KB_per_bank, dir, fp_size_in_bits, cr, entropy_reduction, false_rate, intra_compression_ratio, use_xorcache);
+}
+
+void lowentropy(int seg_size, int bits_to_take, int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, bool use_xorcache)
 {
     int line_size = 64;
     int assoc = 16;
@@ -895,9 +957,14 @@ void lowentropy(int seg_size, int bits_to_take, int num_banks, int KB_per_bank, 
         cr = hxorCache->get_compression_ratio();
         false_rate = hxorCache->get_false_positive_rate();
 
+        BDICompressedXORCache * bdiXorCache;
+        bdiXorCache = new BDICompressedXORCache(*hxorCache);
+        intra_compression_ratio = bdiXorCache->get_intra_compression_ratio();
+
         printf("lowentropy (%d,%d) %d-bit bit entropy: %f, cr:%f, unempty: %f\n", 
             seg_size, bits_to_take, fp_size_in_bits, bit_entropy, cr, percent_unempty_cluster);
         // hxorCache->print();
+        delete bdiXorCache;
         delete hxorCache;
     } else {
         HashDeltaCache * hxorCache;
@@ -917,16 +984,94 @@ void lowentropy(int seg_size, int bits_to_take, int num_banks, int KB_per_bank, 
     delete cache;
 }
 
-void all(int num_banks, int KB_per_bank, string dir, vector <double> &crs, vector <double> &ers, vector <double> &frs, vector<double> fbs, bool use_xorcache,
-    void (*func)(int, int, string, int, double &, double &, double &, bool))
+void try_vanila_bdi(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, bool use_xorcache)
+{
+    (void)use_xorcache;
+    (void)fp_size_in_bits;
+
+    
+    cr = 0;
+    entropy_reduction = 0;
+    false_rate = 0;
+
+    int line_size = 64;
+    int assoc = 16;
+    int shift_bank = 0;
+    int shift_set = 0;
+    // int fp_size_in_bits = 32;
+
+    vector<string> filenames_data;
+    vector<string> filenames_addr;
+    fill_string_arrays_data_addr(filenames_data, filenames_addr, dir, num_banks);
+
+    Cache * cache;
+    cache = new Cache(num_banks, KB_per_bank, assoc, line_size, shift_bank, shift_set);
+    cache->populate_lines(filenames_data, filenames_addr);
+
+    bool use_little_endian = true;
+    bool allow_immo = false;
+
+    BDICompressedCache * bdiCache;
+    bdiCache = new BDICompressedCache(*cache, use_little_endian, allow_immo);
+
+    double intra_cr = bdiCache->get_compression_ratio();
+    intra_compression_ratio = intra_cr;
+
+    delete cache;
+    delete bdiCache;
+}
+
+
+void try_vanila_bdi_big_end(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, bool use_xorcache)
+{
+    (void)use_xorcache;
+    (void)fp_size_in_bits;
+
+    
+    cr = 0;
+    entropy_reduction = 0;
+    false_rate = 0;
+
+    int line_size = 64;
+    int assoc = 16;
+    int shift_bank = 0;
+    int shift_set = 0;
+    // int fp_size_in_bits = 32;
+
+    vector<string> filenames_data;
+    vector<string> filenames_addr;
+    fill_string_arrays_data_addr(filenames_data, filenames_addr, dir, num_banks);
+
+    Cache * cache;
+    cache = new Cache(num_banks, KB_per_bank, assoc, line_size, shift_bank, shift_set);
+    cache->populate_lines(filenames_data, filenames_addr);
+
+    bool use_little_endian = false;
+    bool allow_immo = false;
+
+    BDICompressedCache * bdiCache;
+    bdiCache = new BDICompressedCache(*cache, use_little_endian, allow_immo);
+
+    double intra_cr = bdiCache->get_compression_ratio();
+    intra_compression_ratio = intra_cr;
+
+    delete cache;
+    delete bdiCache;
+}
+
+
+void all(int num_banks, int KB_per_bank, string dir, vector <double> &crs, vector <double> &ers, vector <double> &frs, vector <double> &intras, vector<double> fbs, bool use_xorcache,
+    void (*func)(int, int, string, int, double &, double &, double &, double &, bool))
 {
     double cr, entropy_reduction;
     double fr;
+    double intra;
 
     for (unsigned i = 0; i < fbs.size(); i++){
-        func(num_banks, KB_per_bank, dir, fbs[i], cr, entropy_reduction, fr, use_xorcache);
+        func(num_banks, KB_per_bank, dir, fbs[i], cr, entropy_reduction, fr, intra, use_xorcache);
         crs.push_back(cr);
         ers.push_back(entropy_reduction);
         frs.push_back(fr);
+        intras.push_back(intra);
     }
 }
