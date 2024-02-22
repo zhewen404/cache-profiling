@@ -175,7 +175,7 @@
 //     delete [] bytesel_fp;
 
 //     SparseByteMapHash * sbmhash;
-//     sbmhash = new SparseByteMapHash(8);
+//     sbmhash = new SparseByteMapHash(8,6);
 //     sbmhash->print();
 //     int sbm_fp_size;
 //     u_int8_t * sbm_fp = sbmhash->hash(data, data_size*8, sbm_fp_size);

@@ -318,3 +318,36 @@ u_int8_t * sparse_byte_map(u_int8_t * data, int data_size_in_bit, int everyNByte
    return byte_map;
 }
 
+// for every N byte take MSB k bytes (last argument)
+u_int8_t * sparse_byte_map(u_int8_t * data, int data_size_in_bit, int everyNByte, int bytes_to_take)
+{
+   u_int8_t * byte_map;
+   int num_byte_needed = int(ceil(data_size_in_bit / 64.0 / everyNByte * bytes_to_take));
+   // printf("num_byte_needed=%d\n", num_byte_needed);
+   byte_map = new u_int8_t[num_byte_needed]();
+   memset(byte_map, 0, num_byte_needed);
+   //0...63
+   //1, 3, 5, ..., 63  (every 2, take 1 byte)
+   //3, 7, 11, ..., 63 (every 4, take 1 byte)
+   //2,3, 6,7, 10,11, ..., 62,63 (every 4, take 2 byte)
+   //1,2,3, 5,6,7, 9,10,11, ..., 61,62,63 (every 4, take 3 byte)
+
+   for (int i = 0; i < int(ceil(data_size_in_bit / 8.0 / everyNByte)); i++) // for every  n byte in data
+   {
+      for (int j = 0; j < bytes_to_take; j++) {
+         int flattend_bit_index = i*bytes_to_take+j;
+         int write_byte_index = flattend_bit_index / 8;
+         int write_bit_index = flattend_bit_index % 8;
+         int read_byte_index = (i+1)*everyNByte-1-j;
+         // printf("i=%d, j=%d, write_byte_index=%d, write_bit_index=%d, read_byte_index=%d, ", 
+            // i, j, write_byte_index, write_bit_index, read_byte_index);
+         if (data[read_byte_index] != 0) {
+            // printf("non zero\n");
+            byte_map[write_byte_index] |= 1 << write_bit_index;
+         } else {
+            // printf("zero\n");
+         }
+      }
+   }
+   return byte_map;
+}

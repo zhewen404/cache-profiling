@@ -312,6 +312,12 @@ class SparseByteMapHash : public HashFunction
     SparseByteMapHash(int everyNByte) : HashFunction() 
     {
         m_everyNByte = everyNByte;
+        m_bytes_to_take = 1;
+    }
+    SparseByteMapHash(int everyNByte, int bytes_to_take) : HashFunction() 
+    {
+        m_everyNByte = everyNByte;
+        m_bytes_to_take = bytes_to_take;
     }
 
     virtual ~SparseByteMapHash() {
@@ -319,16 +325,17 @@ class SparseByteMapHash : public HashFunction
 
     // writing fingerprint size
     u_int8_t * hash(u_int8_t * line_data, int data_size_in_bit, int &fingerprint_size_in_bit) {
-        u_int8_t * fingerprint = sparse_byte_map(line_data, data_size_in_bit, m_everyNByte);
-        fingerprint_size_in_bit = data_size_in_bit/8/m_everyNByte;
+        u_int8_t * fingerprint = sparse_byte_map(line_data, data_size_in_bit, m_everyNByte, m_bytes_to_take);
+        fingerprint_size_in_bit = (data_size_in_bit/8/m_everyNByte)*m_bytes_to_take;
         return fingerprint;
     }
 
     void print() const {
-        printf("SparseByteMapHash [ every %d byte ]\n", m_everyNByte);
+        printf("SparseByteMapHash [ every %d byte, take %d bytes ]\n", m_everyNByte, m_bytes_to_take);
     }
 
     int m_everyNByte;
+    int m_bytes_to_take;
 
 };
 

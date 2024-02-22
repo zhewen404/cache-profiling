@@ -53,13 +53,18 @@ def print_avg(dumps, benchname, suitename, schemes_to_plot=None, plot_even_only=
     scheme_to_name = {
         "bdi": "vanila_bdi",
         "BDI": "vanila_bdi_big_end",
+        "thesaurus": "thesaurus",
         "shuffle-xorfold": "fbsxf",
         "thesaurus": "thesaurus",
         "bit-sampling": "bs",
         "bytemap-shuffle-xorfold": "shuffledbytemap",
-        "ternarybytemap-shuffle-xorfold": "try_shuffledtbytemap",
+        "ternarybytemap-shuffle-xorfold": "shuffledtbytemap",
         "lowentropy_8_4": "lowentropy_8_4",
         "lowentropy_8_16(BCD)": "lowentropy_8_16",
+        "sparseshuffledbytemap_8_6": "sparseshuffledbytemap_8_6",
+        "sparseshuffledbytemap_8_4": "sparseshuffledbytemap_8_4",
+        "sparseshuffledbytemap_4_3": "sparseshuffledbytemap_4_3",
+        "sparseshuffledbytemap_4_2": "sparseshuffledbytemap_4_2",
     }
     crs_schemes = {
         "bdi": [],
@@ -73,6 +78,10 @@ def print_avg(dumps, benchname, suitename, schemes_to_plot=None, plot_even_only=
         "shuffledbytemap-shuffle-xorfold": [],
         "lowentropy_8_4": [],
         "lowentropy_8_16(BCD)": [],
+        "sparseshuffledbytemap_8_6": [],
+        "sparseshuffledbytemap_8_4": [],
+        "sparseshuffledbytemap_4_3": [],
+        "sparseshuffledbytemap_4_2": [],
     }
 
     ers_schemes = {
@@ -87,6 +96,10 @@ def print_avg(dumps, benchname, suitename, schemes_to_plot=None, plot_even_only=
         "shuffledbytemap-shuffle-xorfold": [],
         "lowentropy_8_4": [],
         "lowentropy_8_16(BCD)": [],
+        "sparseshuffledbytemap_8_6": [],
+        "sparseshuffledbytemap_8_4": [],
+        "sparseshuffledbytemap_4_3": [],
+        "sparseshuffledbytemap_4_2": [],
     }
 
     frs_schemes = {
@@ -101,6 +114,10 @@ def print_avg(dumps, benchname, suitename, schemes_to_plot=None, plot_even_only=
         "shuffledbytemap-shuffle-xorfold": [],
         "lowentropy_8_4": [],
         "lowentropy_8_16(BCD)": [],
+        "sparseshuffledbytemap_8_6": [],
+        "sparseshuffledbytemap_8_4": [],
+        "sparseshuffledbytemap_4_3": [],
+        "sparseshuffledbytemap_4_2": [],
     }
     intras_schemes = {
         "bdi": [],
@@ -114,6 +131,10 @@ def print_avg(dumps, benchname, suitename, schemes_to_plot=None, plot_even_only=
         "shuffledbytemap-shuffle-xorfold": [],
         "lowentropy_8_4": [],
         "lowentropy_8_16(BCD)": [],
+        "sparseshuffledbytemap_8_6": [],
+        "sparseshuffledbytemap_8_4": [],
+        "sparseshuffledbytemap_4_3": [],
+        "sparseshuffledbytemap_4_2": [],
     }
 
     num_points = 0
@@ -178,22 +199,51 @@ def print_avg(dumps, benchname, suitename, schemes_to_plot=None, plot_even_only=
     for scheme, data in crs_schemes.items():
         if len(data) == 0: continue
         crs_scheme_vs_avg[scheme] = [gmean(x) for x in zip(*data)]
+        if scheme == "ternarybytemap-shuffle-xorfold":
+            new_vec = []
+            for i in range(len(crs_scheme_vs_avg[scheme])):
+                if (i%2) != 0 and 2*i+1 < len(crs_scheme_vs_avg[scheme]): new_vec.append(crs_scheme_vs_avg[scheme][2*i+1])
+                else: new_vec.append(np.nan)
+            crs_scheme_vs_avg[scheme] = new_vec
+            # print(crs_scheme_vs_avg[scheme])
+
         
 
     for scheme, data in ers_schemes.items():
         if len(data) == 0: continue
         # ers_scheme_vs_avg[scheme] = [gmean(x) for x in zip(*data)]
         ers_scheme_vs_avg[scheme] = [sum(x)/len(x) for x in zip(*data)]
+        if scheme == "ternarybytemap-shuffle-xorfold":
+            new_vec = []
+            for i in range(len(ers_scheme_vs_avg[scheme])):
+                if (i%2) != 0 and 2*i+1 < len(ers_scheme_vs_avg[scheme]): new_vec.append(ers_scheme_vs_avg[scheme][2*i+1])
+                else: new_vec.append(np.nan)
+            ers_scheme_vs_avg[scheme] = new_vec
+            # print(ers_scheme_vs_avg[scheme])
         
 
     for scheme, data in frs_schemes.items():
         if len(data) == 0: continue
         # frs_scheme_vs_avg[scheme] = [gmean(x) for x in zip(*data)]
         frs_scheme_vs_avg[scheme] = [sum(x)/len(x) for x in zip(*data)]
+        if scheme == "ternarybytemap-shuffle-xorfold":
+            new_vec = []
+            for i in range(len(frs_scheme_vs_avg[scheme])):
+                if (i%2) != 0 and 2*i+1 < len(frs_scheme_vs_avg[scheme]): new_vec.append(frs_scheme_vs_avg[scheme][2*i+1])
+                else: new_vec.append(np.nan)
+            frs_scheme_vs_avg[scheme] = new_vec
+            # print(frs_scheme_vs_avg[scheme])
 
     for scheme, data in intras_schemes.items():
         if len(data) == 0: continue
         intras_scheme_vs_avg[scheme] = [gmean(x) for x in zip(*data)]
+        if scheme == "ternarybytemap-shuffle-xorfold":
+            new_vec = []
+            for i in range(len(intras_scheme_vs_avg[scheme])):
+                if (i%2) != 0 and 2*i+1 < len(intras_scheme_vs_avg[scheme]): new_vec.append(intras_scheme_vs_avg[scheme][2*i+1])
+                else: new_vec.append(np.nan)
+            intras_scheme_vs_avg[scheme] = new_vec
+            # print(intras_scheme_vs_avg[scheme])
 
     if plot_even_only:
         xaxis = xaxis[1::2]
@@ -319,6 +369,7 @@ def print_avg(dumps, benchname, suitename, schemes_to_plot=None, plot_even_only=
 if __name__ == "__main__":
     benchname = "*"
     suitename = "allsuite"
+    launch_flag = False
 
     num_banks = None
     kb_per_bank = None
@@ -337,18 +388,25 @@ if __name__ == "__main__":
         print("Error: unknown suitename")
         sys.exit(1)
 
-    
-    # for d in dumps:
-    #     launch(d, num_banks, kb_per_bank)
-    # print(len(dumps))
+    if launch_flag:
+        assert suitename != "allsuite"
+        for d in dumps:
+            launch(d, num_banks, kb_per_bank)
+        print(len(dumps))
 
-    if benchname == "*" or suitename == "allsuite": benchname = "all"
-    print_avg(dumps, benchname, suitename, 
-              schemes_to_plot=[
-                  "bdi",
-                  "BDI",
-                  "bytemap-shuffle-xorfold", 
-                #   "ternarybytemap-shuffle-xorfold",
-                #   "lowentropy_8_4",
-                  "lowentropy_8_16(BCD)",
-                  ])
+    if not launch_flag:
+        if benchname == "*" or suitename == "allsuite": benchname = "all"
+        print_avg(dumps, benchname, suitename, 
+                schemes_to_plot=[
+                    "bdi",
+                    # "BDI",
+                    "thesaurus",
+                    "bytemap-shuffle-xorfold", 
+                    "sparseshuffledbytemap_8_6",
+                    # "sparseshuffledbytemap_8_4",
+                    # "sparseshuffledbytemap_4_3",
+                    # "sparseshuffledbytemap_4_2",
+                    # "ternarybytemap-shuffle-xorfold",
+                    #   "lowentropy_8_4",
+                    "lowentropy_8_16(BCD)",
+                    ])

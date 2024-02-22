@@ -24,13 +24,13 @@ int main(int argc, char *argv[]){
 
     vector<double> fbs = {
         1,
-        // 2,3,4,5, 
-        // 6,7, 8, 9, 10, 
-        // 11, 12, 13,14,15,16,17,18,19,20,
-        // 21,22,23,24,25,26,27,28,29,30,
-        // 31,32,33,34,35,36,37,38,39,40,
-        // 41,42,43,44,45,46,47,48,49,50,
-        // 51,52,53,53,55,56,57,58,59,60
+        2,3,4,5, 
+        6,7, 8, 9, 10, 
+        11, 12, 13,14,15,16,17,18,19,20,
+        21,22,23,24,25,26,27,28,29,30,
+        31,32,33,34,35,36,37,38,39,40,
+        41,42,43,44,45,46,47,48,49,50,
+        51,52,53,53,55,56,57,58,59,60
     };
     // vector<double> fbs = {
     //     2,4,6,8,10,12,14,16,18,20,
@@ -41,11 +41,11 @@ int main(int argc, char *argv[]){
     vector<string> legends;
 
 
-    string name = "vanila_bdi_big_end";
+    string name = "thesaurus";
     bool use_xorcache = true;
 
     vector<double> crs6, ers6, frs6, intras6;
-    all(num_banks, KB_per_bank, dir, crs6, ers6, frs6, intras6, fbs, use_xorcache, &try_vanila_bdi_big_end);
+    all(num_banks, KB_per_bank, dir, crs6, ers6, frs6, intras6, fbs, use_xorcache, &try_thesaurus);
 
     // print crss to file dir/crss.txt
     if (!use_xorcache){

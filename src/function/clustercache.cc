@@ -61,7 +61,7 @@ void try_bbsxf(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, 
         intra_compression_ratio = bdiXorCache->get_intra_compression_ratio();
 
 
-        printf("bbsxf %d-bit bit entropy: %f, cr:%f\n", fp_size_in_bits, bit_entropy, cr);
+        // printf("bbsxf %d-bit bit entropy: %f, cr:%f\n", fp_size_in_bits, bit_entropy, cr);
         // hxorCache->print();
         delete bdiXorCache;
         delete hxorCache;
@@ -75,7 +75,7 @@ void try_bbsxf(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, 
         cr = hxorCache->get_compression_ratio();
         false_rate = hxorCache->get_false_positive_rate();
 
-        printf("bbsxf %d-bit bit entropy: %f, cr:%f\n", fp_size_in_bits, bit_entropy, cr);
+        // printf("bbsxf %d-bit bit entropy: %f, cr:%f\n", fp_size_in_bits, bit_entropy, cr);
         // hxorCache->print();
         delete hxorCache;
 
@@ -138,7 +138,7 @@ void try_fbsxf(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, 
         intra_compression_ratio = bdiXorCache->get_intra_compression_ratio();
 
 
-        printf("fbsxf %d-bit bit entropy: %f, cr:%f\n", fp_size_in_bits, bit_entropy, cr);
+        // printf("fbsxf %d-bit bit entropy: %f, cr:%f\n", fp_size_in_bits, bit_entropy, cr);
         // hxorCache->print();
         delete bdiXorCache;
         delete hxorCache;
@@ -153,7 +153,7 @@ void try_fbsxf(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, 
         cr = hxorCache->get_compression_ratio();
         false_rate = hxorCache->get_false_positive_rate();
 
-        printf("fbsxf %d-bit bit entropy: %f, cr:%f\n", fp_size_in_bits, bit_entropy, cr);
+        // printf("fbsxf %d-bit bit entropy: %f, cr:%f\n", fp_size_in_bits, bit_entropy, cr);
         // hxorCache->print();
         delete hxorCache;
     }
@@ -216,7 +216,7 @@ void try_thesaurus(int num_banks, int KB_per_bank, string dir, int fp_size_in_bi
         intra_compression_ratio = bdiXorCache->get_intra_compression_ratio();
 
 
-        printf("thesaurus lsh %d-bit bit entropy: %f, cr:%f\n", fp_size_in_bits, bit_entropy, cr);
+        // printf("thesaurus lsh %d-bit bit entropy: %f, cr:%f\n", fp_size_in_bits, bit_entropy, cr);
         // hxorCache->print();
         delete bdiXorCache;
         delete hxorCache;
@@ -231,7 +231,7 @@ void try_thesaurus(int num_banks, int KB_per_bank, string dir, int fp_size_in_bi
         cr = hxorCache->get_compression_ratio();
         false_rate = hxorCache->get_false_positive_rate();
 
-        printf("thesaurus lsh %d-bit bit entropy: %f, cr:%f\n", fp_size_in_bits, bit_entropy, cr);
+        // printf("thesaurus lsh %d-bit bit entropy: %f, cr:%f\n", fp_size_in_bits, bit_entropy, cr);
         // hxorCache->print();
         delete hxorCache;
     }
@@ -298,7 +298,7 @@ void try_bs(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, dou
         intra_compression_ratio = bdiXorCache->get_intra_compression_ratio();
 
 
-        printf("bs lsh %d-bit bit entropy: %f, cr:%f\n", fp_size_in_bits, bit_entropy, cr);
+        // printf("bs lsh %d-bit bit entropy: %f, cr:%f\n", fp_size_in_bits, bit_entropy, cr);
         // hxorCache->print();
         delete bdiXorCache;
         delete hxorCache;
@@ -312,7 +312,7 @@ void try_bs(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, dou
         cr = hxorCache->get_compression_ratio();
         false_rate = hxorCache->get_false_positive_rate();
 
-        printf("bs lsh %d-bit bit entropy: %f, cr:%f\n", fp_size_in_bits, bit_entropy, cr);
+        // printf("bs lsh %d-bit bit entropy: %f, cr:%f\n", fp_size_in_bits, bit_entropy, cr);
         // hxorCache->print();
         delete hxorCache;
 
@@ -370,7 +370,7 @@ void try_bytemap(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits
         intra_compression_ratio = bdiXorCache->get_intra_compression_ratio();
 
 
-        printf("bm lsh %d-bit bit entropy: %f, cr:%f\n", fp_size_in_bits, bit_entropy, cr);
+        // printf("bm lsh %d-bit bit entropy: %f, cr:%f\n", fp_size_in_bits, bit_entropy, cr);
         // hxorCache->print();
         delete bdiXorCache;
         delete hxorCache;
@@ -385,7 +385,7 @@ void try_bytemap(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits
         cr = hxorCache->get_compression_ratio();
         false_rate = hxorCache->get_false_positive_rate();
 
-        printf("bm lsh %d-bit bit entropy: %f, cr:%f\n", fp_size_in_bits, bit_entropy, cr);
+        // printf("bm lsh %d-bit bit entropy: %f, cr:%f\n", fp_size_in_bits, bit_entropy, cr);
         // hxorCache->print();
         delete hxorCache;
     }
@@ -394,7 +394,7 @@ void try_bytemap(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits
 }
 
 
-void sparsebytemap(bool shuffle, int everyNByte, int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, bool use_xorcache)
+void sparsebytemap(bool shuffle, int everyNByte, int bytes_to_take, int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, bool use_xorcache)
 {
     int line_size = 64;
     int assoc = 16;
@@ -411,7 +411,7 @@ void sparsebytemap(bool shuffle, int everyNByte, int num_banks, int KB_per_bank,
 
     int true_hash = 0;
     vector<HashFunction *> hash_functions;
-    SparseByteMapHash * bm = new SparseByteMapHash(everyNByte);
+    SparseByteMapHash * bm = new SparseByteMapHash(everyNByte, bytes_to_take);
     hash_functions.push_back(bm);
     true_hash += 1;
     if (shuffle) {
@@ -448,8 +448,8 @@ void sparsebytemap(bool shuffle, int everyNByte, int num_banks, int KB_per_bank,
         bdiXorCache = new BDICompressedXORCache(*hxorCache);
         intra_compression_ratio = bdiXorCache->get_intra_compression_ratio();
 
-        printf("sbm lsh (every %d byte) %d-bit bit entropy: %f, cr:%f\n", 
-            everyNByte,fp_size_in_bits, bit_entropy, cr);
+        // printf("sbm lsh (every %d byte) %d-bit bit entropy: %f, cr:%f\n", 
+        //     everyNByte,fp_size_in_bits, bit_entropy, cr);
         // hxorCache->print();
         delete bdiXorCache;
         delete hxorCache;
@@ -463,8 +463,8 @@ void sparsebytemap(bool shuffle, int everyNByte, int num_banks, int KB_per_bank,
         cr = hxorCache->get_compression_ratio();
         false_rate = hxorCache->get_false_positive_rate();
 
-        printf("sbm lsh (every %d byte) %d-bit bit entropy: %f, cr:%f\n", 
-            everyNByte,fp_size_in_bits, bit_entropy, cr);
+        // printf("sbm lsh (every %d byte) %d-bit bit entropy: %f, cr:%f\n", 
+        //     everyNByte,fp_size_in_bits, bit_entropy, cr);
         // hxorCache->print();
         delete hxorCache;
 
@@ -473,30 +473,46 @@ void sparsebytemap(bool shuffle, int everyNByte, int num_banks, int KB_per_bank,
     delete cache;
 }
 
-void try_sparsebytemap_2(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, bool use_xorcache)
+void try_sparsebytemap_2_1(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, bool use_xorcache)
 {
-    sparsebytemap(false, 2, num_banks, KB_per_bank, dir, fp_size_in_bits, cr, entropy_reduction, false_rate, intra_compression_ratio, use_xorcache);
+    sparsebytemap(false, 2, 1, num_banks, KB_per_bank, dir, fp_size_in_bits, cr, entropy_reduction, false_rate, intra_compression_ratio, use_xorcache);
 }
-void try_sparseshuffledbytemap_2(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, bool use_xorcache)
+void try_sparseshuffledbytemap_2_1(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, bool use_xorcache)
 {
-    sparsebytemap(true, 2, num_banks, KB_per_bank, dir, fp_size_in_bits, cr, entropy_reduction, false_rate, intra_compression_ratio, use_xorcache);
+    sparsebytemap(true, 2, 1, num_banks, KB_per_bank, dir, fp_size_in_bits, cr, entropy_reduction, false_rate, intra_compression_ratio, use_xorcache);
 }
 
-void try_sparsebytemap_4(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, bool use_xorcache)
+void try_sparsebytemap_4_1(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, bool use_xorcache)
 {
-    sparsebytemap(false, 4, num_banks, KB_per_bank, dir, fp_size_in_bits, cr, entropy_reduction, false_rate, intra_compression_ratio, use_xorcache);
+    sparsebytemap(false, 4, 1, num_banks, KB_per_bank, dir, fp_size_in_bits, cr, entropy_reduction, false_rate, intra_compression_ratio, use_xorcache);
 }
-void try_sparseshuffledbytemap_4(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, bool use_xorcache)
+void try_sparseshuffledbytemap_4_1(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, bool use_xorcache)
 {
-    sparsebytemap(true, 4, num_banks, KB_per_bank, dir, fp_size_in_bits, cr, entropy_reduction, false_rate, intra_compression_ratio, use_xorcache);
+    sparsebytemap(true, 4, 1, num_banks, KB_per_bank, dir, fp_size_in_bits, cr, entropy_reduction, false_rate, intra_compression_ratio, use_xorcache);
 }
-void try_sparsebytemap_8(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, bool use_xorcache)
+void try_sparsebytemap_8_1(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, bool use_xorcache)
 {
-    sparsebytemap(false, 8, num_banks, KB_per_bank, dir, fp_size_in_bits, cr, entropy_reduction, false_rate, intra_compression_ratio, use_xorcache);
+    sparsebytemap(false, 8, 1, num_banks, KB_per_bank, dir, fp_size_in_bits, cr, entropy_reduction, false_rate, intra_compression_ratio, use_xorcache);
 }
-void try_sparseshuffledbytemap_8(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, bool use_xorcache)
+void try_sparseshuffledbytemap_8_1(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, bool use_xorcache)
 {
-    sparsebytemap(true, 8, num_banks, KB_per_bank, dir, fp_size_in_bits, cr, entropy_reduction, false_rate, intra_compression_ratio, use_xorcache);
+    sparsebytemap(true, 8, 1, num_banks, KB_per_bank, dir, fp_size_in_bits, cr, entropy_reduction, false_rate, intra_compression_ratio, use_xorcache);
+}
+void try_sparseshuffledbytemap_8_6(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, bool use_xorcache)
+{
+    sparsebytemap(true, 8, 6, num_banks, KB_per_bank, dir, fp_size_in_bits, cr, entropy_reduction, false_rate, intra_compression_ratio, use_xorcache);
+}
+void try_sparseshuffledbytemap_8_4(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, bool use_xorcache)
+{
+    sparsebytemap(true, 8, 4, num_banks, KB_per_bank, dir, fp_size_in_bits, cr, entropy_reduction, false_rate, intra_compression_ratio, use_xorcache);
+}
+void try_sparseshuffledbytemap_4_3(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, bool use_xorcache)
+{
+    sparsebytemap(true, 4, 3, num_banks, KB_per_bank, dir, fp_size_in_bits, cr, entropy_reduction, false_rate, intra_compression_ratio, use_xorcache);
+}
+void try_sparseshuffledbytemap_4_2(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, bool use_xorcache)
+{
+    sparsebytemap(true, 4, 2, num_banks, KB_per_bank, dir, fp_size_in_bits, cr, entropy_reduction, false_rate, intra_compression_ratio, use_xorcache);
 }
 
 void try_2bytemap(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, bool use_xorcache)
@@ -546,7 +562,7 @@ void try_2bytemap(int num_banks, int KB_per_bank, string dir, int fp_size_in_bit
         bdiXorCache = new BDICompressedXORCache(*hxorCache);
         intra_compression_ratio = bdiXorCache->get_intra_compression_ratio();
 
-        printf("2bm lsh %d-bit bit entropy: %f, cr:%f\n", fp_size_in_bits, bit_entropy, cr);
+        // printf("2bm lsh %d-bit bit entropy: %f, cr:%f\n", fp_size_in_bits, bit_entropy, cr);
         // hxorCache->print();
         delete bdiXorCache;
         delete hxorCache;
@@ -560,7 +576,7 @@ void try_2bytemap(int num_banks, int KB_per_bank, string dir, int fp_size_in_bit
         cr = hxorCache->get_compression_ratio();
         false_rate = hxorCache->get_false_positive_rate();
 
-        printf("2bm lsh %d-bit bit entropy: %f, cr:%f\n", fp_size_in_bits, bit_entropy, cr);
+        // printf("2bm lsh %d-bit bit entropy: %f, cr:%f\n", fp_size_in_bits, bit_entropy, cr);
         // hxorCache->print();
         delete hxorCache;
 
@@ -617,7 +633,7 @@ void try_4bytemap(int num_banks, int KB_per_bank, string dir, int fp_size_in_bit
         bdiXorCache = new BDICompressedXORCache(*hxorCache);
         intra_compression_ratio = bdiXorCache->get_intra_compression_ratio();
 
-        printf("4bm lsh %d-bit bit entropy: %f, cr:%f\n", fp_size_in_bits, bit_entropy, cr);
+        // printf("4bm lsh %d-bit bit entropy: %f, cr:%f\n", fp_size_in_bits, bit_entropy, cr);
         // hxorCache->print();
         delete bdiXorCache;
         delete hxorCache;
@@ -631,7 +647,7 @@ void try_4bytemap(int num_banks, int KB_per_bank, string dir, int fp_size_in_bit
         cr = hxorCache->get_compression_ratio();
         false_rate = hxorCache->get_false_positive_rate();
 
-        printf("4bm lsh %d-bit bit entropy: %f, cr:%f\n", fp_size_in_bits, bit_entropy, cr);
+        // printf("4bm lsh %d-bit bit entropy: %f, cr:%f\n", fp_size_in_bits, bit_entropy, cr);
         // hxorCache->print();
         delete hxorCache;
 
@@ -688,7 +704,7 @@ void try_tbytemap(int num_banks, int KB_per_bank, string dir, int fp_size_in_bit
         bdiXorCache = new BDICompressedXORCache(*hxorCache);
         intra_compression_ratio = bdiXorCache->get_intra_compression_ratio();
 
-        printf("tbm lsh %d-bit bit entropy: %f, cr:%f\n", fp_size_in_bits, bit_entropy, cr);
+        // printf("tbm lsh %d-bit bit entropy: %f, cr:%f\n", fp_size_in_bits, bit_entropy, cr);
         // hxorCache->print();
         delete bdiXorCache;
         delete hxorCache;
@@ -702,7 +718,7 @@ void try_tbytemap(int num_banks, int KB_per_bank, string dir, int fp_size_in_bit
         cr = hxorCache->get_compression_ratio();
         false_rate = hxorCache->get_false_positive_rate();
 
-        printf("tbm lsh %d-bit bit entropy: %f, cr:%f\n", fp_size_in_bits, bit_entropy, cr);
+        // printf("tbm lsh %d-bit bit entropy: %f, cr:%f\n", fp_size_in_bits, bit_entropy, cr);
         // hxorCache->print();
         delete hxorCache;
 
@@ -760,7 +776,7 @@ void try_shuffledtbytemap(int num_banks, int KB_per_bank, string dir, int fp_siz
         intra_compression_ratio = bdiXorCache->get_intra_compression_ratio();
 
 
-        printf("stbm lsh %d-bit bit entropy: %f, cr:%f\n", fp_size_in_bits, bit_entropy, cr);
+        // printf("stbm lsh %d-bit bit entropy: %f, cr:%f\n", fp_size_in_bits, bit_entropy, cr);
         // hxorCache->print();
         delete bdiXorCache;
         delete hxorCache;
@@ -774,7 +790,7 @@ void try_shuffledtbytemap(int num_banks, int KB_per_bank, string dir, int fp_siz
         cr = hxorCache->get_compression_ratio();
         false_rate = hxorCache->get_false_positive_rate();
 
-        printf("stbm lsh %d-bit bit entropy: %f, cr:%f\n", fp_size_in_bits, bit_entropy, cr);
+        // printf("stbm lsh %d-bit bit entropy: %f, cr:%f\n", fp_size_in_bits, bit_entropy, cr);
         // hxorCache->print();
         delete hxorCache;
 
@@ -832,7 +848,7 @@ void try_shuffledbytemap(int num_banks, int KB_per_bank, string dir, int fp_size
         bdiXorCache = new BDICompressedXORCache(*hxorCache);
         intra_compression_ratio = bdiXorCache->get_intra_compression_ratio();
 
-        printf("shuffled bm lsh %d-bit bit entropy: %f, cr:%f\n", fp_size_in_bits, bit_entropy, cr);
+        // printf("shuffled bm lsh %d-bit bit entropy: %f, cr:%f\n", fp_size_in_bits, bit_entropy, cr);
         // hxorCache->print();
         delete bdiXorCache;
         delete hxorCache;
@@ -846,7 +862,7 @@ void try_shuffledbytemap(int num_banks, int KB_per_bank, string dir, int fp_size
         cr = hxorCache->get_compression_ratio();
         false_rate = hxorCache->get_false_positive_rate();
 
-        printf("shuffled bm lsh %d-bit bit entropy: %f, cr:%f\n", fp_size_in_bits, bit_entropy, cr);
+        // printf("shuffled bm lsh %d-bit bit entropy: %f, cr:%f\n", fp_size_in_bits, bit_entropy, cr);
         // hxorCache->print();
         delete hxorCache;
 
@@ -961,8 +977,8 @@ void lowentropy(int seg_size, int bits_to_take, int num_banks, int KB_per_bank, 
         bdiXorCache = new BDICompressedXORCache(*hxorCache);
         intra_compression_ratio = bdiXorCache->get_intra_compression_ratio();
 
-        printf("lowentropy (%d,%d) %d-bit bit entropy: %f, cr:%f, unempty: %f\n", 
-            seg_size, bits_to_take, fp_size_in_bits, bit_entropy, cr, percent_unempty_cluster);
+        // printf("lowentropy (%d,%d) %d-bit bit entropy: %f, cr:%f, unempty: %f\n", 
+        //     seg_size, bits_to_take, fp_size_in_bits, bit_entropy, cr, percent_unempty_cluster);
         // hxorCache->print();
         delete bdiXorCache;
         delete hxorCache;
@@ -975,8 +991,8 @@ void lowentropy(int seg_size, int bits_to_take, int num_banks, int KB_per_bank, 
         cr = hxorCache->get_compression_ratio();
         false_rate = hxorCache->get_false_positive_rate();
 
-        printf("lowentropy (%d,%d) %d-bit bit entropy: %f, cr:%f, unempty: %f\n", 
-            seg_size, bits_to_take, fp_size_in_bits, bit_entropy, cr, percent_unempty_cluster);
+        // printf("lowentropy (%d,%d) %d-bit bit entropy: %f, cr:%f, unempty: %f\n", 
+        //     seg_size, bits_to_take, fp_size_in_bits, bit_entropy, cr, percent_unempty_cluster);
         // hxorCache->print();
         delete hxorCache;
     }

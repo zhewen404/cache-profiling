@@ -29,5 +29,6 @@ u_int8_t * byte_map_max(u_int8_t * data, int data_size_in_bit);
 u_int8_t * byte_map_min(u_int8_t * data, int data_size_in_bit);
 u_int8_t * nbyte_map(u_int8_t * data, int data_size_in_bit, int nByte);
 u_int8_t * sparse_byte_map(u_int8_t * data, int data_size_in_bit, int everyNByte);
+u_int8_t * sparse_byte_map(u_int8_t * data, int data_size_in_bit, int everyNByte, int bytes_to_take);
 
 #endif // COMMON_BIT_BITVEC_HH
