@@ -45,6 +45,59 @@ RandBankXORCache::get_compression_ratio() const
     return (double)get_uncompressed_size() / (double)get_compressed_size();
 }
 
+vector<double> * 
+RandBankXORCache::get_per_byte_entropy() const
+{
+    vector<double> * entropies = new vector<double>();
+    for (int b=0; b < m_line_size; b++) { // for every byte
+        unordered_map<u_int8_t, int> byte_count;
+        for (unsigned i=0; i < m_lines.size(); i++) {
+            for (unsigned j=0; j < m_lines[i].size(); j++) { // for every line
+                u_int8_t byte = m_lines[i][j]->m_segs[b];
+                if (byte_count.find(byte) == byte_count.end()) {
+                    byte_count[byte] = 1;
+                } else {
+                    byte_count[byte]++;
+                }
+            }
+        }
+        vector <int> vec;
+        for (auto it = byte_count.begin(); it != byte_count.end(); it++) {
+            vec.push_back(it->second);
+        }
+        double entropy = calculateEntropy(vec);
+        entropies->push_back(entropy);
+    }
+    return entropies;
+}
+
+vector<double> * 
+RandBankXORCache::get_per_byte_entropy_only_thoses_xored() const
+{
+    vector<double> * entropies = new vector<double>();
+    for (int b=0; b < m_line_size; b++) { // for every byte
+        unordered_map<u_int8_t, int> byte_count;
+        for (unsigned i=0; i < m_lines.size(); i++) {
+            for (unsigned j=0; j < m_lines[i].size(); j++) { // for every line
+                if (m_lines[i][j]->m_line_cluster_size == 1) continue;
+                u_int8_t byte = m_lines[i][j]->m_segs[b];
+                if (byte_count.find(byte) == byte_count.end()) {
+                    byte_count[byte] = 1;
+                } else {
+                    byte_count[byte]++;
+                }
+            }
+        }
+        vector <int> vec;
+        for (auto it = byte_count.begin(); it != byte_count.end(); it++) {
+            vec.push_back(it->second);
+        }
+        double entropy = calculateEntropy(vec);
+        entropies->push_back(entropy);
+    }
+    return entropies;
+}
+
 void 
 RandBankXORCache::print() const
 {
@@ -163,6 +216,30 @@ HashXORCache::get_per_byte_entropy() const
     for (int b=0; b < m_lines[0]->m_size; b++) { // for every byte
         unordered_map<u_int8_t, int> byte_count;
         for (unsigned i=0; i < m_lines.size(); i++) { // for every line
+            u_int8_t byte = m_lines[i]->m_segs[b];
+            if (byte_count.find(byte) == byte_count.end()) {
+                byte_count[byte] = 1;
+            } else {
+                byte_count[byte]++;
+            }
+        }
+        vector <int> vec;
+        for (auto it = byte_count.begin(); it != byte_count.end(); it++) {
+            vec.push_back(it->second);
+        }
+        double entropy = calculateEntropy(vec);
+        entropies->push_back(entropy);
+    }
+    return entropies;
+}
+vector<double> * 
+HashXORCache::get_per_byte_entropy_only_thoses_xored() const
+{
+    vector<double> * entropies = new vector<double>();
+    for (int b=0; b < m_lines[0]->m_size; b++) { // for every byte
+        unordered_map<u_int8_t, int> byte_count;
+        for (unsigned i=0; i < m_lines.size(); i++) { // for every line
+            if (m_lines[i]->m_line_cluster_size == 1) continue;
             u_int8_t byte = m_lines[i]->m_segs[b];
             if (byte_count.find(byte) == byte_count.end()) {
                 byte_count[byte] = 1;

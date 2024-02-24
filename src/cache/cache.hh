@@ -104,6 +104,7 @@ class Cache : public BaseCache
         Cache& operator=(const Cache& obj);
 
         int get_size() const;
+        int get_num_lines() const;
         
         void print();
 

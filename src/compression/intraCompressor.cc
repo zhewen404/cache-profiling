@@ -28,6 +28,18 @@ BaseIntraCompressor<T>::is_line_compressible_repeatByte(Line* line) const
     return true;
 }
 
+BPCLine * 
+BitPlaneCompressor::compress_a_line(Line* line)
+{
+    BPCLine * bpcLine = new BPCLine(line);
+    return bpcLine;
+}
+
+void
+BitPlaneCompressor::print() const
+{
+    printf("[ BitPlaneCompressor ]\n");
+}
 
 BDILine * 
 BDICompressor::compress_a_line(Line* line)

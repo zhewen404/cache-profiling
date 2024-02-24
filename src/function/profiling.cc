@@ -1,9 +1,11 @@
 #include "function/profiling.hh"
 #include "cache/cache.hh"
+#include "cache/xorCache.hh"
 #include "common/file/file_read.hh"
 
-void profiling_entropy_byte_position(int num_banks, int KB_per_bank, string dir, vector <double> &entropies)
+void profiling_entropy_byte_position(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &entropies)
 {
+    (void)only_those_xored;
     int line_size = 64;
     int assoc = 16;
     int shift_bank = 0;
@@ -14,10 +16,11 @@ void profiling_entropy_byte_position(int num_banks, int KB_per_bank, string dir,
     fill_string_arrays_data_addr(filenames_data, filenames_addr, dir, num_banks);
 
     Cache * cache;
-    cache = new Cache(num_banks, KB_per_bank, line_size, assoc, shift_bank, shift_set);
+    cache = new Cache(num_banks, KB_per_bank, assoc, line_size, shift_bank, shift_set);
     cache->populate_lines(filenames_data, filenames_addr);
 
-    vector<double> * ent_vec = cache->get_per_byte_entropy();
+    vector<double> * ent_vec;
+    ent_vec = cache->get_per_byte_entropy();
     for (unsigned i = 0; i < ent_vec->size(); i++){
         entropies.push_back((*ent_vec)[i]);
     }
@@ -25,8 +28,207 @@ void profiling_entropy_byte_position(int num_banks, int KB_per_bank, string dir,
     delete cache;
 }
 
-void profiling_x(int num_banks, int KB_per_bank, string dir, vector <double> &results, 
-    void(*profiling_function)(int, int, string, vector <double> &))
+void profiling_entropy_byte_position_afterxor12_bytemap(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &entropies)
 {
-    profiling_function(num_banks, KB_per_bank, dir, results);
+    int line_size = 64;
+    int assoc = 16;
+    int shift_bank = 0;
+    int shift_set = 0;
+    int fp_size_in_bits = 12;
+    u_int64_t num_clusters = (u_int64_t)pow((u_int64_t)2,(u_int64_t)fp_size_in_bits);
+
+    vector<string> filenames_data;
+    vector<string> filenames_addr;
+    fill_string_arrays_data_addr(filenames_data, filenames_addr, dir, num_banks);
+
+    ClusteredCache * cache;
+
+    vector<HashFunction *> hash_functions;
+    ByteMapHash * bm = new ByteMapHash();
+    hash_functions.push_back(bm);
+    FullBitShuffleHash * fbs = new FullBitShuffleHash();
+    hash_functions.push_back(fbs);
+    XORFoldingHash * x = new XORFoldingHash(fp_size_in_bits);
+    hash_functions.push_back(x);
+
+
+
+    cache = new ClusteredCache(
+        num_banks, KB_per_bank, assoc, line_size, 
+        shift_bank, shift_set, 
+        num_clusters, hash_functions,2);
+
+    cache->populate_lines(filenames_data, filenames_addr);
+
+    HashXORCache * hxorCache;
+    hxorCache = new HashXORCache(*cache);
+
+    vector<double> * ent_vec;
+    if (only_those_xored) {
+        ent_vec = hxorCache->get_per_byte_entropy_only_thoses_xored();
+    } else {
+        ent_vec = hxorCache->get_per_byte_entropy();
+    }
+    for (unsigned i = 0; i < ent_vec->size(); i++){
+        entropies.push_back((*ent_vec)[i]);
+    }
+
+    delete ent_vec;
+    delete hxorCache;
+    delete cache;
+}
+
+void profiling_entropy_byte_position_afterxor_randbank(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &entropies)
+{
+    int line_size = 64;
+    int assoc = 16;
+    int shift_bank = 0;
+    int shift_set = 0;
+    // int fp_size_in_bits = 12;
+    // u_int64_t num_clusters = (u_int64_t)pow((u_int64_t)2,(u_int64_t)fp_size_in_bits);
+
+    vector<string> filenames_data;
+    vector<string> filenames_addr;
+    fill_string_arrays_data_addr(filenames_data, filenames_addr, dir, num_banks);
+
+    Cache * cache;
+    cache = new Cache(num_banks, KB_per_bank, assoc, line_size, shift_bank, shift_set);
+    cache->populate_lines(filenames_data, filenames_addr);
+
+    RandBankXORCache * xorRandBankCache;
+    xorRandBankCache = new RandBankXORCache(*cache);
+
+    vector<double> * ent_vec;
+    if (only_those_xored) {
+        ent_vec = xorRandBankCache->get_per_byte_entropy_only_thoses_xored();
+    } else {
+        ent_vec = xorRandBankCache->get_per_byte_entropy();
+    }
+    for (unsigned i = 0; i < ent_vec->size(); i++){
+        entropies.push_back((*ent_vec)[i]);
+    }
+
+    delete ent_vec;
+    delete xorRandBankCache;
+    delete cache;
+}
+
+void profiling_entropy_byte_position_afterxor12_thesaurus(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &entropies)
+{
+    int line_size = 64;
+    int assoc = 16;
+    int shift_bank = 0;
+    int shift_set = 0;
+    int fp_size_in_bits = 12;
+    u_int64_t num_clusters = (u_int64_t)pow((u_int64_t)2,(u_int64_t)fp_size_in_bits);
+
+    vector<string> filenames_data;
+    vector<string> filenames_addr;
+    fill_string_arrays_data_addr(filenames_data, filenames_addr, dir, num_banks);
+
+    ClusteredCache * cache;
+
+    vector<HashFunction *> hash_functions;
+    ThesaurusLSHash * the = new ThesaurusLSHash(fp_size_in_bits, line_size);
+    hash_functions.push_back(the);
+
+
+
+    cache = new ClusteredCache(
+        num_banks, KB_per_bank, assoc, line_size, 
+        shift_bank, shift_set, 
+        num_clusters, hash_functions,1);
+
+    cache->populate_lines(filenames_data, filenames_addr);
+
+    HashXORCache * hxorCache;
+    hxorCache = new HashXORCache(*cache);
+
+    vector<double> * ent_vec;
+    if (only_those_xored) {
+        ent_vec = hxorCache->get_per_byte_entropy_only_thoses_xored();
+    } else {
+        ent_vec = hxorCache->get_per_byte_entropy();
+    }
+
+    for (unsigned i = 0; i < ent_vec->size(); i++){
+        entropies.push_back((*ent_vec)[i]);
+    }
+
+    delete ent_vec;
+    delete hxorCache;
+    delete cache;
+}
+
+void profiling_entropy_byte_position_afterxor12_lowentropy_8_16(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &entropies)
+{
+    int line_size = 64;
+    int assoc = 16;
+    int shift_bank = 0;
+    int shift_set = 0;
+    int fp_size_in_bits = 12;
+    u_int64_t num_clusters = (u_int64_t)pow((u_int64_t)2,(u_int64_t)fp_size_in_bits);
+
+    vector<string> filenames_data;
+    vector<string> filenames_addr;
+    fill_string_arrays_data_addr(filenames_data, filenames_addr, dir, num_banks);
+
+    ClusteredCache * cache;
+
+    vector<HashFunction *> hash_functions;
+
+    int seg_size = 8; // take per every seg_size bytes
+    int bits_to_take = 16; // total 64 bit
+    int bits_to_take_to_byte = int(ceil(bits_to_take/8.0));
+    int funct_to_concact = 0;
+    int funct_true_hash = 0;
+    for (int i = 0; i < line_size/seg_size; i++){
+        int byte_ind = seg_size*i+seg_size-bits_to_take_to_byte;
+        for (int j = 0; j < bits_to_take; j++){
+            int bit_ind = byte_ind*8+j;
+            // printf("i: %d, j: %d, byte_ind:%d, bit_ind: %d\n", i, j, byte_ind, bit_ind);
+            BitSelectionHash * bs = new BitSelectionHash(bit_ind);
+            // bs->print();
+            hash_functions.push_back(bs);
+            funct_to_concact++;
+            funct_true_hash++;
+        }
+    }
+    hash_functions.push_back(new FullBitShuffleHash()); // with shuffling
+    funct_true_hash++;
+    hash_functions.push_back(new XORFoldingHash(fp_size_in_bits));
+
+
+
+    cache = new ClusteredCache(
+        num_banks, KB_per_bank, assoc, line_size, 
+        shift_bank, shift_set, 
+        num_clusters, hash_functions, false, funct_to_concact, funct_true_hash);
+
+
+    cache->populate_lines(filenames_data, filenames_addr);
+
+    HashXORCache * hxorCache;
+    hxorCache = new HashXORCache(*cache);
+
+    vector<double> * ent_vec;
+    if (only_those_xored) {
+        ent_vec = hxorCache->get_per_byte_entropy_only_thoses_xored();
+    } else {
+        ent_vec = hxorCache->get_per_byte_entropy();
+    }
+    for (unsigned i = 0; i < ent_vec->size(); i++){
+        entropies.push_back((*ent_vec)[i]);
+    }
+
+    delete ent_vec;
+    delete hxorCache;
+    delete cache;
+}
+
+
+void profiling_x(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &results, 
+    void(*profiling_function)(int, int, string, bool, vector <double> &))
+{
+    profiling_function(num_banks, KB_per_bank, dir, only_those_xored, results);
 }

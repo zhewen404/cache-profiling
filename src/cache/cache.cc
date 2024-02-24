@@ -120,6 +120,17 @@ Cache::get_size() const
     }
     return size;
 }
+int 
+Cache::get_num_lines() const
+{
+    int num = 0;
+    for (int i = 0; i < m_num_banks; i++) {
+        for (int j = 0; j < m_num_sets; j++) {
+            num += m_lines[i][j].size();
+        }
+    }
+    return num;
+}
 
 void
 Cache::print()

@@ -1,416 +1,135 @@
 #include "function/clustercache.hh"
-#include "cache/compressedCache.hh"
-#include "cache/cache.hh"
 #include "cache/xorCache.hh"
 #include "common/file/file_read.hh"
 #include <stdio.h>
+#include <assert.h>
 
-
-void try_bbsxf(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, bool use_xorcache)
+ClusteredCache * create_clustered_cache(int num_banks, int KB_per_bank, int assoc, int line_size, int shift_bank, int shift_set,
+    int fp_size_in_bits,
+    bool cascade, int funct_to_concact, int funct_true_hash,
+    string dir, vector<HashFunction *> &hash_functions)
 {
-    int line_size = 64;
-    int assoc = 16;
-    int shift_bank = 0;
-    int shift_set = 0;
-    // int fp_size_in_bits = 32;
     u_int64_t num_clusters = (u_int64_t)pow((u_int64_t)2,(u_int64_t)fp_size_in_bits);
 
     vector<string> filenames_data;
     vector<string> filenames_addr;
     fill_string_arrays_data_addr(filenames_data, filenames_addr, dir, num_banks);
 
-    ClusteredCache * cache;
+    ClusteredCache * cache = new ClusteredCache(
+        num_banks, KB_per_bank, assoc, line_size, 
+        shift_bank, shift_set, 
+        num_clusters, hash_functions, cascade, funct_to_concact, funct_true_hash);
 
-    vector<HashFunction *> hash_functions;
-    // ThesaurusLSHash * the = new ThesaurusLSHash(fp_size_in_bits, line_size);
-    // hash_functions.push_back(the);
+    cache->populate_lines(filenames_data, filenames_addr);
+    return cache;
+}
+
+HashXORCache * create_hashed_inter_cache_from_clustered_cache_xor(ClusteredCache * cache)
+{
+    HashXORCache * hxorCache;
+    hxorCache = new HashXORCache(*cache);
+    return hxorCache;
+}
+HashDeltaCache * create_hashed_inter_cache_from_clustered_cache_delta(ClusteredCache * cache)
+{
+    HashDeltaCache * hxorCache;
+    hxorCache = new HashDeltaCache(*cache);
+    return hxorCache;
+}
+
+BDICompressedXORCache * create_bdicompressedxorcache_from_hashedxorcache(HashXORCache * hxorCache, bool use_little_e, bool allow_immo)
+{
+    BDICompressedXORCache * bdiXorCache;
+    bdiXorCache = new BDICompressedXORCache(*hxorCache, use_little_e, allow_immo);
+    return bdiXorCache;
+}
+BPCCompressedXORCache * create_bpccompressedxorcache_from_hashedxorcache(HashXORCache * hxorCache)
+{
+    BPCCompressedXORCache * bpcXorCache;
+    bpcXorCache = new BPCCompressedXORCache(*hxorCache);
+    return bpcXorCache;
+}
+////////////////////////////////////////////////////////////////
+
+void create_hashfunctions_bbsxf(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact,
+    int fp_size_in_bits, int line_size)
+{
+    (void) line_size;
+    true_hash = 0;
+    funct_to_concact = 0;
+    cascade = true;
 
     ByteBitShuffleHash * bbs = new ByteBitShuffleHash(true);
     hash_functions.push_back(bbs);
-
-    // FullBitShuffleHash * fbs = new FullBitShuffleHash();
-    // hash_functions.push_back(fbs);
+    true_hash += 1;
     XORFoldingHash * x = new XORFoldingHash(fp_size_in_bits);
     hash_functions.push_back(x);
-
-
-
-    cache = new ClusteredCache(
-        num_banks, KB_per_bank, assoc, line_size, 
-        shift_bank, shift_set, 
-        num_clusters, hash_functions,1);
-
-    cache->populate_lines(filenames_data, filenames_addr);
-    double vanilla_bit_entropy = cache->get_bit_entropy();
-    // printf("vanilla bit entropy: %f\n", bit_entropy);
-    // cache->print();
-
-
-    if (use_xorcache) {
-        HashXORCache * hxorCache;
-        hxorCache = new HashXORCache(*cache);
-        double bit_entropy = hxorCache->get_bit_entropy();
-
-        entropy_reduction = vanilla_bit_entropy - bit_entropy;
-        cr = hxorCache->get_compression_ratio();
-
-        false_rate = hxorCache->get_false_positive_rate();
-
-        BDICompressedXORCache * bdiXorCache;
-        bdiXorCache = new BDICompressedXORCache(*hxorCache);
-        intra_compression_ratio = bdiXorCache->get_intra_compression_ratio();
-
-
-        // printf("bbsxf %d-bit bit entropy: %f, cr:%f\n", fp_size_in_bits, bit_entropy, cr);
-        // hxorCache->print();
-        delete bdiXorCache;
-        delete hxorCache;
-
-    } else {
-        HashDeltaCache * hxorCache;
-        hxorCache = new HashDeltaCache(*cache);
-        double bit_entropy = hxorCache->get_bit_entropy();
-
-        entropy_reduction = vanilla_bit_entropy - bit_entropy;
-        cr = hxorCache->get_compression_ratio();
-        false_rate = hxorCache->get_false_positive_rate();
-
-        // printf("bbsxf %d-bit bit entropy: %f, cr:%f\n", fp_size_in_bits, bit_entropy, cr);
-        // hxorCache->print();
-        delete hxorCache;
-
-    }
-
-    delete cache;
 }
 
-
-void try_fbsxf(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, bool use_xorcache)
+void create_hashfunctions_fbsxf(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact,
+    int fp_size_in_bits, int line_size)
 {
-    int line_size = 64;
-    int assoc = 16;
-    int shift_bank = 0;
-    int shift_set = 0;
-    u_int64_t num_clusters = (u_int64_t)pow((u_int64_t)2,(u_int64_t)fp_size_in_bits);
-
-    vector<string> filenames_data;
-    vector<string> filenames_addr;
-    fill_string_arrays_data_addr(filenames_data, filenames_addr, dir, num_banks);
-
-    ClusteredCache * cache;
-
-    vector<HashFunction *> hash_functions;
-    // ThesaurusLSHash * the = new ThesaurusLSHash(fp_size_in_bits, line_size);
-    // hash_functions.push_back(the);
-
-    // ByteBitShuffleHash * bbs = new ByteBitShuffleHash(false);
-    // hash_functions.push_back(bbs);
+    (void) line_size;
+    true_hash = 0;
+    funct_to_concact = 0;
+    cascade = true;
 
     FullBitShuffleHash * fbs = new FullBitShuffleHash();
     hash_functions.push_back(fbs);
+    true_hash += 1;
     XORFoldingHash * x = new XORFoldingHash(fp_size_in_bits);
     hash_functions.push_back(x);
-
-
-
-    cache = new ClusteredCache(
-        num_banks, KB_per_bank, assoc, line_size, 
-        shift_bank, shift_set, 
-        num_clusters, hash_functions,1);
-
-    cache->populate_lines(filenames_data, filenames_addr);
-    double vanilla_bit_entropy = cache->get_bit_entropy();
-    // printf("vanilla bit entropy: %f\n", bit_entropy);
-    // cache->print();
-
-
-    if (use_xorcache) {
-        HashXORCache * hxorCache;
-        hxorCache = new HashXORCache(*cache);
-        double bit_entropy = hxorCache->get_bit_entropy();
-
-        entropy_reduction = vanilla_bit_entropy - bit_entropy;
-        cr = hxorCache->get_compression_ratio();
-        false_rate = hxorCache->get_false_positive_rate();
-
-        BDICompressedXORCache * bdiXorCache;
-        bdiXorCache = new BDICompressedXORCache(*hxorCache);
-        intra_compression_ratio = bdiXorCache->get_intra_compression_ratio();
-
-
-        // printf("fbsxf %d-bit bit entropy: %f, cr:%f\n", fp_size_in_bits, bit_entropy, cr);
-        // hxorCache->print();
-        delete bdiXorCache;
-        delete hxorCache;
-
-    } else {
-
-        HashDeltaCache * hxorCache;
-        hxorCache = new HashDeltaCache(*cache);
-        double bit_entropy = hxorCache->get_bit_entropy();
-
-        entropy_reduction = vanilla_bit_entropy - bit_entropy;
-        cr = hxorCache->get_compression_ratio();
-        false_rate = hxorCache->get_false_positive_rate();
-
-        // printf("fbsxf %d-bit bit entropy: %f, cr:%f\n", fp_size_in_bits, bit_entropy, cr);
-        // hxorCache->print();
-        delete hxorCache;
-    }
-
-    delete cache;
 }
 
-
-void try_thesaurus(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, bool use_xorcache)
+void create_hashfunctions_thesaurus(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact,
+    int fp_size_in_bits, int line_size)
 {
-    int line_size = 64;
-    int assoc = 16;
-    int shift_bank = 0;
-    int shift_set = 0;
-    // int fp_size_in_bits = 32;
-    u_int64_t num_clusters = (u_int64_t)pow((u_int64_t)2,(u_int64_t)fp_size_in_bits);
+    true_hash = 0;
+    funct_to_concact = 0;
+    cascade = true;
 
-    vector<string> filenames_data;
-    vector<string> filenames_addr;
-    fill_string_arrays_data_addr(filenames_data, filenames_addr, dir, num_banks);
-
-    ClusteredCache * cache;
-
-    vector<HashFunction *> hash_functions;
     ThesaurusLSHash * the = new ThesaurusLSHash(fp_size_in_bits, line_size);
     hash_functions.push_back(the);
-
-    // ByteBitShuffleHash * bbs = new ByteBitShuffleHash(true);
-    // hash_functions.push_back(bbs);
-
-    // FullBitShuffleHash * fbs = new FullBitShuffleHash();
-    // hash_functions.push_back(fbs);
-    // XORFoldingHash * x = new XORFoldingHash(fp_size_in_bits);
-    // hash_functions.push_back(x);
-
-
-
-    cache = new ClusteredCache(
-        num_banks, KB_per_bank, assoc, line_size, 
-        shift_bank, shift_set, 
-        num_clusters, hash_functions,1);
-
-    cache->populate_lines(filenames_data, filenames_addr);
-    double vanilla_bit_entropy = cache->get_bit_entropy();
-    // printf("vanilla bit entropy: %f\n", bit_entropy);
-    // cache->print();
-
-
-    if (use_xorcache) {
-        HashXORCache * hxorCache;
-        hxorCache = new HashXORCache(*cache);
-        double bit_entropy = hxorCache->get_bit_entropy();
-
-        entropy_reduction = vanilla_bit_entropy - bit_entropy;
-        cr = hxorCache->get_compression_ratio();
-        false_rate = hxorCache->get_false_positive_rate();
-
-        BDICompressedXORCache * bdiXorCache;
-        bdiXorCache = new BDICompressedXORCache(*hxorCache);
-        intra_compression_ratio = bdiXorCache->get_intra_compression_ratio();
-
-
-        // printf("thesaurus lsh %d-bit bit entropy: %f, cr:%f\n", fp_size_in_bits, bit_entropy, cr);
-        // hxorCache->print();
-        delete bdiXorCache;
-        delete hxorCache;
-
-    } else {
-
-        HashDeltaCache * hxorCache;
-        hxorCache = new HashDeltaCache(*cache);
-        double bit_entropy = hxorCache->get_bit_entropy();
-
-        entropy_reduction = vanilla_bit_entropy - bit_entropy;
-        cr = hxorCache->get_compression_ratio();
-        false_rate = hxorCache->get_false_positive_rate();
-
-        // printf("thesaurus lsh %d-bit bit entropy: %f, cr:%f\n", fp_size_in_bits, bit_entropy, cr);
-        // hxorCache->print();
-        delete hxorCache;
-    }
-
-    delete cache;
+    true_hash += 1;
 }
 
-
-void try_bs(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, bool use_xorcache)
+void create_hashfunctions_bs(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact,
+    int fp_size_in_bits, int line_size)
 {
-    int line_size = 64;
-    int assoc = 16;
-    int shift_bank = 0;
-    int shift_set = 0;
-    // int fp_size_in_bits = 32;
-    u_int64_t num_clusters = (u_int64_t)pow((u_int64_t)2,(u_int64_t)fp_size_in_bits);
+    (void) line_size;
+    true_hash = 0;
+    funct_to_concact = 0;
+    cascade = true;
 
-    vector<string> filenames_data;
-    vector<string> filenames_addr;
-    fill_string_arrays_data_addr(filenames_data, filenames_addr, dir, num_banks);
-
-    ClusteredCache * cache;
-
-    // vector<HashFunction *> hash_functions;
-    // ThesaurusLSHash * the = new ThesaurusLSHash(fp_size_in_bits, line_size);
-    // hash_functions.push_back(the);
-
-    vector<HashFunction *> hash_functions;
     BitSamplingLSHash * bs = new BitSamplingLSHash(fp_size_in_bits);
     hash_functions.push_back(bs);
-
-    // ByteBitShuffleHash * bbs = new ByteBitShuffleHash(true);
-    // hash_functions.push_back(bbs);
-
-    // FullBitShuffleHash * fbs = new FullBitShuffleHash();
-    // hash_functions.push_back(fbs);
-    // XORFoldingHash * x = new XORFoldingHash(fp_size_in_bits);
-    // hash_functions.push_back(x);
-
-
-
-    cache = new ClusteredCache(
-        num_banks, KB_per_bank, assoc, line_size, 
-        shift_bank, shift_set, 
-        num_clusters, hash_functions,1);
-
-    cache->populate_lines(filenames_data, filenames_addr);
-    double vanilla_bit_entropy = cache->get_bit_entropy();
-    // printf("vanilla bit entropy: %f\n", bit_entropy);
-    // cache->print();
-
-
-    if (use_xorcache) {
-        HashXORCache * hxorCache;
-        hxorCache = new HashXORCache(*cache);
-        double bit_entropy = hxorCache->get_bit_entropy();
-
-        entropy_reduction = vanilla_bit_entropy - bit_entropy;
-        cr = hxorCache->get_compression_ratio();
-        false_rate = hxorCache->get_false_positive_rate();
-
-        BDICompressedXORCache * bdiXorCache;
-        bdiXorCache = new BDICompressedXORCache(*hxorCache);
-        intra_compression_ratio = bdiXorCache->get_intra_compression_ratio();
-
-
-        // printf("bs lsh %d-bit bit entropy: %f, cr:%f\n", fp_size_in_bits, bit_entropy, cr);
-        // hxorCache->print();
-        delete bdiXorCache;
-        delete hxorCache;
-
-    } else {
-        HashDeltaCache * hxorCache;
-        hxorCache = new HashDeltaCache(*cache);
-        double bit_entropy = hxorCache->get_bit_entropy();
-
-        entropy_reduction = vanilla_bit_entropy - bit_entropy;
-        cr = hxorCache->get_compression_ratio();
-        false_rate = hxorCache->get_false_positive_rate();
-
-        // printf("bs lsh %d-bit bit entropy: %f, cr:%f\n", fp_size_in_bits, bit_entropy, cr);
-        // hxorCache->print();
-        delete hxorCache;
-
-    }
-
-    delete cache;
+    true_hash += 1;
 }
 
-
-void try_bytemap(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, bool use_xorcache)
+void create_hashfunctions_bytemap(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact,
+    int fp_size_in_bits, int line_size)
 {
-    int line_size = 64;
-    int assoc = 16;
-    int shift_bank = 0;
-    int shift_set = 0;
-    // int fp_size_in_bits = 32;
-    u_int64_t num_clusters = (u_int64_t)pow((u_int64_t)2,(u_int64_t)fp_size_in_bits);
+    (void) line_size;
+    true_hash = 0;
+    funct_to_concact = 0;
+    cascade = true;
 
-    vector<string> filenames_data;
-    vector<string> filenames_addr;
-    fill_string_arrays_data_addr(filenames_data, filenames_addr, dir, num_banks);
-
-    ClusteredCache * cache;
-
-    vector<HashFunction *> hash_functions;
     ByteMapHash * bm = new ByteMapHash();
     hash_functions.push_back(bm);
+    true_hash += 1;
     XORFoldingHash * x = new XORFoldingHash(fp_size_in_bits);
     hash_functions.push_back(x);
-
-
-
-    cache = new ClusteredCache(
-        num_banks, KB_per_bank, assoc, line_size, 
-        shift_bank, shift_set, 
-        num_clusters, hash_functions,1);
-
-    cache->populate_lines(filenames_data, filenames_addr);
-    double vanilla_bit_entropy = cache->get_bit_entropy();
-    // printf("vanilla bit entropy: %f\n", bit_entropy);
-    // cache->print();
-
-
-    if (use_xorcache) {
-        HashXORCache * hxorCache;
-        hxorCache = new HashXORCache(*cache);
-        double bit_entropy = hxorCache->get_bit_entropy();
-
-        entropy_reduction = vanilla_bit_entropy - bit_entropy;
-        cr = hxorCache->get_compression_ratio();
-        false_rate = hxorCache->get_false_positive_rate();
-
-        BDICompressedXORCache * bdiXorCache;
-        bdiXorCache = new BDICompressedXORCache(*hxorCache);
-        intra_compression_ratio = bdiXorCache->get_intra_compression_ratio();
-
-
-        // printf("bm lsh %d-bit bit entropy: %f, cr:%f\n", fp_size_in_bits, bit_entropy, cr);
-        // hxorCache->print();
-        delete bdiXorCache;
-        delete hxorCache;
-
-    } else {
-
-        HashDeltaCache * hxorCache;
-        hxorCache = new HashDeltaCache(*cache);
-        double bit_entropy = hxorCache->get_bit_entropy();
-
-        entropy_reduction = vanilla_bit_entropy - bit_entropy;
-        cr = hxorCache->get_compression_ratio();
-        false_rate = hxorCache->get_false_positive_rate();
-
-        // printf("bm lsh %d-bit bit entropy: %f, cr:%f\n", fp_size_in_bits, bit_entropy, cr);
-        // hxorCache->print();
-        delete hxorCache;
-    }
-
-    delete cache;
 }
 
-
-void sparsebytemap(bool shuffle, int everyNByte, int bytes_to_take, int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, bool use_xorcache)
+void sparsebytemap(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact,
+    int fp_size_in_bits, int line_size,
+    bool shuffle, int everyNByte, int bytes_to_take)
 {
-    int line_size = 64;
-    int assoc = 16;
-    int shift_bank = 0;
-    int shift_set = 0;
-    // int fp_size_in_bits = 32;
-    u_int64_t num_clusters = (u_int64_t)pow((u_int64_t)2,(u_int64_t)fp_size_in_bits);
+    (void) line_size;
+    true_hash = 0;
+    funct_to_concact = 0;
+    cascade = true;
 
-    vector<string> filenames_data;
-    vector<string> filenames_addr;
-    fill_string_arrays_data_addr(filenames_data, filenames_addr, dir, num_banks);
-
-    ClusteredCache * cache;
-
-    int true_hash = 0;
-    vector<HashFunction *> hash_functions;
     SparseByteMapHash * bm = new SparseByteMapHash(everyNByte, bytes_to_take);
     hash_functions.push_back(bm);
     true_hash += 1;
@@ -422,516 +141,161 @@ void sparsebytemap(bool shuffle, int everyNByte, int bytes_to_take, int num_bank
     XORFoldingHash * x = new XORFoldingHash(fp_size_in_bits);
     hash_functions.push_back(x);
 
-
-
-    cache = new ClusteredCache(
-        num_banks, KB_per_bank, assoc, line_size, 
-        shift_bank, shift_set, 
-        num_clusters, hash_functions, true_hash);
-
-    cache->populate_lines(filenames_data, filenames_addr);
-    double vanilla_bit_entropy = cache->get_bit_entropy();
-    // printf("vanilla bit entropy: %f\n", bit_entropy);
-    // cache->print();
-
-
-    if (use_xorcache) {
-        HashXORCache * hxorCache;
-        hxorCache = new HashXORCache(*cache);
-        double bit_entropy = hxorCache->get_bit_entropy();
-
-        entropy_reduction = vanilla_bit_entropy - bit_entropy;
-        cr = hxorCache->get_compression_ratio();
-        false_rate = hxorCache->get_false_positive_rate();
-
-        BDICompressedXORCache * bdiXorCache;
-        bdiXorCache = new BDICompressedXORCache(*hxorCache);
-        intra_compression_ratio = bdiXorCache->get_intra_compression_ratio();
-
-        // printf("sbm lsh (every %d byte) %d-bit bit entropy: %f, cr:%f\n", 
-        //     everyNByte,fp_size_in_bits, bit_entropy, cr);
-        // hxorCache->print();
-        delete bdiXorCache;
-        delete hxorCache;
-
-    } else {
-        HashDeltaCache * hxorCache;
-        hxorCache = new HashDeltaCache(*cache);
-        double bit_entropy = hxorCache->get_bit_entropy();
-
-        entropy_reduction = vanilla_bit_entropy - bit_entropy;
-        cr = hxorCache->get_compression_ratio();
-        false_rate = hxorCache->get_false_positive_rate();
-
-        // printf("sbm lsh (every %d byte) %d-bit bit entropy: %f, cr:%f\n", 
-        //     everyNByte,fp_size_in_bits, bit_entropy, cr);
-        // hxorCache->print();
-        delete hxorCache;
-
-    }
-
-    delete cache;
+}
+void create_hashfunctions_sparsebytemap_2_1(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact,
+    int fp_size_in_bits, int line_size)
+{
+    (void) line_size;
+    sparsebytemap(hash_functions, true_hash, cascade, funct_to_concact, fp_size_in_bits, line_size, false, 2, 1);
+}
+void create_hashfunctions_sparseshuffledbytemap_2_1(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact,
+    int fp_size_in_bits, int line_size)
+{
+    (void) line_size;
+    sparsebytemap(hash_functions, true_hash, cascade, funct_to_concact, fp_size_in_bits, line_size, true, 4, 1);
+}
+void create_hashfunctions_sparsebytemap_4_1(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact,
+    int fp_size_in_bits, int line_size)
+{
+    (void) line_size;
+    sparsebytemap(hash_functions, true_hash, cascade, funct_to_concact, fp_size_in_bits, line_size, false, 4, 1);
+}
+void create_hashfunctions_sparseshuffledbytemap_4_1(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact,
+    int fp_size_in_bits, int line_size)
+{
+    (void) line_size;
+    sparsebytemap(hash_functions, true_hash, cascade, funct_to_concact, fp_size_in_bits, line_size, true, 4, 1);
+}
+void create_hashfunctions_sparsebytemap_8_1(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact,
+    int fp_size_in_bits, int line_size)
+{
+    (void) line_size;
+    sparsebytemap(hash_functions, true_hash, cascade, funct_to_concact, fp_size_in_bits, line_size, false, 8, 1);
+}
+void create_hashfunctions_sparseshuffledbytemap_8_1(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact,
+    int fp_size_in_bits, int line_size)
+{
+    (void) line_size;
+    sparsebytemap(hash_functions, true_hash, cascade, funct_to_concact, fp_size_in_bits, line_size, true, 8, 1);
+}
+void create_hashfunctions_sparseshuffledbytemap_8_7(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact,
+    int fp_size_in_bits, int line_size)
+{
+    (void) line_size;
+    sparsebytemap(hash_functions, true_hash, cascade, funct_to_concact, fp_size_in_bits, line_size, true, 8, 7);
+}
+void create_hashfunctions_sparseshuffledbytemap_8_6(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact,
+    int fp_size_in_bits, int line_size)
+{
+    (void) line_size;
+    sparsebytemap(hash_functions, true_hash, cascade, funct_to_concact, fp_size_in_bits, line_size, true, 8, 6);
+}
+void create_hashfunctions_sparseshuffledbytemap_8_4(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact,
+    int fp_size_in_bits, int line_size)
+{
+    (void) line_size;
+    sparsebytemap(hash_functions, true_hash, cascade, funct_to_concact, fp_size_in_bits, line_size, true, 8, 4);
+}
+void create_hashfunctions_sparseshuffledbytemap_4_3(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact,
+    int fp_size_in_bits, int line_size)
+{
+    (void) line_size;
+    sparsebytemap(hash_functions, true_hash, cascade, funct_to_concact, fp_size_in_bits, line_size, true, 4, 3);
+}
+void create_hashfunctions_sparseshuffledbytemap_4_2(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact,
+    int fp_size_in_bits, int line_size)
+{
+    (void) line_size;
+    sparsebytemap(hash_functions, true_hash, cascade, funct_to_concact, fp_size_in_bits, line_size, true, 4, 2);
 }
 
-void try_sparsebytemap_2_1(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, bool use_xorcache)
+void create_hashfunctions_2bytemap(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact,
+    int fp_size_in_bits, int line_size)
 {
-    sparsebytemap(false, 2, 1, num_banks, KB_per_bank, dir, fp_size_in_bits, cr, entropy_reduction, false_rate, intra_compression_ratio, use_xorcache);
-}
-void try_sparseshuffledbytemap_2_1(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, bool use_xorcache)
-{
-    sparsebytemap(true, 2, 1, num_banks, KB_per_bank, dir, fp_size_in_bits, cr, entropy_reduction, false_rate, intra_compression_ratio, use_xorcache);
-}
+    (void) line_size;
+    true_hash = 0;
+    funct_to_concact = 0;
+    cascade = true;
 
-void try_sparsebytemap_4_1(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, bool use_xorcache)
-{
-    sparsebytemap(false, 4, 1, num_banks, KB_per_bank, dir, fp_size_in_bits, cr, entropy_reduction, false_rate, intra_compression_ratio, use_xorcache);
-}
-void try_sparseshuffledbytemap_4_1(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, bool use_xorcache)
-{
-    sparsebytemap(true, 4, 1, num_banks, KB_per_bank, dir, fp_size_in_bits, cr, entropy_reduction, false_rate, intra_compression_ratio, use_xorcache);
-}
-void try_sparsebytemap_8_1(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, bool use_xorcache)
-{
-    sparsebytemap(false, 8, 1, num_banks, KB_per_bank, dir, fp_size_in_bits, cr, entropy_reduction, false_rate, intra_compression_ratio, use_xorcache);
-}
-void try_sparseshuffledbytemap_8_1(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, bool use_xorcache)
-{
-    sparsebytemap(true, 8, 1, num_banks, KB_per_bank, dir, fp_size_in_bits, cr, entropy_reduction, false_rate, intra_compression_ratio, use_xorcache);
-}
-void try_sparseshuffledbytemap_8_6(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, bool use_xorcache)
-{
-    sparsebytemap(true, 8, 6, num_banks, KB_per_bank, dir, fp_size_in_bits, cr, entropy_reduction, false_rate, intra_compression_ratio, use_xorcache);
-}
-void try_sparseshuffledbytemap_8_4(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, bool use_xorcache)
-{
-    sparsebytemap(true, 8, 4, num_banks, KB_per_bank, dir, fp_size_in_bits, cr, entropy_reduction, false_rate, intra_compression_ratio, use_xorcache);
-}
-void try_sparseshuffledbytemap_4_3(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, bool use_xorcache)
-{
-    sparsebytemap(true, 4, 3, num_banks, KB_per_bank, dir, fp_size_in_bits, cr, entropy_reduction, false_rate, intra_compression_ratio, use_xorcache);
-}
-void try_sparseshuffledbytemap_4_2(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, bool use_xorcache)
-{
-    sparsebytemap(true, 4, 2, num_banks, KB_per_bank, dir, fp_size_in_bits, cr, entropy_reduction, false_rate, intra_compression_ratio, use_xorcache);
-}
-
-void try_2bytemap(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, bool use_xorcache)
-{
-    int line_size = 64;
-    int assoc = 16;
-    int shift_bank = 0;
-    int shift_set = 0;
-    // int fp_size_in_bits = 32;
-    u_int64_t num_clusters = (u_int64_t)pow((u_int64_t)2,(u_int64_t)fp_size_in_bits);
-
-    vector<string> filenames_data;
-    vector<string> filenames_addr;
-    fill_string_arrays_data_addr(filenames_data, filenames_addr, dir, num_banks);
-
-    ClusteredCache * cache;
-
-    vector<HashFunction *> hash_functions;
     NByteMapHash * nbm = new NByteMapHash(2);
     hash_functions.push_back(nbm);
+    true_hash += 1;
     XORFoldingHash * x = new XORFoldingHash(fp_size_in_bits);
     hash_functions.push_back(x);
-
-
-
-    cache = new ClusteredCache(
-        num_banks, KB_per_bank, assoc, line_size, 
-        shift_bank, shift_set, 
-        num_clusters, hash_functions,1);
-
-    cache->populate_lines(filenames_data, filenames_addr);
-    double vanilla_bit_entropy = cache->get_bit_entropy();
-    // printf("vanilla bit entropy: %f\n", bit_entropy);
-    // cache->print();
-
-
-    if (use_xorcache) {
-        HashXORCache * hxorCache;
-        hxorCache = new HashXORCache(*cache);
-        double bit_entropy = hxorCache->get_bit_entropy();
-
-        entropy_reduction = vanilla_bit_entropy - bit_entropy;
-        cr = hxorCache->get_compression_ratio();
-        false_rate = hxorCache->get_false_positive_rate();
-
-        BDICompressedXORCache * bdiXorCache;
-        bdiXorCache = new BDICompressedXORCache(*hxorCache);
-        intra_compression_ratio = bdiXorCache->get_intra_compression_ratio();
-
-        // printf("2bm lsh %d-bit bit entropy: %f, cr:%f\n", fp_size_in_bits, bit_entropy, cr);
-        // hxorCache->print();
-        delete bdiXorCache;
-        delete hxorCache;
-
-    } else {
-        HashDeltaCache * hxorCache;
-        hxorCache = new HashDeltaCache(*cache);
-        double bit_entropy = hxorCache->get_bit_entropy();
-
-        entropy_reduction = vanilla_bit_entropy - bit_entropy;
-        cr = hxorCache->get_compression_ratio();
-        false_rate = hxorCache->get_false_positive_rate();
-
-        // printf("2bm lsh %d-bit bit entropy: %f, cr:%f\n", fp_size_in_bits, bit_entropy, cr);
-        // hxorCache->print();
-        delete hxorCache;
-
-    }
-
-    delete cache;
 }
-
-
-void try_4bytemap(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, bool use_xorcache)
+void create_hashfunctions_4bytemap(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact,
+    int fp_size_in_bits, int line_size)
 {
-    int line_size = 64;
-    int assoc = 16;
-    int shift_bank = 0;
-    int shift_set = 0;
-    // int fp_size_in_bits = 32;
-    u_int64_t num_clusters = (u_int64_t)pow((u_int64_t)2,(u_int64_t)fp_size_in_bits);
+    (void) line_size;
+    true_hash = 0;
+    funct_to_concact = 0;
+    cascade = true;
 
-    vector<string> filenames_data;
-    vector<string> filenames_addr;
-    fill_string_arrays_data_addr(filenames_data, filenames_addr, dir, num_banks);
-
-    ClusteredCache * cache;
-
-    vector<HashFunction *> hash_functions;
     NByteMapHash * nbm = new NByteMapHash(4);
     hash_functions.push_back(nbm);
+    true_hash += 1;
     XORFoldingHash * x = new XORFoldingHash(fp_size_in_bits);
     hash_functions.push_back(x);
-
-
-
-    cache = new ClusteredCache(
-        num_banks, KB_per_bank, assoc, line_size, 
-        shift_bank, shift_set, 
-        num_clusters, hash_functions,1);
-
-    cache->populate_lines(filenames_data, filenames_addr);
-    double vanilla_bit_entropy = cache->get_bit_entropy();
-    // printf("vanilla bit entropy: %f\n", bit_entropy);
-    // cache->print();
-
-
-    if (use_xorcache) {
-        HashXORCache * hxorCache;
-        hxorCache = new HashXORCache(*cache);
-        double bit_entropy = hxorCache->get_bit_entropy();
-
-        entropy_reduction = vanilla_bit_entropy - bit_entropy;
-        cr = hxorCache->get_compression_ratio();
-        false_rate = hxorCache->get_false_positive_rate();
-
-        BDICompressedXORCache * bdiXorCache;
-        bdiXorCache = new BDICompressedXORCache(*hxorCache);
-        intra_compression_ratio = bdiXorCache->get_intra_compression_ratio();
-
-        // printf("4bm lsh %d-bit bit entropy: %f, cr:%f\n", fp_size_in_bits, bit_entropy, cr);
-        // hxorCache->print();
-        delete bdiXorCache;
-        delete hxorCache;
-
-    } else {
-        HashDeltaCache * hxorCache;
-        hxorCache = new HashDeltaCache(*cache);
-        double bit_entropy = hxorCache->get_bit_entropy();
-
-        entropy_reduction = vanilla_bit_entropy - bit_entropy;
-        cr = hxorCache->get_compression_ratio();
-        false_rate = hxorCache->get_false_positive_rate();
-
-        // printf("4bm lsh %d-bit bit entropy: %f, cr:%f\n", fp_size_in_bits, bit_entropy, cr);
-        // hxorCache->print();
-        delete hxorCache;
-
-    }
-
-    delete cache;
 }
 
-
-void try_tbytemap(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, bool use_xorcache)
+void create_hashfunctions_tbytemap(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact,
+    int fp_size_in_bits, int line_size)
 {
-    int line_size = 64;
-    int assoc = 16;
-    int shift_bank = 0;
-    int shift_set = 0;
-    // int fp_size_in_bits = 32;
-    u_int64_t num_clusters = (u_int64_t)pow((u_int64_t)2,(u_int64_t)fp_size_in_bits);
+    (void) line_size;
+    true_hash = 0;
+    funct_to_concact = 0;
+    cascade = true;
 
-    vector<string> filenames_data;
-    vector<string> filenames_addr;
-    fill_string_arrays_data_addr(filenames_data, filenames_addr, dir, num_banks);
-
-    ClusteredCache * cache;
-
-    vector<HashFunction *> hash_functions;
     TernaryByteMapHash * tbm = new TernaryByteMapHash();
     hash_functions.push_back(tbm);
+    true_hash += 1;
     XORFoldingHash * x = new XORFoldingHash(fp_size_in_bits);
     hash_functions.push_back(x);
-
-
-
-    cache = new ClusteredCache(
-        num_banks, KB_per_bank, assoc, line_size, 
-        shift_bank, shift_set, 
-        num_clusters, hash_functions,1);
-
-    cache->populate_lines(filenames_data, filenames_addr);
-    double vanilla_bit_entropy = cache->get_bit_entropy();
-    // printf("vanilla bit entropy: %f\n", bit_entropy);
-    // cache->print();
-
-
-    if (use_xorcache) {
-        HashXORCache * hxorCache;
-        hxorCache = new HashXORCache(*cache);
-        double bit_entropy = hxorCache->get_bit_entropy();
-
-        entropy_reduction = vanilla_bit_entropy - bit_entropy;
-        cr = hxorCache->get_compression_ratio();
-        false_rate = hxorCache->get_false_positive_rate();
-
-        BDICompressedXORCache * bdiXorCache;
-        bdiXorCache = new BDICompressedXORCache(*hxorCache);
-        intra_compression_ratio = bdiXorCache->get_intra_compression_ratio();
-
-        // printf("tbm lsh %d-bit bit entropy: %f, cr:%f\n", fp_size_in_bits, bit_entropy, cr);
-        // hxorCache->print();
-        delete bdiXorCache;
-        delete hxorCache;
-
-    } else {
-        HashDeltaCache * hxorCache;
-        hxorCache = new HashDeltaCache(*cache);
-        double bit_entropy = hxorCache->get_bit_entropy();
-
-        entropy_reduction = vanilla_bit_entropy - bit_entropy;
-        cr = hxorCache->get_compression_ratio();
-        false_rate = hxorCache->get_false_positive_rate();
-
-        // printf("tbm lsh %d-bit bit entropy: %f, cr:%f\n", fp_size_in_bits, bit_entropy, cr);
-        // hxorCache->print();
-        delete hxorCache;
-
-    }
-
-    delete cache;
 }
-
-
-void try_shuffledtbytemap(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, bool use_xorcache)
+void create_hashfunctions_shuffledtbytemap(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact,
+    int fp_size_in_bits, int line_size)
 {
-    int line_size = 64;
-    int assoc = 16;
-    int shift_bank = 0;
-    int shift_set = 0;
-    // int fp_size_in_bits = 32;
-    u_int64_t num_clusters = (u_int64_t)pow((u_int64_t)2,(u_int64_t)fp_size_in_bits);
+    (void) line_size;
+    true_hash = 0;
+    funct_to_concact = 0;
+    cascade = true;
 
-    vector<string> filenames_data;
-    vector<string> filenames_addr;
-    fill_string_arrays_data_addr(filenames_data, filenames_addr, dir, num_banks);
-
-    ClusteredCache * cache;
-
-    vector<HashFunction *> hash_functions;
     ShuffledTernaryByteMapHash * tbm = new ShuffledTernaryByteMapHash();
     hash_functions.push_back(tbm);
+    true_hash += 1;
     XORFoldingHash * x = new XORFoldingHash(fp_size_in_bits);
     hash_functions.push_back(x);
 
-
-
-    cache = new ClusteredCache(
-        num_banks, KB_per_bank, assoc, line_size, 
-        shift_bank, shift_set, 
-        num_clusters, hash_functions,1);
-
-    cache->populate_lines(filenames_data, filenames_addr);
-    double vanilla_bit_entropy = cache->get_bit_entropy();
-    // printf("vanilla bit entropy: %f\n", bit_entropy);
-    // cache->print();
-
-
-    if (use_xorcache) {
-        HashXORCache * hxorCache;
-        hxorCache = new HashXORCache(*cache);
-        double bit_entropy = hxorCache->get_bit_entropy();
-
-        entropy_reduction = vanilla_bit_entropy - bit_entropy;
-        cr = hxorCache->get_compression_ratio();
-        false_rate = hxorCache->get_false_positive_rate();
-
-        BDICompressedXORCache * bdiXorCache;
-        bdiXorCache = new BDICompressedXORCache(*hxorCache);
-        intra_compression_ratio = bdiXorCache->get_intra_compression_ratio();
-
-
-        // printf("stbm lsh %d-bit bit entropy: %f, cr:%f\n", fp_size_in_bits, bit_entropy, cr);
-        // hxorCache->print();
-        delete bdiXorCache;
-        delete hxorCache;
-
-    } else {
-        HashDeltaCache * hxorCache;
-        hxorCache = new HashDeltaCache(*cache);
-        double bit_entropy = hxorCache->get_bit_entropy();
-
-        entropy_reduction = vanilla_bit_entropy - bit_entropy;
-        cr = hxorCache->get_compression_ratio();
-        false_rate = hxorCache->get_false_positive_rate();
-
-        // printf("stbm lsh %d-bit bit entropy: %f, cr:%f\n", fp_size_in_bits, bit_entropy, cr);
-        // hxorCache->print();
-        delete hxorCache;
-
-    }
-
-    delete cache;
 }
 
 
-void try_shuffledbytemap(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, bool use_xorcache)
+void create_hashfunctions_shuffledbytemap(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact,
+    int fp_size_in_bits, int line_size)
 {
-    int line_size = 64;
-    int assoc = 16;
-    int shift_bank = 0;
-    int shift_set = 0;
-    u_int64_t num_clusters = (u_int64_t)pow((u_int64_t)2,(u_int64_t)fp_size_in_bits);
+    (void) line_size;
+    true_hash = 0;
+    funct_to_concact = 0;
+    cascade = true;
 
-    vector<string> filenames_data;
-    vector<string> filenames_addr;
-    fill_string_arrays_data_addr(filenames_data, filenames_addr, dir, num_banks);
-
-    ClusteredCache * cache;
-
-    vector<HashFunction *> hash_functions;
     ByteMapHash * bm = new ByteMapHash();
     hash_functions.push_back(bm);
+    true_hash += 1;
     FullBitShuffleHash * fbs = new FullBitShuffleHash();
     hash_functions.push_back(fbs);
+    true_hash += 1;
     XORFoldingHash * x = new XORFoldingHash(fp_size_in_bits);
     hash_functions.push_back(x);
-
-
-
-    cache = new ClusteredCache(
-        num_banks, KB_per_bank, assoc, line_size, 
-        shift_bank, shift_set, 
-        num_clusters, hash_functions,2);
-
-    cache->populate_lines(filenames_data, filenames_addr);
-    double vanilla_bit_entropy = cache->get_bit_entropy();
-    // printf("vanilla bit entropy: %f\n", bit_entropy);
-    // cache->print();
-
-
-    if (use_xorcache) {
-        HashXORCache * hxorCache;
-        hxorCache = new HashXORCache(*cache);
-        double bit_entropy = hxorCache->get_bit_entropy();
-
-        entropy_reduction = vanilla_bit_entropy - bit_entropy;
-        cr = hxorCache->get_compression_ratio();
-        false_rate = hxorCache->get_false_positive_rate();
-
-        BDICompressedXORCache * bdiXorCache;
-        bdiXorCache = new BDICompressedXORCache(*hxorCache);
-        intra_compression_ratio = bdiXorCache->get_intra_compression_ratio();
-
-        // printf("shuffled bm lsh %d-bit bit entropy: %f, cr:%f\n", fp_size_in_bits, bit_entropy, cr);
-        // hxorCache->print();
-        delete bdiXorCache;
-        delete hxorCache;
-
-    } else {
-        HashDeltaCache * hxorCache;
-        hxorCache = new HashDeltaCache(*cache);
-        double bit_entropy = hxorCache->get_bit_entropy();
-
-        entropy_reduction = vanilla_bit_entropy - bit_entropy;
-        cr = hxorCache->get_compression_ratio();
-        false_rate = hxorCache->get_false_positive_rate();
-
-        // printf("shuffled bm lsh %d-bit bit entropy: %f, cr:%f\n", fp_size_in_bits, bit_entropy, cr);
-        // hxorCache->print();
-        delete hxorCache;
-
-    }
-
-    delete cache;
 }
 
-
-void try_lowentropy_2_8(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, bool use_xorcache)
+void lowentropy(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact,
+    int fp_size_in_bits, int line_size,
+    int seg_size, int bits_to_take)
 {
-    lowentropy(2, 8, num_banks, KB_per_bank, dir, fp_size_in_bits, cr, entropy_reduction, false_rate, intra_compression_ratio, use_xorcache);
-}
+    true_hash = 0;
+    funct_to_concact = 0;
+    cascade = false;
 
-void try_lowentropy_2_4(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, bool use_xorcache)
-{
-    lowentropy(2, 4, num_banks, KB_per_bank, dir, fp_size_in_bits, cr, entropy_reduction, false_rate, intra_compression_ratio, use_xorcache);
-}
-void try_lowentropy_2_2(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, bool use_xorcache)
-{
-    lowentropy(2, 2, num_banks, KB_per_bank, dir, fp_size_in_bits, cr, entropy_reduction, false_rate, intra_compression_ratio, use_xorcache);
-}
-
-void try_lowentropy_4_4(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, bool use_xorcache)
-{
-    lowentropy(4, 4, num_banks, KB_per_bank, dir, fp_size_in_bits, cr, entropy_reduction, false_rate, intra_compression_ratio, use_xorcache);
-}
-
-void try_lowentropy_4_8(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, bool use_xorcache)
-{
-    lowentropy(4, 8, num_banks, KB_per_bank, dir, fp_size_in_bits, cr, entropy_reduction, false_rate, intra_compression_ratio, use_xorcache);
-}
-
-void try_lowentropy_8_16(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, bool use_xorcache)
-{
-    lowentropy(8, 16, num_banks, KB_per_bank, dir, fp_size_in_bits, cr, entropy_reduction, false_rate, intra_compression_ratio, use_xorcache);
-}
-
-void try_lowentropy_8_8(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, bool use_xorcache)
-{
-    lowentropy(8, 8, num_banks, KB_per_bank, dir, fp_size_in_bits, cr, entropy_reduction, false_rate, intra_compression_ratio, use_xorcache);
-}
-
-void try_lowentropy_8_4(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, bool use_xorcache)
-{
-    lowentropy(8, 4, num_banks, KB_per_bank, dir, fp_size_in_bits, cr, entropy_reduction, false_rate, intra_compression_ratio, use_xorcache);
-}
-
-void lowentropy(int seg_size, int bits_to_take, int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, bool use_xorcache)
-{
-    int line_size = 64;
-    int assoc = 16;
-    int shift_bank = 0;
-    int shift_set = 0;
-    u_int64_t num_clusters = (u_int64_t)pow((u_int64_t)2,(u_int64_t)fp_size_in_bits);
-
-    vector<string> filenames_data;
-    vector<string> filenames_addr;
-    fill_string_arrays_data_addr(filenames_data, filenames_addr, dir, num_banks);
-
-    ClusteredCache * cache;
-
-    vector<HashFunction *> hash_functions;
-
-    // int seg_size = 4; // take per every seg_size bytes
-    // int bits_to_take = 4; // total 64 bit
     int bits_to_take_to_byte = int(ceil(bits_to_take/8.0));
-    int funct_to_concact = 0;
-    int funct_true_hash = 0;
     for (int i = 0; i < line_size/seg_size; i++){
         int byte_ind = seg_size*i+seg_size-bits_to_take_to_byte;
         for (int j = 0; j < bits_to_take; j++){
@@ -941,69 +305,98 @@ void lowentropy(int seg_size, int bits_to_take, int num_banks, int KB_per_bank, 
             // bs->print();
             hash_functions.push_back(bs);
             funct_to_concact++;
-            funct_true_hash++;
+            true_hash++;
         }
     }
     hash_functions.push_back(new FullBitShuffleHash()); // with shuffling
-    funct_true_hash++;
+    true_hash++;
     hash_functions.push_back(new XORFoldingHash(fp_size_in_bits));
-
-
-
-    cache = new ClusteredCache(
-        num_banks, KB_per_bank, assoc, line_size, 
-        shift_bank, shift_set, 
-        num_clusters, hash_functions, false, funct_to_concact, funct_true_hash);
-
-    cache->populate_lines(filenames_data, filenames_addr);
-    double vanilla_bit_entropy = cache->get_bit_entropy();
-    // printf("vanilla bit entropy: %f\n", bit_entropy);
-    // cache->print();
-    unsigned num_unempty_cluster = cache->m_clusters.size();
-    double percent_unempty_cluster = (double)num_unempty_cluster/(double)num_clusters*100.0;
-
-
-
-    if (use_xorcache) {
-        HashXORCache * hxorCache;
-        hxorCache = new HashXORCache(*cache);
-        double bit_entropy = hxorCache->get_bit_entropy();
-
-        entropy_reduction = vanilla_bit_entropy - bit_entropy;
-        cr = hxorCache->get_compression_ratio();
-        false_rate = hxorCache->get_false_positive_rate();
-
-        BDICompressedXORCache * bdiXorCache;
-        bdiXorCache = new BDICompressedXORCache(*hxorCache);
-        intra_compression_ratio = bdiXorCache->get_intra_compression_ratio();
-
-        // printf("lowentropy (%d,%d) %d-bit bit entropy: %f, cr:%f, unempty: %f\n", 
-        //     seg_size, bits_to_take, fp_size_in_bits, bit_entropy, cr, percent_unempty_cluster);
-        // hxorCache->print();
-        delete bdiXorCache;
-        delete hxorCache;
-    } else {
-        HashDeltaCache * hxorCache;
-        hxorCache = new HashDeltaCache(*cache);
-        double bit_entropy = hxorCache->get_bit_entropy();
-
-        entropy_reduction = vanilla_bit_entropy - bit_entropy;
-        cr = hxorCache->get_compression_ratio();
-        false_rate = hxorCache->get_false_positive_rate();
-
-        // printf("lowentropy (%d,%d) %d-bit bit entropy: %f, cr:%f, unempty: %f\n", 
-        //     seg_size, bits_to_take, fp_size_in_bits, bit_entropy, cr, percent_unempty_cluster);
-        // hxorCache->print();
-        delete hxorCache;
-    }
-
-    delete cache;
 }
 
-void try_vanila_bdi(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, bool use_xorcache)
+void create_hashfunctions_lowentropy_2_8(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact,
+    int fp_size_in_bits, int line_size)
 {
-    (void)use_xorcache;
-    (void)fp_size_in_bits;
+    lowentropy(hash_functions, true_hash, cascade, funct_to_concact, fp_size_in_bits, line_size, 2, 8);
+}
+void create_hashfunctions_lowentropy_2_4(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact,
+    int fp_size_in_bits, int line_size)
+{
+    lowentropy(hash_functions, true_hash, cascade, funct_to_concact, fp_size_in_bits, line_size, 2, 4);
+}
+void create_hashfunctions_lowentropy_2_2(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact,
+    int fp_size_in_bits, int line_size)
+{
+    lowentropy(hash_functions, true_hash, cascade, funct_to_concact, fp_size_in_bits, line_size, 2, 2);
+}
+
+void create_hashfunctions_lowentropy_4_8(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact,
+    int fp_size_in_bits, int line_size)
+{
+    lowentropy(hash_functions, true_hash, cascade, funct_to_concact, fp_size_in_bits, line_size, 4, 8);
+}
+void create_hashfunctions_lowentropy_4_4(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact,
+    int fp_size_in_bits, int line_size)
+{
+    lowentropy(hash_functions, true_hash, cascade, funct_to_concact, fp_size_in_bits, line_size, 4, 4);
+}
+
+
+void create_hashfunctions_lowentropy_8_16(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact,
+    int fp_size_in_bits, int line_size)
+{
+    lowentropy(hash_functions, true_hash, cascade, funct_to_concact, fp_size_in_bits, line_size, 8, 16);
+}
+void create_hashfunctions_lowentropy_8_8(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact,
+    int fp_size_in_bits, int line_size)
+{
+    lowentropy(hash_functions, true_hash, cascade, funct_to_concact, fp_size_in_bits, line_size, 8, 8);
+}
+void create_hashfunctions_lowentropy_8_4(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact,
+    int fp_size_in_bits, int line_size)
+{
+    lowentropy(hash_functions, true_hash, cascade, funct_to_concact, fp_size_in_bits, line_size, 8, 4);
+}
+
+////////////////////////////////////////////////////////////////
+void create_vanila_bdi(int num_banks, int KB_per_bank, string dir, 
+    double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, 
+    bool use_little_endian, bool allow_immo)
+{
+    cr = 0;
+    entropy_reduction = 0;
+    false_rate = 0;
+
+    int line_size = 64;
+    int assoc = 16;
+    int shift_bank = 0;
+    int shift_set = 0;
+    // int fp_size_in_bits = 32;
+
+    vector<string> filenames_data;
+    vector<string> filenames_addr;
+    fill_string_arrays_data_addr(filenames_data, filenames_addr, dir, num_banks);
+
+    Cache * cache;
+    cache = new Cache(num_banks, KB_per_bank, assoc, line_size, shift_bank, shift_set);
+    cache->populate_lines(filenames_data, filenames_addr);
+
+    BDICompressedCache * bdiCache;
+    bdiCache = new BDICompressedCache(*cache, use_little_endian, allow_immo);
+
+    double intra_cr = bdiCache->get_compression_ratio();
+    intra_compression_ratio = intra_cr;
+
+    delete cache;
+    delete bdiCache;
+}
+
+
+void create_vanila_bpc(int num_banks, int KB_per_bank, string dir, 
+    double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, 
+    bool use_little_endian, bool allow_immo)
+{
+    (void)use_little_endian;
+    (void)allow_immo;
 
     
     cr = 0;
@@ -1024,70 +417,103 @@ void try_vanila_bdi(int num_banks, int KB_per_bank, string dir, int fp_size_in_b
     cache = new Cache(num_banks, KB_per_bank, assoc, line_size, shift_bank, shift_set);
     cache->populate_lines(filenames_data, filenames_addr);
 
-    bool use_little_endian = true;
-    bool allow_immo = false;
+    BPCCompressedCache * bpcCache;
+    bpcCache = new BPCCompressedCache(*cache);
 
-    BDICompressedCache * bdiCache;
-    bdiCache = new BDICompressedCache(*cache, use_little_endian, allow_immo);
-
-    double intra_cr = bdiCache->get_compression_ratio();
+    double intra_cr = bpcCache->get_compression_ratio();
     intra_compression_ratio = intra_cr;
 
     delete cache;
-    delete bdiCache;
+    delete bpcCache;
 }
 
 
-void try_vanila_bdi_big_end(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, bool use_xorcache)
-{
-    (void)use_xorcache;
-    (void)fp_size_in_bits;
 
-    
-    cr = 0;
-    entropy_reduction = 0;
-    false_rate = 0;
-
-    int line_size = 64;
-    int assoc = 16;
-    int shift_bank = 0;
-    int shift_set = 0;
-    // int fp_size_in_bits = 32;
-
-    vector<string> filenames_data;
-    vector<string> filenames_addr;
-    fill_string_arrays_data_addr(filenames_data, filenames_addr, dir, num_banks);
-
-    Cache * cache;
-    cache = new Cache(num_banks, KB_per_bank, assoc, line_size, shift_bank, shift_set);
-    cache->populate_lines(filenames_data, filenames_addr);
-
-    bool use_little_endian = false;
-    bool allow_immo = false;
-
-    BDICompressedCache * bdiCache;
-    bdiCache = new BDICompressedCache(*cache, use_little_endian, allow_immo);
-
-    double intra_cr = bdiCache->get_compression_ratio();
-    intra_compression_ratio = intra_cr;
-
-    delete cache;
-    delete bdiCache;
-}
-
-
-void all(int num_banks, int KB_per_bank, string dir, vector <double> &crs, vector <double> &ers, vector <double> &frs, vector <double> &intras, vector<double> fbs, bool use_xorcache,
-    void (*func)(int, int, string, int, double &, double &, double &, double &, bool))
+////////////////////////////////////////////////////////////////
+// for hash functions
+void map_all(int num_banks, int KB_per_bank, string dir, 
+    vector <double> &crs, vector <double> &ers, vector <double> &frs, vector <double> &intras, 
+    vector<double> fbs, bool use_xorcache, bool use_little_e, bool allow_immo, intracomp_t type,
+    void (*create_hash_functions_x)(vector<HashFunction *> &, int &, bool &, int &, int, int))
 {
     double cr, entropy_reduction;
     double fr;
     double intra;
 
     for (unsigned i = 0; i < fbs.size(); i++){
-        func(num_banks, KB_per_bank, dir, fbs[i], cr, entropy_reduction, fr, intra, use_xorcache);
+        map_x(num_banks, KB_per_bank, dir, fbs[i], cr, entropy_reduction, fr, intra, use_xorcache, use_little_e, allow_immo, type, create_hash_functions_x);
         crs.push_back(cr);
         ers.push_back(entropy_reduction);
         frs.push_back(fr);
         intras.push_back(intra);
     }
+}
+
+// for hash functions
+void map_x(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, 
+    double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, 
+    bool use_xorcache, bool use_little_e, bool allow_immo, intracomp_t type,
+    void (*create_hash_functions_x)(vector<HashFunction *> &, int &, bool &, int &, int, int)
+    )
+{
+    assert(use_xorcache);
+
+    int line_size = 64;
+    int assoc = 16;
+    int shift_bank = 0;
+    int shift_set = 0;
+    
+    int true_hash = 0;
+    int funct_to_concact = 0;
+    bool cascade = true;
+    vector<HashFunction *> hash_functions;
+    create_hash_functions_x(hash_functions, true_hash, cascade, funct_to_concact, fp_size_in_bits, line_size);
+
+    ClusteredCache *cache = create_clustered_cache(
+        num_banks, KB_per_bank, assoc, line_size, shift_bank, shift_set, fp_size_in_bits, 
+        cascade, funct_to_concact, true_hash, dir, hash_functions);
+
+    double vanilla_bit_entropy = cache->get_bit_entropy();
+
+
+    HashXORCache * hxorCache = create_hashed_inter_cache_from_clustered_cache_xor(cache);
+    
+    double bit_entropy = hxorCache->get_bit_entropy();
+    entropy_reduction = vanilla_bit_entropy - bit_entropy;
+    cr = hxorCache->get_compression_ratio();
+    false_rate = hxorCache->get_false_positive_rate();
+
+    if (type == BDI) {
+        BDICompressedXORCache * bdiXorCache = create_bdicompressedxorcache_from_hashedxorcache(hxorCache, use_little_e, allow_immo);
+        intra_compression_ratio = bdiXorCache->get_intra_compression_ratio();
+        delete bdiXorCache;
+    } else if (type == BPC) {
+        BPCCompressedXORCache * bpcXorCache = create_bpccompressedxorcache_from_hashedxorcache(hxorCache);
+        intra_compression_ratio = bpcXorCache->get_intra_compression_ratio();
+        delete bpcXorCache;
+    } else {
+        assert(false);
+    }
+    delete hxorCache;
+    delete cache;
+}
+
+////////////////////////////////////////////////////////////////
+// for vanila intra compressed cache
+void vanila_x(int num_banks, int KB_per_bank, string dir, 
+    vector <double> &crs, vector <double> &ers, vector <double> &frs, vector <double> &intras, 
+    vector<double> fbs, bool use_xorcache, bool use_little_e, bool allow_immo,
+    void (*create_vanila_x)(int, int, string, double &, double &, double &, double &, bool, bool))
+{
+    (void) fbs;
+    (void) use_xorcache;
+    double cr, entropy_reduction;
+    double fr;
+    double intra;
+
+    create_vanila_x(num_banks, KB_per_bank, dir, cr, entropy_reduction, fr, intra, use_little_e, allow_immo);
+    crs.push_back(cr);
+    ers.push_back(entropy_reduction);
+    frs.push_back(fr);
+    intras.push_back(intra);
 }

@@ -15,6 +15,14 @@ public:
     bool is_line_compressible_repeatByte(Line* line) const;
 };
 
+class BitPlaneCompressor : public BaseIntraCompressor <BPCLine>
+{
+public:
+    BitPlaneCompressor() {};
+    ~BitPlaneCompressor() {};
+    BPCLine * compress_a_line(Line* line);
+    void print() const;
+};
 
 class BDICompressor : public BaseIntraCompressor <BDILine>
 {

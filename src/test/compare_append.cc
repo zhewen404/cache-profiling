@@ -41,15 +41,37 @@ int main(int argc, char *argv[]){
     vector<string> legends;
 
 
-    string name = "thesaurus";
+    string name = "shuffledbytemap";
     bool use_xorcache = true;
+    bool use_little_e = true;
+    bool allow_immo = false;
 
     vector<double> crs6, ers6, frs6, intras6;
-    all(num_banks, KB_per_bank, dir, crs6, ers6, frs6, intras6, fbs, use_xorcache, &try_thesaurus);
 
     // print crss to file dir/crss.txt
-    if (!use_xorcache){
-        name += "-deltacache";
+    if (name.find("vanila") == string::npos) {
+        intracomp_t type = BPC;
+        // no vanila in name
+        if (!use_xorcache){
+            name += "-deltacache";
+        }
+        if (!use_little_e){
+            name += "-bigE";
+        }
+        if (allow_immo){
+            name += "-immo";
+        }
+        if (type == BDI){
+        } else if (type == BPC) {
+            name += "-bpc";
+        } else {
+            assert(false);
+        }
+        map_all(num_banks, KB_per_bank, dir, crs6, ers6, frs6, intras6, fbs, use_xorcache, use_little_e, allow_immo, type,
+            &create_hashfunctions_shuffledbytemap);
+    } else {
+        vanila_x(num_banks, KB_per_bank, dir, crs6, ers6, frs6, intras6, fbs, use_xorcache, use_little_e, allow_immo, 
+            &create_vanila_bdi);
     }
 
     string crss_filename = dir + "/crss-" + name +".txt";

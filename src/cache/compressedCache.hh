@@ -6,6 +6,53 @@
 #include "cache/xorCache.hh"
 #include <vector>
 
+class BPCCompressedCache : public BaseCache
+{
+public:
+    vector<vector<vector<BPCLine*>>> m_lines;
+    BitPlaneCompressor* m_intraCompressor;
+    BPCCompressedCache(const Cache& cache) : BaseCache(cache.m_num_banks, cache.m_size_per_bank_KB, cache.m_assoc, cache.m_line_size, cache.m_shift_bank, cache.m_shift_set)
+    {
+        m_intraCompressor = new BitPlaneCompressor();
+
+        for (int i = 0; i < m_num_banks; i++) {
+            m_lines.push_back(vector<vector<BPCLine*>>());
+            for (int j = 0; j < m_num_sets; j++) {
+                m_lines[i].push_back(vector<BPCLine*>());
+                for (Line* line : cache.m_lines[i][j]) {
+                    // Apply your compression algorithm here and create a CompressedLine object
+                    BPCLine* compressedLine = m_intraCompressor->compress_a_line(line);
+                    m_lines[i][j].push_back(compressedLine);
+                }
+            }
+        }
+    }
+    ~BPCCompressedCache()
+    {
+        for (int i=0; i < m_num_banks; i++) {
+            for (int j=0; j < m_num_sets; j++) {
+                // delete lines in each set
+                for (long unsigned int k=0; k < m_lines[i][j].size(); k++) {
+                    delete m_lines[i][j][k];
+                }
+                m_lines[i][j].clear();
+            }
+            m_lines[i].clear();
+        }
+        m_lines.clear();
+        delete m_intraCompressor;
+    }
+    
+    void print() const;
+
+    int get_compressed_size() const;
+    int get_uncompressed_size() const;
+    double get_compression_ratio() const;
+
+    int get_num_lines() const;
+    int get_num_compressed_lines() const;
+    double get_coverage_rate() const;
+};
 
 class BDICompressedCache : public BaseCache
 {
@@ -84,52 +131,36 @@ class BDICompressedCache : public BaseCache
     int get_uncompressed_size() const;
     double get_compression_ratio() const;
 
-
+    int get_num_lines() const;
+    int get_num_compressed_lines() const;
+    double get_coverage_rate() const;
 };
 
-class BDICompressedXORCache : public BaseCache
+
+///////////////////////////////////////////////
+template<class Tcompressor, class Tline>
+class BaseCompressedXORCache : public BaseCache
 {
     public:
-    vector<BDILine*> m_intra_lines;
-    BDICompressor* m_intraCompressor;
+    vector<Tline*> m_intra_lines;
+    Tcompressor* m_intraCompressor;
     int m_uncompressed_size;
     int m_xor_compress_size;
-    BDICompressedXORCache(const HashXORCache& xorcache) : BaseCache(xorcache.m_num_banks, xorcache.m_size_per_bank_KB, xorcache.m_assoc, xorcache.m_line_size, xorcache.m_shift_bank, xorcache.m_shift_set)
+    BaseCompressedXORCache(const HashXORCache& xorcache, Tcompressor* compressor) : 
+        BaseCache(xorcache.m_num_banks, xorcache.m_size_per_bank_KB, xorcache.m_assoc, xorcache.m_line_size, 
+            xorcache.m_shift_bank, xorcache.m_shift_set),
+        m_intraCompressor(compressor),
+        m_uncompressed_size(xorcache.get_uncompressed_size()),
+        m_xor_compress_size(xorcache.get_compressed_size())
     {
-        m_intraCompressor = new BDICompressor();
-        m_uncompressed_size = xorcache.get_uncompressed_size();
-        m_xor_compress_size = xorcache.get_compressed_size();
         for (Line* line : xorcache.m_lines) {
             // Apply your compression algorithm here and create a CompressedLine object
-            BDILine* compressedLine = m_intraCompressor->compress_a_line(line);
-            m_intra_lines.push_back(compressedLine);
-        }
-    }
-    BDICompressedXORCache(const HashXORCache& xorcache, bool use_little_endian) : BaseCache(xorcache.m_num_banks, xorcache.m_size_per_bank_KB, xorcache.m_assoc, xorcache.m_line_size, xorcache.m_shift_bank, xorcache.m_shift_set)
-    {
-        m_intraCompressor = new BDICompressor(use_little_endian);
-        m_uncompressed_size = xorcache.get_uncompressed_size();
-        m_xor_compress_size = xorcache.get_compressed_size();
-        for (Line* line : xorcache.m_lines) {
-            // Apply your compression algorithm here and create a CompressedLine object
-            BDILine* compressedLine = m_intraCompressor->compress_a_line(line);
-            m_intra_lines.push_back(compressedLine);
-        }
-    }
-    
-    BDICompressedXORCache(const HashXORCache& xorcache, bool use_little_endian, bool allow_immo) : BaseCache(xorcache.m_num_banks, xorcache.m_size_per_bank_KB, xorcache.m_assoc, xorcache.m_line_size, xorcache.m_shift_bank, xorcache.m_shift_set)
-    {
-        m_intraCompressor = new BDICompressor(use_little_endian, allow_immo);
-        m_uncompressed_size = xorcache.get_uncompressed_size();
-        m_xor_compress_size = xorcache.get_compressed_size();
-        for (Line* line : xorcache.m_lines) {
-            // Apply your compression algorithm here and create a CompressedLine object
-            BDILine* compressedLine = m_intraCompressor->compress_a_line(line);
+            Tline* compressedLine = m_intraCompressor->compress_a_line(line);
             m_intra_lines.push_back(compressedLine);
         }
     }
 
-    ~BDICompressedXORCache()
+    ~BaseCompressedXORCache()
     {
         for (long unsigned int k=0; k < m_intra_lines.size(); k++) {
             delete m_intra_lines[k];
@@ -147,7 +178,38 @@ class BDICompressedXORCache : public BaseCache
     double get_inter_compression_ratio() const;
     double get_intra_compression_ratio() const;
 
+    int get_num_lines() const;
+    int get_num_compressed_lines() const;
+    double get_coverage_rate() const;
+};
 
+class BDICompressedXORCache : public BaseCompressedXORCache<BDICompressor, BDILine>
+{
+    public:
+    bool m_use_little_endian;
+    bool m_allow_immo;
+    BDICompressedXORCache(const HashXORCache& xorcache, bool use_little_e, bool allow_immo) 
+        : BaseCompressedXORCache<BDICompressor, BDILine>(xorcache, new BDICompressor(use_little_e, allow_immo)), 
+            m_use_little_endian(use_little_e), m_allow_immo(allow_immo)
+    {
+    }
+    ~BDICompressedXORCache()
+    {
+    }
+    void print() const;
+};
+
+class BPCCompressedXORCache : public BaseCompressedXORCache<BitPlaneCompressor, BPCLine>
+{
+    public:
+    BPCCompressedXORCache(const HashXORCache& xorcache) 
+        : BaseCompressedXORCache<BitPlaneCompressor, BPCLine>(xorcache, new BitPlaneCompressor())
+    {
+    }
+    ~BPCCompressedXORCache()
+    {
+    }
+    void print() const;
 };
 
 #endif // CACHE_COMPRESSEDCACHE_HH

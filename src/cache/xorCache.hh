@@ -77,6 +77,8 @@ class RandBankXORCache : public BaseCache
     int get_compressed_size() const;
     int get_uncompressed_size() const;
     double get_compression_ratio() const;
+    vector<double> * get_per_byte_entropy() const;
+    vector<double> * get_per_byte_entropy_only_thoses_xored() const;
 
 
     void print() const;
@@ -294,6 +296,7 @@ class HashXORCache : public BaseCache
     double get_compression_ratio() const;
     double get_false_positive_rate() const;
     vector<double> * get_per_byte_entropy() const;
+    vector<double> * get_per_byte_entropy_only_thoses_xored() const;
 
     void print() const;
 
