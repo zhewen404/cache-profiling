@@ -235,49 +235,89 @@ class BitSamplingLSHash : public HashFunction
     virtual ~BitSamplingLSHash() {
     }
 
-    vector<unsigned> gen_rand_indices(int data_size_in_bit, int fingerprint_size) {
-        vector<unsigned> rand_indices;
-        set<unsigned> rand_indices_set;
-        while (rand_indices.size() < (unsigned)fingerprint_size) {
-            unsigned rand_index = rand() % data_size_in_bit;
-            if (rand_indices_set.find(rand_index) == rand_indices_set.end()) { // dedup
-                rand_indices_set.insert(rand_index);
-                rand_indices.push_back(rand_index);
-            }
-        }
-        rand_indices_set.clear();
-        return rand_indices;
-    }
 
     // writing fingerprint size
     u_int8_t * hash(u_int8_t * line_data, int data_size_in_bit, int &fingerprint_size_in_bit) {
         assert (data_size_in_bit >= m_fingerprint_size_bit);
-        vector<unsigned> rand_indices = gen_rand_indices(data_size_in_bit, m_fingerprint_size_bit);
-
-        // print the random indices
-        // printf("rand_indices: ");
-        // for (unsigned i = 0; i < rand_indices.size(); i++) {
-        //     printf("%d ", rand_indices[i]);
-        // }
-        // printf("\n");
-
+        u_int8_t * scrambled = scramble_bit(line_data, data_size_in_bit, m_seed);
+        fingerprint_size_in_bit = m_fingerprint_size_bit;
         u_int8_t * fingerprint = new u_int8_t[int(ceil(m_fingerprint_size_bit/8.0))]();
         memset(fingerprint, 0, int(ceil(m_fingerprint_size_bit/8.0)));
-        fingerprint_size_in_bit = m_fingerprint_size_bit;
-
-        for (unsigned i=0; i < rand_indices.size(); i++) {
-            unsigned rand_index = rand_indices[i];
-            unsigned byte_index = rand_index / 8;
-            unsigned bit_index = rand_index % 8;
-            unsigned bit = (line_data[byte_index] >> bit_index) & 1;
-            fingerprint[i/8] |= (bit << (i%8));
+        for (int i = 0; i < m_fingerprint_size_bit; i++) {
+            fingerprint[i/8] |= (scrambled[i/8] & (1 << (i%8)));
         }
-
+        delete[] scrambled;
         return fingerprint;
     }
 
     void print() const {
         printf("BitSamplingLSHash [ fp_bits: %d ]\n", m_fingerprint_size_bit);
+    }
+
+    int m_fingerprint_size_bit;
+};
+
+class MaskedBitSamplingLSHash : public HashFunction
+{
+    public:
+    int m_everyNbyte;
+    int m_bits_to_take;
+
+    MaskedBitSamplingLSHash(int fingerprint_size_bit, int everyNbyte, int bits_to_take) : HashFunction() 
+    {
+        m_fingerprint_size_bit = fingerprint_size_bit;
+        m_everyNbyte = everyNbyte;
+        m_bits_to_take = bits_to_take;
+    }
+    MaskedBitSamplingLSHash(int fingerprint_size_bit, int everyNbyte, int bits_to_take, unsigned seed) : HashFunction(seed) 
+    {
+        m_fingerprint_size_bit = fingerprint_size_bit;
+        m_everyNbyte = everyNbyte;
+        m_bits_to_take = bits_to_take;
+    }
+
+    virtual ~MaskedBitSamplingLSHash() {
+    }
+
+
+    // writing fingerprint size
+    u_int8_t * hash(u_int8_t * line_data, int data_size_in_bit, int &fingerprint_size_in_bit) {
+        int max_sampled_bits = (data_size_in_bit/8/m_everyNbyte)*m_bits_to_take;
+        // printf("max_sampled_bits: %d\n", max_sampled_bits);
+        assert (max_sampled_bits >= m_fingerprint_size_bit);
+        assert(data_size_in_bit >= max_sampled_bits);
+        int max_sampled_bytes = max_sampled_bits/8;
+        u_int8_t * sampled = new u_int8_t[max_sampled_bytes]();
+        memset(sampled, 0, max_sampled_bytes);
+        int bits_to_take_to_byte = int(ceil(m_bits_to_take/8.0));
+        for (int i = 0; i < data_size_in_bit/8/m_everyNbyte; i++){
+            int read_byte_ind = m_everyNbyte*i+m_everyNbyte-bits_to_take_to_byte;
+            for (int j = 0; j < m_bits_to_take; j++){
+                int read_bit_ind = read_byte_ind*8+j;
+                int bit = bitExtractedAtIndex(line_data, read_bit_ind);
+                int write_byte_ind = i*m_bits_to_take/8+j/8;
+                int write_bit_ind = (j%8);
+                sampled[write_byte_ind] |= (bit << (write_bit_ind));
+                // printf("i: %d, j: %d, rd_byte_ind:%d, rd_bit_ind: %d, wr_byte_ind: %d, wr_bit_ind: %d\n", i, j, 
+                //     read_byte_ind, read_bit_ind, write_byte_ind, write_bit_ind);
+            }
+        }
+
+        u_int8_t * scrambled = scramble_bit(sampled, max_sampled_bits, m_seed);
+        fingerprint_size_in_bit = m_fingerprint_size_bit;
+        u_int8_t * fingerprint = new u_int8_t[int(ceil(m_fingerprint_size_bit/8.0))]();
+        memset(fingerprint, 0, int(ceil(m_fingerprint_size_bit/8.0)));
+        for (int i = 0; i < m_fingerprint_size_bit; i++) {
+            fingerprint[i/8] |= (scrambled[i/8] & (1 << (i%8)));
+        }
+        delete[] scrambled;
+        delete[] sampled;
+        return fingerprint;
+    }
+
+    void print() const {
+        printf("MaskedBitSamplingLSHash [ fp_bits: %d, every %d byte, %d bis to take ]\n", 
+            m_fingerprint_size_bit, m_everyNbyte, m_bits_to_take);
     }
 
     int m_fingerprint_size_bit;
@@ -302,6 +342,28 @@ class ByteMapHash : public HashFunction
 
     void print() const {
         printf("ByteMapHash \n");
+    }
+
+};
+class MaxByteMapHash : public HashFunction
+{
+    public:
+    MaxByteMapHash() : HashFunction() 
+    {
+    }
+
+    virtual ~MaxByteMapHash() {
+    }
+
+    // writing fingerprint size
+    u_int8_t * hash(u_int8_t * line_data, int data_size_in_bit, int &fingerprint_size_in_bit) {
+        u_int8_t * fingerprint = byte_map_max(line_data, data_size_in_bit);
+        fingerprint_size_in_bit = data_size_in_bit/8;
+        return fingerprint;
+    }
+
+    void print() const {
+        printf("MaxByteMapHash \n");
     }
 
 };

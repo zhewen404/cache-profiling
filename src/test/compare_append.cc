@@ -46,11 +46,11 @@ int main(int argc, char *argv[]){
     bool use_little_e = true;
     bool allow_immo = false;
 
-    vector<double> crs6, ers6, frs6, intras6;
+    vector<double> crs6, ers6, frs6, intras6, hammings6;
 
     // print crss to file dir/crss.txt
     if (name.find("vanila") == string::npos) {
-        intracomp_t type = BPC;
+        intracomp_t type = BDI;
         // no vanila in name
         if (!use_xorcache){
             name += "-deltacache";
@@ -67,10 +67,10 @@ int main(int argc, char *argv[]){
         } else {
             assert(false);
         }
-        map_all(num_banks, KB_per_bank, dir, crs6, ers6, frs6, intras6, fbs, use_xorcache, use_little_e, allow_immo, type,
+        map_all(num_banks, KB_per_bank, dir, crs6, ers6, frs6, intras6, hammings6, fbs, use_xorcache, use_little_e, allow_immo, type,
             &create_hashfunctions_shuffledbytemap);
     } else {
-        vanila_x(num_banks, KB_per_bank, dir, crs6, ers6, frs6, intras6, fbs, use_xorcache, use_little_e, allow_immo, 
+        vanila_x(num_banks, KB_per_bank, dir, crs6, ers6, frs6, intras6, hammings6, fbs, use_xorcache, use_little_e, allow_immo, 
             &create_vanila_bdi);
     }
 
@@ -103,7 +103,7 @@ int main(int argc, char *argv[]){
     fclose(frss_file);
 
 
-    // print frss to file dir/intras.txt
+    // print intras to file dir/intras.txt
     string intras_filename = dir + "/intras-" + name + ".txt";
     FILE * instras_file = fopen(intras_filename.c_str(), "w");
     for (unsigned j = 0; j < intras6.size(); j++){
@@ -111,6 +111,16 @@ int main(int argc, char *argv[]){
     }
     fprintf(instras_file, "\n");
     fclose(instras_file);
+
+
+    // print hammings to file dir/hammings.txt
+    string hammings_filename = dir + "/hammings-" + name + ".txt";
+    FILE * hammings_file = fopen(hammings_filename.c_str(), "w");
+    for (unsigned j = 0; j < hammings6.size(); j++){
+        fprintf(hammings_file, "%f ", hammings6[j]);
+    }
+    fprintf(hammings_file, "\n");
+    fclose(hammings_file);
 
     // string plot_name = dir + "/" + name + ".pdf";
     // vector<vector<double>> datas = {crs6, ers6};
@@ -124,6 +134,7 @@ int main(int argc, char *argv[]){
     ers6.clear();
     frs6.clear();
     intras6.clear();
+    hammings6.clear();
 
     return 0;
 

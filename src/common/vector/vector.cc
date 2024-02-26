@@ -31,6 +31,24 @@ double calculateMean(const std::vector<int>& numbers) {
         return 0.0; // You can choose to return any default value in this case
     }
 
+    int sum = 0;
+    int length = 0;
+    for (int number : numbers) {
+        sum += number;
+        length += 1;
+    }
+
+    double mean = (double)sum / length;
+
+    return mean;
+}
+
+double calculateMeanLinesPerBank(const std::vector<int>& numbers) {
+    if (numbers.empty()) {
+        // Handle the case when the vector is empty
+        return 0.0; // You can choose to return any default value in this case
+    }
+
     double sum = 0.0;
     int nonemptyset = 0;
     for (int number : numbers) {

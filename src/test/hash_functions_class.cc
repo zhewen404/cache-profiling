@@ -188,4 +188,19 @@
 //     delete sbmhash;
 //     delete [] sbm_fp;
 
+//     MaskedBitSamplingLSHash * mbs;
+//     mbs = new MaskedBitSamplingLSHash(16, 4, 8);
+//     mbs->print();
+//     int mbs_fp_size;
+//     u_int8_t * mbs_fp = mbs->hash(data, data_size*8, mbs_fp_size);
+//     printf("mbs_fp_size: %d\n", mbs_fp_size);
+//     // print the fingerprint
+//     for (int i = 0; i < ceill(mbs_fp_size/8.0); i++) {
+//         printf("%d ", mbs_fp[i]);
+//     }
+//     printf("\n\n\n");
+//     delete mbs;
+//     delete [] mbs_fp;
+
+
 // }

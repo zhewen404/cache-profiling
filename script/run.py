@@ -8,25 +8,28 @@ import numpy as np
 from scipy.stats import gmean
 
 def parse_parsec_snapshots(benchname="*"):
-    dump_dir = "/home/zhewen/repo/gem5-dev-clean/gem5/m5out/m5out_fs_ruby_parsec_cachedump/anonymous_latency/version0/dump_64kB/c16/simlarge/"
+    home = os.path.expanduser('~')
+    dump_dir = f"{home}/Dropbox/result/snapshots/m5out_fs_ruby_parsec_cachedump/anonymous_latency/version0/dump_64kB/c16/simlarge/"
     dumps = sorted(glob(dump_dir + "/" + benchname + "/[0-9]*/"))
-    print(dumps)
+    # print(dumps)
     num_dump = len(dumps)
     print(f"parsec {benchname} contains {num_dump} snapshots.")
     return dumps
 
 def parse_spec_snapshots(benchname="*"):
-    dump_dir = f"/home/zhewen/Dropbox/result/snapshots/m5out_fs_spec2017_cachedump/dump/core4_proc4_{benchname}_seed100"
+    home = os.path.expanduser('~')
+    dump_dir = f"{home}/Dropbox/result/snapshots/m5out_fs_spec2017_cachedump/dump/core4_proc4_{benchname}_seed100"
     dumps = sorted(glob(dump_dir + "/[0-9]*/"))
-    print(dumps)
+    # print(dumps)
     num_dump = len(dumps)
     print(f"spec {benchname} contains {num_dump} snapshots.")
     return dumps
 
 def parse_perfect_snapshots(benchname="*"):
-    dump_dir = "/home/zhewen/repo/gem5-dev-clean/gem5/m5out/m5out_fs_perfect/dump/ser/"
+    home = os.path.expanduser('~')
+    dump_dir = f"{home}/Dropbox/result/snapshots/m5out_fs_perfect/dump/ser/"
     dumps = sorted(glob(dump_dir + "/" + benchname + "/[0-9]*/"))
-    print(dumps)
+    # print(dumps)
     num_dump = len(dumps)
     print(f"perfect {benchname} contains {num_dump} snapshots.")
     return dumps
@@ -37,17 +40,16 @@ def launch(dir, num_banks=None, kb_per_bank=None):
         sys.exit(1)
     # launch the main program in background
     if num_banks and kb_per_bank:
-        cmd = f"./bin/main {dir} {num_banks} {kb_per_bank} &"
+        cmd = f"nohup ./bin/main {dir} {num_banks} {kb_per_bank} >/dev/null 2>&1 &"
     elif num_banks and not kb_per_bank:
-        cmd = f"./bin/main {dir} {num_banks} &"
+        cmd = f"nohup ./bin/main {dir} {num_banks} >/dev/null 2>&1 &"
     elif not num_banks and not kb_per_bank:
-        cmd = f"./bin/main {dir} &"
+        cmd = f"nohup ./bin/main {dir} >/dev/null 2>&1 &"
     else: 
         print("Error: unknown arguments")
         sys.exit(1)
     print(f"Launching {cmd}")
     os.system(cmd)
-
 
 def plot_hashfunction(dumps, benchname, suitename, schemes_to_plot=None, plot_even_only=False):
     scheme_to_name = {
@@ -60,7 +62,12 @@ def plot_hashfunction(dumps, benchname, suitename, schemes_to_plot=None, plot_ev
         "shuffle-xorfold": "fbsxf",
         "thesaurus": "thesaurus",
         "bit-sampling": "bs",
+        "masked-bit-sampling_8_32": "maskedbs_8_32",
+        "masked-bit-sampling_4_16": "maskedbs_4_16",
+        "masked-bit-sampling_8_16": "maskedbs_8_16",
+        "masked-bit-sampling_4_8": "maskedbs_4_8",
         "bytemap-shuffle-xorfold": "shuffledbytemap",
+        "maxbytemap-shuffle-xorfold": "shuffledmaxbytemap",
         "bytemap-shuffle-xorfold-bpc": "shuffledbytemap-bpc",
         "bytemap-shuffle-xorfold-immo": "shuffledbytemap-immo",
         "ternarybytemap-shuffle-xorfold": "shuffledtbytemap",
@@ -71,6 +78,7 @@ def plot_hashfunction(dumps, benchname, suitename, schemes_to_plot=None, plot_ev
         "sparseshuffledbytemap_8_6": "sparseshuffledbytemap_8_6",
         "sparseshuffledbytemap_8_4": "sparseshuffledbytemap_8_4",
         "sparseshuffledbytemap_4_3": "sparseshuffledbytemap_4_3",
+        "sparseshuffledbytemap_4_3-bpc": "sparseshuffledbytemap_4_3-bpc",
         "sparseshuffledbytemap_4_2": "sparseshuffledbytemap_4_2",
     }
     crs_schemes = {
@@ -82,7 +90,12 @@ def plot_hashfunction(dumps, benchname, suitename, schemes_to_plot=None, plot_ev
         "thesaurus": [],
         "thesaurus-immo": [],
         "bit-sampling": [],
+        "masked-bit-sampling_8_32": [],
+        "masked-bit-sampling_4_16": [],
+        "masked-bit-sampling_8_16": [],
+        "masked-bit-sampling_4_8": [],
         "bytemap-shuffle-xorfold": [],
+        "maxbytemap-shuffle-xorfold": [],
         "bytemap-shuffle-xorfold-bpc": [],
         "bytemap-shuffle-xorfold-immo": [],
         "ternarybytemap-shuffle-xorfold": [],
@@ -95,6 +108,7 @@ def plot_hashfunction(dumps, benchname, suitename, schemes_to_plot=None, plot_ev
         "sparseshuffledbytemap_8_6": [],
         "sparseshuffledbytemap_8_4": [],
         "sparseshuffledbytemap_4_3": [],
+        "sparseshuffledbytemap_4_3-bpc": [],
         "sparseshuffledbytemap_4_2": [],
     }
 
@@ -107,7 +121,12 @@ def plot_hashfunction(dumps, benchname, suitename, schemes_to_plot=None, plot_ev
         "thesaurus": [],
         "thesaurus-immo": [],
         "bit-sampling": [],
+        "masked-bit-sampling_8_32": [],
+        "masked-bit-sampling_4_16": [],
+        "masked-bit-sampling_8_16": [],
+        "masked-bit-sampling_4_8": [],
         "bytemap-shuffle-xorfold": [],
+        "maxbytemap-shuffle-xorfold": [],
         "bytemap-shuffle-xorfold-bpc": [],
         "bytemap-shuffle-xorfold-immo": [],
         "ternarybytemap-shuffle-xorfold": [],
@@ -120,6 +139,7 @@ def plot_hashfunction(dumps, benchname, suitename, schemes_to_plot=None, plot_ev
         "sparseshuffledbytemap_8_6": [],
         "sparseshuffledbytemap_8_4": [],
         "sparseshuffledbytemap_4_3": [],
+        "sparseshuffledbytemap_4_3-bpc": [],
         "sparseshuffledbytemap_4_2": [],
     }
 
@@ -132,7 +152,12 @@ def plot_hashfunction(dumps, benchname, suitename, schemes_to_plot=None, plot_ev
         "thesaurus": [],
         "thesaurus-immo": [],
         "bit-sampling": [],
+        "masked-bit-sampling_8_32": [],
+        "masked-bit-sampling_4_16": [],
+        "masked-bit-sampling_8_16": [],
+        "masked-bit-sampling_4_8": [],
         "bytemap-shuffle-xorfold": [],
+        "maxbytemap-shuffle-xorfold": [],
         "bytemap-shuffle-xorfold-bpc": [],
         "bytemap-shuffle-xorfold-immo": [],
         "ternarybytemap-shuffle-xorfold": [],
@@ -145,6 +170,7 @@ def plot_hashfunction(dumps, benchname, suitename, schemes_to_plot=None, plot_ev
         "sparseshuffledbytemap_8_6": [],
         "sparseshuffledbytemap_8_4": [],
         "sparseshuffledbytemap_4_3": [],
+        "sparseshuffledbytemap_4_3-bpc": [],
         "sparseshuffledbytemap_4_2": [],
     }
     intras_schemes = {
@@ -156,7 +182,12 @@ def plot_hashfunction(dumps, benchname, suitename, schemes_to_plot=None, plot_ev
         "thesaurus": [],
         "thesaurus-immo": [],
         "bit-sampling": [],
+        "masked-bit-sampling_8_32": [],
+        "masked-bit-sampling_4_16": [],
+        "masked-bit-sampling_8_16": [],
+        "masked-bit-sampling_4_8": [],
         "bytemap-shuffle-xorfold": [],
+        "maxbytemap-shuffle-xorfold": [],
         "bytemap-shuffle-xorfold-bpc": [],
         "bytemap-shuffle-xorfold-immo": [],
         "ternarybytemap-shuffle-xorfold": [],
@@ -169,6 +200,37 @@ def plot_hashfunction(dumps, benchname, suitename, schemes_to_plot=None, plot_ev
         "sparseshuffledbytemap_8_6": [],
         "sparseshuffledbytemap_8_4": [],
         "sparseshuffledbytemap_4_3": [],
+        "sparseshuffledbytemap_4_3-bpc": [],
+        "sparseshuffledbytemap_4_2": [],
+    }
+    hammings_schemes = {
+        "bpc": [],
+        "bdi": [],
+        "BDI": [],
+        "bdi-immo": [],
+        "shuffle-xorfold": [],
+        "thesaurus": [],
+        "thesaurus-immo": [],
+        "bit-sampling": [],
+        "masked-bit-sampling_8_32": [],
+        "masked-bit-sampling_4_16": [],
+        "masked-bit-sampling_8_16": [],
+        "masked-bit-sampling_4_8": [],
+        "bytemap-shuffle-xorfold": [],
+        "maxbytemap-shuffle-xorfold": [],
+        "bytemap-shuffle-xorfold-bpc": [],
+        "bytemap-shuffle-xorfold-immo": [],
+        "ternarybytemap-shuffle-xorfold": [],
+        "twobytemap-shuffle-xorfold": [],
+        "shuffledbytemap-shuffle-xorfold": [],
+        "lowentropy_8_4": [],
+        "lowentropy_8_16(BCD)": [],
+        "lowentropy_8_16(BCD)-immo": [],
+        "sparseshuffledbytemap_8_7": [],
+        "sparseshuffledbytemap_8_6": [],
+        "sparseshuffledbytemap_8_4": [],
+        "sparseshuffledbytemap_4_3": [],
+        "sparseshuffledbytemap_4_3-bpc": [],
         "sparseshuffledbytemap_4_2": [],
     }
 
@@ -222,6 +284,19 @@ def plot_hashfunction(dumps, benchname, suitename, schemes_to_plot=None, plot_ev
                     scheme_vector = [scheme_vector[0]] * 60
                 intras_schemes[scheme].append(scheme_vector)
 
+            # Repeat for HAMMINGS
+            file_path = f"{d}hammings-{scheme_name}.txt"
+            with open(file_path, "r") as file:
+                lines = file.readlines()
+                assert len(lines) == 1
+                l = lines[0]
+                scheme_vector = list(map(float, l.split()))
+                for data in scheme_vector:
+                    assert data >= 0, f"Negative data: {data}, scheme: {scheme}, file: {file_path}"
+                if len(scheme_vector) == 1:
+                    scheme_vector = [np.nan] * 60
+                hammings_schemes[scheme].append(scheme_vector)
+
     # Remaining code for processing and plotting the averages...
     print(len(crs_schemes[schemes_to_plot[0]]))
     xaxis = [i+1 for i in range(num_points)]
@@ -230,6 +305,7 @@ def plot_hashfunction(dumps, benchname, suitename, schemes_to_plot=None, plot_ev
     ers_scheme_vs_avg = {}
     frs_scheme_vs_avg = {}
     intras_scheme_vs_avg = {}
+    hammings_scheme_vs_avg = {}
 
     for scheme, data in crs_schemes.items():
         if len(data) == 0: continue
@@ -280,6 +356,17 @@ def plot_hashfunction(dumps, benchname, suitename, schemes_to_plot=None, plot_ev
             intras_scheme_vs_avg[scheme] = new_vec
             # print(intras_scheme_vs_avg[scheme])
 
+    for scheme, data in hammings_schemes.items():
+        if len(data) == 0: continue
+        hammings_scheme_vs_avg[scheme] = [sum(x)/len(x) for x in zip(*data)]
+        if scheme == "ternarybytemap-shuffle-xorfold":
+            new_vec = []
+            for i in range(len(hammings_scheme_vs_avg[scheme])):
+                if (i%2) != 0 and 2*i+1 < len(hammings_scheme_vs_avg[scheme]): new_vec.append(hammings_scheme_vs_avg[scheme][2*i+1])
+                else: new_vec.append(np.nan)
+            hammings_scheme_vs_avg[scheme] = new_vec
+            # print(hammings_scheme_vs_avg[scheme])
+
     if plot_even_only:
         xaxis = xaxis[1::2]
         for scheme in crs_scheme_vs_avg:
@@ -294,13 +381,16 @@ def plot_hashfunction(dumps, benchname, suitename, schemes_to_plot=None, plot_ev
         for scheme in intras_scheme_vs_avg:
             intras_scheme_vs_avg[scheme] = intras_scheme_vs_avg[scheme][1::2]
 
+        for scheme in hammings_scheme_vs_avg:
+            hammings_scheme_vs_avg[scheme] = hammings_scheme_vs_avg[scheme][1::2]
+
     import plotly.graph_objects as go
     import plotly.subplots as sp
     import pandas as pd
     import plotly.io as pio
     pio.kaleido.scope.mathjax = None
 
-    fig = sp.make_subplots(rows=1, cols=4, 
+    fig = sp.make_subplots(rows=1, cols=5, 
                         #    subplot_titles=("Compression Ratio", "Entropy Reduction", "False Positive Rate"),
                            shared_yaxes=False,
                            horizontal_spacing=0.05,
@@ -365,6 +455,21 @@ def plot_hashfunction(dumps, benchname, suitename, schemes_to_plot=None, plot_ev
         i += 1
     fig.update_yaxes(title="intra comp. ratio", row=1, col=4, title_standoff = 0)
 
+    i=0
+    for scheme, data in hammings_scheme_vs_avg.items():
+        print(data)
+        fig.add_trace(
+            go.Scatter(x=xaxis,
+                    y=data,
+                    mode='markers+lines',
+                    name=scheme,
+                    legendgroup=scheme,
+                    line=dict(color=color_sequence[i]), 
+                    showlegend=False),
+            row=1, col=5)
+        i += 1
+    fig.update_yaxes(title="hamming distance", row=1, col=5, title_standoff = 0)
+
 
     dpi = 300
     w=3.3115
@@ -406,6 +511,9 @@ def plot_profiling(dumps, benchname, suitename, stats_to_plot=None):
         "entropy byte position": "entropy_byte_position",
         "entropy byte position<br>after xor rand bank": "entropy_byte_position_afterxor_randbank",
         "entropy byte position<br>after xor bytemap": "entropy_byte_position_afterxor12_bytemap",
+        "entropy byte position<br>after xor bytemap only xored": "entropy_byte_position_afterxor12_bytemap-onlyxored",
+        "entropy byte position<br>after xor sparseshuffledbytemap_4_3": "entropy_byte_position_afterxor12_sparseshuffledbytemap_4_3",
+        "entropy byte position<br>after xor sparseshuffledbytemap_4_3 only xored": "entropy_byte_position_afterxor12_sparseshuffledbytemap_4_3-onlyxored",
         "entropy byte position<br>after xor thesaurus": "entropy_byte_position_afterxor12_thesaurus",
         "entropy byte position<br>after xor lowentropy_8_16(BCD)": "entropy_byte_position_afterxor12_lowentropy_8_16",
         "entropy byte position<br>after xor lowentropy_8_16(BCD) only xored": "entropy_byte_position_afterxor12_lowentropy_8_16-onlyxored",
@@ -414,6 +522,9 @@ def plot_profiling(dumps, benchname, suitename, stats_to_plot=None):
         "entropy byte position": [],
         "entropy byte position<br>after xor rand bank": [],
         "entropy byte position<br>after xor bytemap": [],
+        "entropy byte position<br>after xor bytemap only xored": [],
+        "entropy byte position<br>after xor sparseshuffledbytemap_4_3": [],
+        "entropy byte position<br>after xor sparseshuffledbytemap_4_3 only xored": [],
         "entropy byte position<br>after xor thesaurus": [],
         "entropy byte position<br>after xor lowentropy_8_16(BCD)": [],
         "entropy byte position<br>after xor lowentropy_8_16(BCD) only xored": [],
@@ -633,7 +744,7 @@ def plot_profiling(dumps, benchname, suitename, stats_to_plot=None):
 
 if __name__ == "__main__":
     benchname = "*"
-    suitename = "allsuite"
+    suitename = "spec"
     launch_flag = False
     # plot="profiling"
     plot="hash"
@@ -669,28 +780,38 @@ if __name__ == "__main__":
                                "entropy byte position",
                             #    "entropy byte position<br>after xor rand bank",
                             #    "entropy byte position<br>after xor bytemap",
+                               "entropy byte position<br>after xor bytemap only xored",
+                            #    "entropy byte position<br>after xor sparseshuffledbytemap_4_3",
+                               "entropy byte position<br>after xor sparseshuffledbytemap_4_3 only xored",
                             #    "entropy byte position<br>after xor thesaurus",
-                               "entropy byte position<br>after xor lowentropy_8_16(BCD)",
-                               "entropy byte position<br>after xor lowentropy_8_16(BCD) only xored",
+                            #    "entropy byte position<br>after xor lowentropy_8_16(BCD)",
+                            #    "entropy byte position<br>after xor lowentropy_8_16(BCD) only xored",
                            ])
         elif plot == "hash":
             plot_hashfunction(dumps, benchname, suitename, 
                     schemes_to_plot=[
-                        "bpc",
-                        "bdi",
+                        # "bpc",
+                        # "bdi",
                         # "BDI",
                         # "bdi-immo",
                         # "thesaurus",
+                        # "bit-sampling",
+                        # "masked-bit-sampling_8_32",
+                        # "masked-bit-sampling_4_16",
+                        # "masked-bit-sampling_8_16",
+                        "masked-bit-sampling_4_8",
                         # "thesaurus-immo",
-                        "bytemap-shuffle-xorfold", 
-                        "bytemap-shuffle-xorfold-bpc", 
+                        # "bytemap-shuffle-xorfold", 
+                        # "maxbytemap-shuffle-xorfold", 
+                        # "bytemap-shuffle-xorfold-bpc", 
                         # "bytemap-shuffle-xorfold-immo", 
                         # "sparseshuffledbytemap_8_7",
                         # "sparseshuffledbytemap_8_6",
                         # "sparseshuffledbytemap_8_4",
                         # "sparseshuffledbytemap_4_3",
+                        # "sparseshuffledbytemap_4_3-bpc",
                         # "sparseshuffledbytemap_4_2",
-                        # "ternarybytemap-shuffle-xorfold",
+                        "ternarybytemap-shuffle-xorfold",
                         # "lowentropy_8_4",
                         # "lowentropy_8_16(BCD)",
                         # "lowentropy_8_16(BCD)-immo",

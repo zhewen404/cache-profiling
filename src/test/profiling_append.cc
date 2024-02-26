@@ -30,10 +30,10 @@
 //     }
 
 
-//     string name = "entropy_byte_position_afterxor12_lowentropy_8_16";
+//     string name = "entropy_byte_position_afterxor12_bytemap";
 
 //     vector<double> results;
-//     profiling_x(num_banks, KB_per_bank, dir, only_those_xored, results, &profiling_entropy_byte_position_afterxor12_lowentropy_8_16);
+//     profiling_x(num_banks, KB_per_bank, dir, only_those_xored, results, &profiling_entropy_byte_position_afterxor12_bytemap);
 
     
 

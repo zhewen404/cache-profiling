@@ -290,7 +290,7 @@ class HashXORCache : public BaseCache
 
     // stats
     double get_bit_entropy() const;
-
+    double get_hamming_distance() const; // for only those xored
     int get_compressed_size() const;
     int get_uncompressed_size() const;
     double get_compression_ratio() const;
@@ -373,7 +373,7 @@ class HashDeltaCache : public BaseCache
     }
 
     double get_bit_entropy() const;
-
+    double get_hamming_distance() const; // for only those xored
     int get_compressed_size() const;
     int get_uncompressed_size() const;
     double get_compression_ratio() const;

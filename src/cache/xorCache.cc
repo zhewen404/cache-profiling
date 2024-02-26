@@ -184,6 +184,20 @@ HashXORCache::get_bit_entropy() const
     return entropy;
 }
 
+double
+HashXORCache::get_hamming_distance() const
+{
+    vector<int> hamming_distance;
+
+    for (unsigned i=0; i < m_lines.size(); i++) {
+        if (m_lines[i]->m_line_cluster_size == 1) continue;
+        unsigned num1 = countSetBits(m_lines[i]->m_segs, m_lines[i]->m_size);
+        hamming_distance.push_back((int)num1);
+    }
+    double mean = calculateMean(hamming_distance);
+    return mean;
+}
+
 int 
 HashXORCache::get_compressed_size() const
 {
@@ -293,6 +307,20 @@ HashDeltaCache::get_bit_entropy() const
     vector<int> vec = {(int)num1s, (int)num0s};
     double entropy = calculateEntropy(vec);
     return entropy;
+}
+
+double
+HashDeltaCache::get_hamming_distance() const
+{
+    vector<int> hamming_distance;
+
+    for (unsigned i=0; i < m_lines.size(); i++) {
+        if (m_lines[i]->m_line_cluster_size == 1) continue;
+        unsigned num1 = countSetBits(m_lines[i]->m_segs, m_lines[i]->m_size);
+        hamming_distance.push_back((int)num1);
+    }
+    double mean = calculateMean(hamming_distance);
+    return mean;
 }
 
 int 

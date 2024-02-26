@@ -106,6 +106,45 @@ void create_hashfunctions_bs(vector<HashFunction *>& hash_functions, int& true_h
     true_hash += 1;
 }
 
+void maskedbs(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact,
+    int fp_size_in_bits, int line_size,
+    int everyNbyte, int bits_to_take)
+{
+    (void) line_size;
+    true_hash = 0;
+    funct_to_concact = 0;
+    cascade = true;
+
+    MaskedBitSamplingLSHash * bs = new MaskedBitSamplingLSHash(fp_size_in_bits, everyNbyte, bits_to_take);
+    hash_functions.push_back(bs);
+    true_hash += 1;
+}
+void create_hashfunctions_maskedbs_8_32(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact,
+    int fp_size_in_bits, int line_size)
+{
+    maskedbs(hash_functions, true_hash, cascade, funct_to_concact, fp_size_in_bits, line_size, 8, 32);
+}
+void create_hashfunctions_maskedbs_8_16(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact,
+    int fp_size_in_bits, int line_size)
+{
+    maskedbs(hash_functions, true_hash, cascade, funct_to_concact, fp_size_in_bits, line_size, 8, 16);
+}
+void create_hashfunctions_maskedbs_8_8(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact,
+    int fp_size_in_bits, int line_size)
+{
+    maskedbs(hash_functions, true_hash, cascade, funct_to_concact, fp_size_in_bits, line_size, 8, 8);
+}
+void create_hashfunctions_maskedbs_4_16(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact,
+    int fp_size_in_bits, int line_size)
+{
+    maskedbs(hash_functions, true_hash, cascade, funct_to_concact, fp_size_in_bits, line_size, 4, 16);
+}
+void create_hashfunctions_maskedbs_4_8(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact,
+    int fp_size_in_bits, int line_size)
+{
+    maskedbs(hash_functions, true_hash, cascade, funct_to_concact, fp_size_in_bits, line_size, 4, 8);
+}
+
 void create_hashfunctions_bytemap(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact,
     int fp_size_in_bits, int line_size)
 {
@@ -287,6 +326,24 @@ void create_hashfunctions_shuffledbytemap(vector<HashFunction *>& hash_functions
     hash_functions.push_back(x);
 }
 
+void create_hashfunctions_shuffledmaxbytemap(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact,
+    int fp_size_in_bits, int line_size)
+{
+    (void) line_size;
+    true_hash = 0;
+    funct_to_concact = 0;
+    cascade = true;
+
+    MaxByteMapHash * bm = new MaxByteMapHash();
+    hash_functions.push_back(bm);
+    true_hash += 1;
+    FullBitShuffleHash * fbs = new FullBitShuffleHash();
+    hash_functions.push_back(fbs);
+    true_hash += 1;
+    XORFoldingHash * x = new XORFoldingHash(fp_size_in_bits);
+    hash_functions.push_back(x);
+}
+
 void lowentropy(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact,
     int fp_size_in_bits, int line_size,
     int seg_size, int bits_to_take)
@@ -359,12 +416,13 @@ void create_hashfunctions_lowentropy_8_4(vector<HashFunction *>& hash_functions,
 
 ////////////////////////////////////////////////////////////////
 void create_vanila_bdi(int num_banks, int KB_per_bank, string dir, 
-    double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, 
+    double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, double &hamming,
     bool use_little_endian, bool allow_immo)
 {
     cr = 0;
     entropy_reduction = 0;
     false_rate = 0;
+    hamming = 0;
 
     int line_size = 64;
     int assoc = 16;
@@ -392,7 +450,7 @@ void create_vanila_bdi(int num_banks, int KB_per_bank, string dir,
 
 
 void create_vanila_bpc(int num_banks, int KB_per_bank, string dir, 
-    double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, 
+    double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, double &hamming,
     bool use_little_endian, bool allow_immo)
 {
     (void)use_little_endian;
@@ -402,6 +460,7 @@ void create_vanila_bpc(int num_banks, int KB_per_bank, string dir,
     cr = 0;
     entropy_reduction = 0;
     false_rate = 0;
+    hamming = 0;
 
     int line_size = 64;
     int assoc = 16;
@@ -432,26 +491,28 @@ void create_vanila_bpc(int num_banks, int KB_per_bank, string dir,
 ////////////////////////////////////////////////////////////////
 // for hash functions
 void map_all(int num_banks, int KB_per_bank, string dir, 
-    vector <double> &crs, vector <double> &ers, vector <double> &frs, vector <double> &intras, 
+    vector <double> &crs, vector <double> &ers, vector <double> &frs, vector <double> &intras, vector <double> &hammings, 
     vector<double> fbs, bool use_xorcache, bool use_little_e, bool allow_immo, intracomp_t type,
     void (*create_hash_functions_x)(vector<HashFunction *> &, int &, bool &, int &, int, int))
 {
     double cr, entropy_reduction;
     double fr;
     double intra;
+    double hamming;
 
     for (unsigned i = 0; i < fbs.size(); i++){
-        map_x(num_banks, KB_per_bank, dir, fbs[i], cr, entropy_reduction, fr, intra, use_xorcache, use_little_e, allow_immo, type, create_hash_functions_x);
+        map_x(num_banks, KB_per_bank, dir, fbs[i], cr, entropy_reduction, fr, intra, hamming, use_xorcache, use_little_e, allow_immo, type, create_hash_functions_x);
         crs.push_back(cr);
         ers.push_back(entropy_reduction);
         frs.push_back(fr);
         intras.push_back(intra);
+        hammings.push_back(hamming);
     }
 }
 
 // for hash functions
 void map_x(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, 
-    double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, 
+    double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, double &hamming, 
     bool use_xorcache, bool use_little_e, bool allow_immo, intracomp_t type,
     void (*create_hash_functions_x)(vector<HashFunction *> &, int &, bool &, int &, int, int)
     )
@@ -482,6 +543,7 @@ void map_x(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits,
     entropy_reduction = vanilla_bit_entropy - bit_entropy;
     cr = hxorCache->get_compression_ratio();
     false_rate = hxorCache->get_false_positive_rate();
+    hamming = hxorCache->get_hamming_distance();
 
     if (type == BDI) {
         BDICompressedXORCache * bdiXorCache = create_bdicompressedxorcache_from_hashedxorcache(hxorCache, use_little_e, allow_immo);
@@ -501,19 +563,21 @@ void map_x(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits,
 ////////////////////////////////////////////////////////////////
 // for vanila intra compressed cache
 void vanila_x(int num_banks, int KB_per_bank, string dir, 
-    vector <double> &crs, vector <double> &ers, vector <double> &frs, vector <double> &intras, 
+    vector <double> &crs, vector <double> &ers, vector <double> &frs, vector <double> &intras, vector <double> &hammings, 
     vector<double> fbs, bool use_xorcache, bool use_little_e, bool allow_immo,
-    void (*create_vanila_x)(int, int, string, double &, double &, double &, double &, bool, bool))
+    void (*create_vanila_x)(int, int, string, double &, double &, double &, double &, double &, bool, bool))
 {
     (void) fbs;
     (void) use_xorcache;
     double cr, entropy_reduction;
     double fr;
     double intra;
+    double hamming;
 
-    create_vanila_x(num_banks, KB_per_bank, dir, cr, entropy_reduction, fr, intra, use_little_e, allow_immo);
+    create_vanila_x(num_banks, KB_per_bank, dir, cr, entropy_reduction, fr, intra, hamming, use_little_e, allow_immo);
     crs.push_back(cr);
     ers.push_back(entropy_reduction);
     frs.push_back(fr);
     intras.push_back(intra);
+    hammings.push_back(hamming);
 }

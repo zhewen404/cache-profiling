@@ -161,8 +161,8 @@ Cache::print()
     // for (long unsigned int i=0; i < num_lines_per_set.size(); i++) {
     //     printf("num_lines_per_set[%lu]: %d\n", i, num_lines_per_set[i]);
     // }
-    double mean_lines_per_bank = calculateMean(num_lines_per_bank);
-    double mean_lines_per_set = calculateMean(num_lines_per_set);
+    double mean_lines_per_bank = calculateMeanLinesPerBank(num_lines_per_bank);
+    double mean_lines_per_set = calculateMeanLinesPerBank(num_lines_per_set);
     double std_dev_lines_per_bank = calculateStandardDeviation(num_lines_per_bank);
     double std_dev_lines_per_set = calculateStandardDeviation(num_lines_per_set);
     printf("num_unempty_bank: %ld, mean_lines_per_bank: %f, std_dev_lines_per_bank: %f\n", 

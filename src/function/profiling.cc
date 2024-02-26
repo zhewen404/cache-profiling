@@ -78,6 +78,67 @@ void profiling_entropy_byte_position_afterxor12_bytemap(int num_banks, int KB_pe
     delete cache;
 }
 
+void profiling_entropy_byte_position_afterxor12_sparseshuffledbytemap_4_3(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &entropies)
+{
+    int line_size = 64;
+    int assoc = 16;
+    int shift_bank = 0;
+    int shift_set = 0;
+    int fp_size_in_bits = 12;
+    u_int64_t num_clusters = (u_int64_t)pow((u_int64_t)2,(u_int64_t)fp_size_in_bits);
+
+    vector<string> filenames_data;
+    vector<string> filenames_addr;
+    fill_string_arrays_data_addr(filenames_data, filenames_addr, dir, num_banks);
+
+    ClusteredCache * cache;
+
+    vector<HashFunction *> hash_functions;
+
+    
+    int true_hash = 0;
+    int funct_to_concact = 0;
+    bool cascade = true;
+    int everyNByte = 4;
+    int bytes_to_take = 3;
+
+    SparseByteMapHash * bm = new SparseByteMapHash(everyNByte, bytes_to_take);
+    hash_functions.push_back(bm);
+    true_hash += 1;
+    FullBitShuffleHash * fbs = new FullBitShuffleHash();
+    hash_functions.push_back(fbs);
+    true_hash += 1;
+    XORFoldingHash * x = new XORFoldingHash(fp_size_in_bits);
+    hash_functions.push_back(x);
+
+
+
+    cache = new ClusteredCache(
+        num_banks, KB_per_bank, assoc, line_size, 
+        shift_bank, shift_set, 
+        num_clusters, hash_functions, cascade, funct_to_concact, true_hash);
+
+
+    cache->populate_lines(filenames_data, filenames_addr);
+
+    HashXORCache * hxorCache;
+    hxorCache = new HashXORCache(*cache);
+
+    vector<double> * ent_vec;
+    if (only_those_xored) {
+        ent_vec = hxorCache->get_per_byte_entropy_only_thoses_xored();
+    } else {
+        ent_vec = hxorCache->get_per_byte_entropy();
+    }
+    for (unsigned i = 0; i < ent_vec->size(); i++){
+        entropies.push_back((*ent_vec)[i]);
+    }
+
+    delete ent_vec;
+    delete hxorCache;
+    delete cache;
+}
+
 void profiling_entropy_byte_position_afterxor_randbank(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &entropies)
 {
     int line_size = 64;
