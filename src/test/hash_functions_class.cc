@@ -202,5 +202,34 @@
 //     delete mbs;
 //     delete [] mbs_fp;
 
+//     EPCWordLabelingHash * epc;
+//     epc = new EPCWordLabelingHash();
+//     // epc->print();
+//     int epc_fp_size;
+//     u_int8_t * epc_fp = epc->hash(data, data_size*8, epc_fp_size);
+//     printf("epc_fp_size: %d\n", epc_fp_size);
+//     // print the fingerprint
+//     for (int i = 0; i < ceill(epc_fp_size/8.0); i++) {
+//         printf("%d ", epc_fp[i]);
+//     }
+//     printf("\n\n\n");
+//     delete epc;
+//     delete [] epc_fp;
+
+//     StrongWordLabelingHash * swl;
+//     swl = new StrongWordLabelingHash();
+//     // swl->print();
+//     int swl_fp_size;
+//     u_int8_t * swl_fp = swl->hash(data, data_size*8, swl_fp_size);
+//     printf("swl_fp_size: %d\n", swl_fp_size);
+//     // print the fingerprint
+//     for (int i = 0; i < ceill(swl_fp_size/8.0); i++) {
+//         printf("%d ", swl_fp[i]);
+//     }
+//     printf("\n\n\n");
+//     delete swl;
+//     delete [] swl_fp;
+
+
 
 // }

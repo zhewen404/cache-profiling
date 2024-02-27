@@ -8,6 +8,7 @@
 #include <assert.h>
 #include <set>
 #include "common/bit/bitvec.hh"
+#include "compression/wordPatternRecognizer.hh"
 
 class HashFunction
 {
@@ -599,5 +600,77 @@ class BitSelectionHash : public HashFunction
     int m_index;
 
 };
+template <class T>
+class BaseWordLabelingHash : public HashFunction
+{
+    public:
+    T * m_word_recognizer;
+    BaseWordLabelingHash(T * word_recognizer) : HashFunction(), m_word_recognizer(word_recognizer) 
+    {
+        assert(m_word_recognizer->get_num_patterns() > 0);
+        assert(m_word_recognizer->get_num_patterns() < 256);
+    }
+    ~BaseWordLabelingHash() {
+        delete m_word_recognizer;
+    }
+    int get_fingerprint_size_in_bit(int data_size_in_bit) {
+        int pattern_size_in_bit = m_word_recognizer->get_pattern_size_in_bits();
+        assert(pattern_size_in_bit < 8);
+        return data_size_in_bit / 8 / 8 * pattern_size_in_bit;
+    }
+    u_int8_t * hash(u_int8_t * line_data, int data_size_in_bit, int &fingerprint_size_in_bit) {
+        fingerprint_size_in_bit = get_fingerprint_size_in_bit(data_size_in_bit);
+        assert(fingerprint_size_in_bit < 64);
+        int num_byte = int(ceil(fingerprint_size_in_bit / 8.0));
+        u_int8_t * fingerprint = new u_int8_t[num_byte]();
+        memset(fingerprint, 0, num_byte);
+        for (int i = 0; i < data_size_in_bit / 8 / 8; i++) {
+            u_int8_t * word = line_data + i * 8;
+            u_int8_t label = (u_int8_t) m_word_recognizer->get_word_pattern_type(word);
+            // printf("i: %d, label: %d\n", i, label);
+            int pattern_size_in_bit = m_word_recognizer->get_pattern_size_in_bits();
+            for (int j = 0; j < pattern_size_in_bit; j++) {
+                int write_bit_ind = i * pattern_size_in_bit + j;
+                int write_byte_ind = write_bit_ind / 8;
+                u_int8_t val = (label & (1 << (j % 8))) >> (j % 8) << (write_bit_ind % 8);
+                fingerprint[write_byte_ind] |= val;
+                // printf("write_bit_ind: %d, write_val: %d\n", write_bit_ind, val);
+            }
+        }
+        return fingerprint;
+    }
+    virtual void print() const = 0;
+};
+
+class EPCWordLabelingHash : public BaseWordLabelingHash<EPCWordPatternRecognizer>
+{
+    public:
+    EPCWordLabelingHash() : BaseWordLabelingHash<EPCWordPatternRecognizer>(new EPCWordPatternRecognizer()) 
+    {
+    }
+    ~EPCWordLabelingHash() {
+    }
+    void print() const {
+        printf("EPCWordLabelingHash\n");
+        m_word_recognizer->print();
+    }
+};
+
+
+class StrongWordLabelingHash : public BaseWordLabelingHash<StrongWordPatternRecognizer>
+{
+    public:
+    StrongWordLabelingHash() : BaseWordLabelingHash<StrongWordPatternRecognizer>(new StrongWordPatternRecognizer()) 
+    {
+    }
+    ~StrongWordLabelingHash() {
+    }
+    void print() const {
+        printf("StrongWordLabelingHash\n");
+        m_word_recognizer->print();
+    }
+};
+
+
 
 #endif

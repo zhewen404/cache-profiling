@@ -62,6 +62,9 @@ void create_hashfunctions_lowentropy_8_16(vector<HashFunction *>& hash_functions
 void create_hashfunctions_lowentropy_8_8(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact, int fp_size_in_bits, int line_size);
 void create_hashfunctions_lowentropy_8_4(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact, int fp_size_in_bits, int line_size);
 
+void create_hashfunctions_epc_word_labeling(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact, int fp_size_in_bits, int line_size);
+void create_hashfunctions_strong_word_labeling(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact, int fp_size_in_bits, int line_size);
+
 void create_vanila_bdi(int num_banks, int KB_per_bank, string dir, double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, double &hamming,
     bool use_little_endian, bool allow_immo);
 void create_vanila_bpc(int num_banks, int KB_per_bank, string dir, double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, double &hamming,

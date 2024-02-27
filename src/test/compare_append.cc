@@ -41,7 +41,7 @@ int main(int argc, char *argv[]){
     vector<string> legends;
 
 
-    string name = "shuffledbytemap";
+    string name = "strong_word_labeling";
     bool use_xorcache = true;
     bool use_little_e = true;
     bool allow_immo = false;
@@ -67,8 +67,17 @@ int main(int argc, char *argv[]){
         } else {
             assert(false);
         }
-        map_all(num_banks, KB_per_bank, dir, crs6, ers6, frs6, intras6, hammings6, fbs, use_xorcache, use_little_e, allow_immo, type,
-            &create_hashfunctions_shuffledbytemap);
+
+        if (name.find("epc_word_labeling") != string::npos) {
+            map_all(num_banks, KB_per_bank, dir, crs6, ers6, frs6, intras6, hammings6, {24.0}, use_xorcache, use_little_e, allow_immo, type,
+                &create_hashfunctions_epc_word_labeling);
+        } else if (name.find("strong_word_labeling") != string::npos) {
+            map_all(num_banks, KB_per_bank, dir, crs6, ers6, frs6, intras6, hammings6, {16.0}, use_xorcache, use_little_e, allow_immo, type,
+                &create_hashfunctions_strong_word_labeling);
+        } else {
+            map_all(num_banks, KB_per_bank, dir, crs6, ers6, frs6, intras6, hammings6, fbs, use_xorcache, use_little_e, allow_immo, type,
+                &create_hashfunctions_shuffledbytemap);
+        }
     } else {
         vanila_x(num_banks, KB_per_bank, dir, crs6, ers6, frs6, intras6, hammings6, fbs, use_xorcache, use_little_e, allow_immo, 
             &create_vanila_bdi);

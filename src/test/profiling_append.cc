@@ -23,17 +23,17 @@
 
 
 //     vector<string> legends;
-//     bool only_those_xored = true;
+//     bool only_those_xored = false;
 //     string name_extra = "";
 //     if (only_those_xored) {
 //         name_extra = "-onlyxored";
 //     }
 
 
-//     string name = "entropy_byte_position_afterxor12_bytemap";
+//     string name = "histogram_word_pattern_strong";
 
 //     vector<double> results;
-//     profiling_x(num_banks, KB_per_bank, dir, only_those_xored, results, &profiling_entropy_byte_position_afterxor12_bytemap);
+//     profiling_x(num_banks, KB_per_bank, dir, only_those_xored, results, &profiling_histogram_word_pattern_strong);
 
     
 
