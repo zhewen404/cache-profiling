@@ -15,6 +15,9 @@ void profiling_entropy_byte_position_afterxor12_lowentropy_8_16(int num_banks, i
 
 void profiling_histogram_word_pattern_epc(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &histogram);
 void profiling_histogram_word_pattern_strong(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &histogram);
+void profiling_histogram_word_pattern_hycomp(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &histogram);
+void profiling_histogram_word_pattern_semantic(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &histogram);
+void profiling_histogram_word_pattern_density(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &histogram);
 
 template <class Treg, typename Tpat>
 class WordPatternCacheProfiler
@@ -83,6 +86,48 @@ class StrongWordPatternCacheProfiler : public WordPatternCacheProfiler<StrongWor
         void print() const
         {
             printf("StrongWordPatternCacheProfiler\n");
+            m_rec->print();
+        }
+};
+class HyCompWordPatternCacheProfiler : public WordPatternCacheProfiler<HyCompWordPatternRecognizer, HyCompWordPattern_t>
+{
+    public:
+        HyCompWordPatternCacheProfiler(const Cache * cache) : 
+            WordPatternCacheProfiler<HyCompWordPatternRecognizer, HyCompWordPattern_t>(new HyCompWordPatternRecognizer(), cache) {
+        }
+        virtual ~HyCompWordPatternCacheProfiler() {
+        }
+        void print() const
+        {
+            printf("HyCompWordPatternCacheProfiler\n");
+            m_rec->print();
+        }
+};
+class SemanticWordPatternCacheProfiler : public WordPatternCacheProfiler<SemanticWordPatternRecognizer, SemanticWordPattern_t>
+{
+    public:
+        SemanticWordPatternCacheProfiler(const Cache * cache) : 
+            WordPatternCacheProfiler<SemanticWordPatternRecognizer, SemanticWordPattern_t>(new SemanticWordPatternRecognizer(), cache) {
+        }
+        virtual ~SemanticWordPatternCacheProfiler() {
+        }
+        void print() const
+        {
+            printf("SemanticWordPatternCacheProfiler\n");
+            m_rec->print();
+        }
+};
+class DensityWordPatternCacheProfiler : public WordPatternCacheProfiler<DensityWordPatternRecognizer, DensityWordPattern_t>
+{
+    public:
+        DensityWordPatternCacheProfiler(const Cache * cache) : 
+            WordPatternCacheProfiler<DensityWordPatternRecognizer, DensityWordPattern_t>(new DensityWordPatternRecognizer(), cache) {
+        }
+        virtual ~DensityWordPatternCacheProfiler() {
+        }
+        void print() const
+        {
+            printf("DensityWordPatternCacheProfiler\n");
             m_rec->print();
         }
 };

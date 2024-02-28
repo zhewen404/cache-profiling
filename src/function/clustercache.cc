@@ -427,7 +427,6 @@ void create_hashfunctions_epc_word_labeling(vector<HashFunction *>& hash_functio
     hash_functions.push_back(epc);
     true_hash += 1;
 }
-
 void create_hashfunctions_strong_word_labeling(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact,
     int fp_size_in_bits, int line_size)
 {
@@ -439,6 +438,45 @@ void create_hashfunctions_strong_word_labeling(vector<HashFunction *>& hash_func
 
     StrongWordLabelingHash * st = new StrongWordLabelingHash();
     hash_functions.push_back(st);
+    true_hash += 1;
+}
+void create_hashfunctions_hycomp_word_labeling(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact,
+    int fp_size_in_bits, int line_size)
+{
+    (void) line_size;
+    (void) fp_size_in_bits;
+    true_hash = 0;
+    funct_to_concact = 0;
+    cascade = true;
+
+    HyCompWordLabelingHash * hycomp = new HyCompWordLabelingHash();
+    hash_functions.push_back(hycomp);
+    true_hash += 1;
+}
+void create_hashfunctions_semantic_word_labeling(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact,
+    int fp_size_in_bits, int line_size)
+{
+    (void) line_size;
+    (void) fp_size_in_bits;
+    true_hash = 0;
+    funct_to_concact = 0;
+    cascade = true;
+
+    SemanticWordLabelingHash * se = new SemanticWordLabelingHash();
+    hash_functions.push_back(se);
+    true_hash += 1;
+}
+void create_hashfunctions_density_word_labeling(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact,
+    int fp_size_in_bits, int line_size)
+{
+    (void) line_size;
+    (void) fp_size_in_bits;
+    true_hash = 0;
+    funct_to_concact = 0;
+    cascade = true;
+
+    DensityWordLabelingHash * se = new DensityWordLabelingHash();
+    hash_functions.push_back(se);
     true_hash += 1;
 }
 ////////////////////////////////////////////////////////////////

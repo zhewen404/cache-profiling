@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <cmath>
+#include <cstring>
 #include "common/bit/bitvec.hh"
 
 template <typename T>
@@ -26,17 +27,16 @@ class BaseWordPatternRecognizer
 };
 
 typedef enum {
-    ONE_INT_WITH_PADDING_0,
-    ONE_INT_WITH_PADDING_1,
-    TWO_INT,
+    ONE_INT_WITH_PADDING_0,//0
+    ONE_INT_WITH_PADDING_1,//1
+    TWO_INT,//2
     // TWO_INT_1,
-    INT_AND_POINTER_0,
-    INT_AND_POINTER_1,
-    TWO_FP,
-    ONE_FP_ONE_INT,
-    OTHER,
+    INT_AND_POINTER_0,//3
+    INT_AND_POINTER_1,//4
+    TWO_FP,//5
+    ONE_FP_ONE_INT,//6
+    OTHER,//7
 } EPCWordPattern_t;
-
 class EPCWordPatternRecognizer : public BaseWordPatternRecognizer<EPCWordPattern_t>
 {
     public:
@@ -97,7 +97,6 @@ typedef enum {
     STRONG_ONE_INT_WITH_PADDING_1,
     STRONG_OTHER,
 } StrongWordPattern_t;
-
 class StrongWordPatternRecognizer : public BaseWordPatternRecognizer<StrongWordPattern_t>
 {
     public:
@@ -124,6 +123,167 @@ class StrongWordPatternRecognizer : public BaseWordPatternRecognizer<StrongWordP
                 type = StrongWordPattern_t::STRONG_ONE_INT_WITH_PADDING_1; //2
             } else {
                 type = StrongWordPattern_t::STRONG_OTHER; //3
+            }
+            // print the 8 bytes and the pattern
+            // for (int i = 0; i < 8; i++) {
+            //     printf("%02x ", word[i]);
+            // }
+            // printf("type: %d\n", type);
+            return type;
+        }
+        
+};
+
+typedef enum {
+    HYCOMP_POS_NULL,
+    HYCOMP_NEG_NULL,
+    HYCOMP_TWO_DUPLICATES,
+    HYCOMP_POS_INT,
+    HYCOMP_NEG_INT,
+    HYCOMP_POINTER,
+    HYCOMP_TWO_SIM_FLOATS,
+    HYCOMP_OTHER, // double, instruction, ...
+} HyCompWordPattern_t;
+class HyCompWordPatternRecognizer : public BaseWordPatternRecognizer<HyCompWordPattern_t>
+{
+    public:
+        HyCompWordPatternRecognizer() : BaseWordPatternRecognizer<HyCompWordPattern_t>(HyCompWordPattern_t::HYCOMP_OTHER + 1) {
+        }
+
+        ~HyCompWordPatternRecognizer() {
+        }
+
+        void print() const
+        {
+            printf("HyCompWordPatternRecognizer, total %d patterns\n", m_num_patterns);
+            // list all patterns
+        }
+
+        HyCompWordPattern_t get_word_pattern_type(const u_int8_t* word) const
+        {   
+            HyCompWordPattern_t type = HyCompWordPattern_t::HYCOMP_OTHER;
+            if (countSetBits(word, 8) == 0) {
+                type = HyCompWordPattern_t::HYCOMP_POS_NULL; //0
+            } else if (word[7] == 0x80 && countSetBits(word, 7) == 0) {
+                type = HyCompWordPattern_t::HYCOMP_NEG_NULL; //1
+            } else if (word[7] == word[3] && word[6] == word[2] && word[5] == word[1] && word[4] == word[0]) {
+                type = HyCompWordPattern_t::HYCOMP_TWO_DUPLICATES; //2
+            } else if (countSetBits(word + sizeof(u_int8_t) * 4, 4) == 0) {
+                type = HyCompWordPattern_t::HYCOMP_POS_INT; //3
+            } else if (countSetBits(word + sizeof(u_int8_t) * 4, 4) == 32) {
+                type = HyCompWordPattern_t::HYCOMP_NEG_INT; //4
+            } else if (countSetBits(word + sizeof(u_int8_t) * 6, 2) == 0 && countSetBits(word + sizeof(u_int8_t) * 4, 2) != 0) {
+                type = HyCompWordPattern_t::HYCOMP_POINTER; //5
+            } else if ((word[3]&0x7f) == (word[7]&0x7f)) {
+                type = HyCompWordPattern_t::HYCOMP_TWO_SIM_FLOATS; //6
+            } else {
+                type = HyCompWordPattern_t::HYCOMP_OTHER; //7
+            }
+            // print the 8 bytes and the pattern
+            // for (int i = 0; i < 8; i++) {
+            //     printf("%02x ", word[i]);
+            // }
+            // printf("type: %d\n", type);
+            return type;
+        }
+        
+};
+typedef enum {
+    SEMANTIC_NULL,
+    SEMANTIC_POS_NARROW6, // 6 MSBytes are 00
+    SEMANTIC_POS_NARROW4, // 4 MSBytes are 00
+    SEMANTIC_TWO_POS_NARROW3, // 3 MSBytes in both half are 00
+    SEMANTIC_TWO_POS_NARROW2, // 2 MSBytes in both half are 00
+    SEMANTIC_TWO_POS_NARROW1, // 1 MSBytes in both half are 00
+    SEMANTIC_NEG_NARROW4, // 4 MSBytes are FF
+
+    SEMANTIC_OTHER, 
+} SemanticWordPattern_t;
+class SemanticWordPatternRecognizer : public BaseWordPatternRecognizer<SemanticWordPattern_t>
+{
+    public:
+        SemanticWordPatternRecognizer() : BaseWordPatternRecognizer<SemanticWordPattern_t>(SemanticWordPattern_t::SEMANTIC_OTHER + 1) {
+        }
+
+        ~SemanticWordPatternRecognizer() {
+        }
+
+        void print() const
+        {
+            printf("SemanticWordPatternRecognizer, total %d patterns\n", m_num_patterns);
+            // list all patterns
+        }
+
+        SemanticWordPattern_t get_word_pattern_type(const u_int8_t* word) const
+        {   
+            SemanticWordPattern_t type = SemanticWordPattern_t::SEMANTIC_OTHER;
+            if (countSetBits(word, 8) == 0 || (word[7] == 0x80 && countSetBits(word, 7) == 0)) {
+                type = SemanticWordPattern_t::SEMANTIC_NULL; //0
+            } else if (countSetBits(word + sizeof(u_int8_t) * 2, 6) == 0) {
+                type = SemanticWordPattern_t::SEMANTIC_POS_NARROW6; //1
+            } else if (countSetBits(word + sizeof(u_int8_t) * 4, 4) == 0) {
+                type = SemanticWordPattern_t::SEMANTIC_POS_NARROW4; //2
+            } else if (countSetBits(word + sizeof(u_int8_t) * 5, 3) == 0 && countSetBits(word + sizeof(u_int8_t) * 1, 3) == 0) {
+                type = SemanticWordPattern_t::SEMANTIC_TWO_POS_NARROW3; //3
+            } else if (countSetBits(word + sizeof(u_int8_t) * 6, 2) == 0 && countSetBits(word + sizeof(u_int8_t) * 2, 2) == 0) {
+                type = SemanticWordPattern_t::SEMANTIC_TWO_POS_NARROW2; //4
+            } else if (countSetBits(word + sizeof(u_int8_t) * 7, 1) == 0 && countSetBits(word + sizeof(u_int8_t) * 3, 1) == 0) {
+                type = SemanticWordPattern_t::SEMANTIC_TWO_POS_NARROW1; //5
+            } else if (countSetBits(word + sizeof(u_int8_t) * 4, 4) == 32) {
+                type = SemanticWordPattern_t::SEMANTIC_NEG_NARROW4; //6
+            // } else if (word[7] == word[6] && word[6] == word[5] && word[5] == word[4] && word[4] == word[3] && 
+            //     word[3] == word[2] && word[2] == word[1] && word[1] == word[0]) {
+            //     type = SemanticWordPattern_t::SEMANTIC_REP_BYTE; //5
+            // } else if (memcmp(word, word + sizeof(u_int8_t) * 2, 2) == 0 && 
+            //     memcmp(word + sizeof(u_int8_t) * 2, word + sizeof(u_int8_t) * 4, 2) == 0 &&
+            //     memcmp(word + sizeof(u_int8_t) * 4, word + sizeof(u_int8_t) * 6, 2) == 0 ){
+            //     type = SemanticWordPattern_t::SEMANTIC_REP_2BYTE; //6
+            } else {
+                type = SemanticWordPattern_t::SEMANTIC_OTHER; //7
+            }
+            // print the 8 bytes and the pattern
+            // for (int i = 0; i < 8; i++) {
+            //     printf("%02x ", word[i]);
+            // }
+            // printf("type: %d\n", type);
+            return type;
+        }
+        
+};
+
+
+typedef enum {
+    DENSITY_MIN,
+    DENSITY_LOW,
+    DENSITY_MED,
+    DENSITY_HIGH,
+} DensityWordPattern_t;
+class DensityWordPatternRecognizer : public BaseWordPatternRecognizer<DensityWordPattern_t>
+{
+    public:
+        DensityWordPatternRecognizer() : BaseWordPatternRecognizer<DensityWordPattern_t>(DensityWordPattern_t::DENSITY_HIGH + 1) {
+        }
+
+        ~DensityWordPatternRecognizer() {
+        }
+
+        void print() const
+        {
+            printf("DensityWordPatternRecognizer, total %d patterns\n", m_num_patterns);
+            // list all patterns
+        }
+
+        DensityWordPattern_t get_word_pattern_type(const u_int8_t* word) const
+        {   
+            DensityWordPattern_t type = DensityWordPattern_t::DENSITY_HIGH;
+            if (countSetBits(word, 8) == 0) {
+                type = DensityWordPattern_t::DENSITY_MIN; //0
+            } else if (countSetBits(word, 8) > 0 && countSetBits(word, 8) <= 20) {
+                type = DensityWordPattern_t::DENSITY_LOW; //1
+            } else if (countSetBits(word, 8) > 20 && countSetBits(word, 8) <= 40) {
+                type = DensityWordPattern_t::DENSITY_MED; //2
+            } else {
+                type = DensityWordPattern_t::DENSITY_HIGH; //7
             }
             // print the 8 bytes and the pattern
             // for (int i = 0; i < 8; i++) {

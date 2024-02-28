@@ -671,6 +671,47 @@ class StrongWordLabelingHash : public BaseWordLabelingHash<StrongWordPatternReco
     }
 };
 
+class HyCompWordLabelingHash : public BaseWordLabelingHash<HyCompWordPatternRecognizer>
+{
+    public:
+    HyCompWordLabelingHash() : BaseWordLabelingHash<HyCompWordPatternRecognizer>(new HyCompWordPatternRecognizer()) 
+    {
+    }
+    ~HyCompWordLabelingHash() {
+    }
+    void print() const {
+        printf("HyCompWordLabelingHash\n");
+        m_word_recognizer->print();
+    }
+};
+
+class SemanticWordLabelingHash : public BaseWordLabelingHash<SemanticWordPatternRecognizer>
+{
+    public:
+    SemanticWordLabelingHash() : BaseWordLabelingHash<SemanticWordPatternRecognizer>(new SemanticWordPatternRecognizer()) 
+    {
+    }
+    ~SemanticWordLabelingHash() {
+    }
+    void print() const {
+        printf("SemanticWordLabelingHash\n");
+        m_word_recognizer->print();
+    }
+};
+
+class DensityWordLabelingHash : public BaseWordLabelingHash<DensityWordPatternRecognizer>
+{
+    public:
+    DensityWordLabelingHash() : BaseWordLabelingHash<DensityWordPatternRecognizer>(new DensityWordPatternRecognizer()) 
+    {
+    }
+    ~DensityWordLabelingHash() {
+    }
+    void print() const {
+        printf("DensityWordLabelingHash\n");
+        m_word_recognizer->print();
+    }
+};
 
 
 #endif

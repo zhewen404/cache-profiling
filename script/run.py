@@ -6,6 +6,7 @@ import subprocess
 from glob import glob
 import numpy as np
 from scipy.stats import gmean
+import argparse
 
 def parse_parsec_snapshots(benchname="*"):
     home = os.path.expanduser('~')
@@ -82,6 +83,10 @@ def plot_hashfunction(dumps, benchname, suitename, schemes_to_plot=None, plot_ev
         "sparseshuffledbytemap_4_2": "sparseshuffledbytemap_4_2",
         "EPC word labeling": "epc_word_labeling",
         "strong word labeling": "strong_word_labeling",
+        "hycomp word labeling": "hycomp_word_labeling",
+        "semantic word labeling": "semantic_word_labeling",
+        "density word labeling": "density_word_labeling",
+        "density word labeling bpc": "density_word_labeling-bpc",
     }
     crs_schemes = {
         "bpc": [],
@@ -114,6 +119,10 @@ def plot_hashfunction(dumps, benchname, suitename, schemes_to_plot=None, plot_ev
         "sparseshuffledbytemap_4_2": [],
         "EPC word labeling": [],
         "strong word labeling": [],
+        "hycomp word labeling": [],
+        "semantic word labeling": [],
+        "density word labeling": [],
+        "density word labeling bpc": [],
     }
 
     ers_schemes = {
@@ -147,6 +156,10 @@ def plot_hashfunction(dumps, benchname, suitename, schemes_to_plot=None, plot_ev
         "sparseshuffledbytemap_4_2": [],
         "EPC word labeling": [],
         "strong word labeling": [],
+        "hycomp word labeling": [],
+        "semantic word labeling": [],
+        "density word labeling": [],
+        "density word labeling bpc": [],
     }
 
     frs_schemes = {
@@ -180,6 +193,10 @@ def plot_hashfunction(dumps, benchname, suitename, schemes_to_plot=None, plot_ev
         "sparseshuffledbytemap_4_2": [],
         "EPC word labeling": [],
         "strong word labeling": [],
+        "hycomp word labeling": [],
+        "semantic word labeling": [],
+        "density word labeling": [],
+        "density word labeling bpc": [],
     }
     intras_schemes = {
         "bpc": [],
@@ -212,6 +229,10 @@ def plot_hashfunction(dumps, benchname, suitename, schemes_to_plot=None, plot_ev
         "sparseshuffledbytemap_4_2": [],
         "EPC word labeling": [],
         "strong word labeling": [],
+        "hycomp word labeling": [],
+        "semantic word labeling": [],
+        "density word labeling": [],
+        "density word labeling bpc": [],
     }
     hammings_schemes = {
         "bpc": [],
@@ -244,6 +265,10 @@ def plot_hashfunction(dumps, benchname, suitename, schemes_to_plot=None, plot_ev
         "sparseshuffledbytemap_4_2": [],
         "EPC word labeling": [],
         "strong word labeling": [],
+        "hycomp word labeling": [],
+        "semantic word labeling": [],
+        "density word labeling": [],
+        "density word labeling bpc": [],
     }
 
     num_points = 0
@@ -259,11 +284,11 @@ def plot_hashfunction(dumps, benchname, suitename, schemes_to_plot=None, plot_ev
                 l = lines[0]
                 scheme_vector = list(map(float, l.split()))
                 if len(scheme_vector) == 1:
-                    if scheme_name == "epc_word_labeling":
+                    if "epc_word_labeling" in scheme_name or "hycomp_word_labeling" in scheme_name or "semantic_word_labeling" in scheme_name:
                         num = scheme_vector[0]
                         scheme_vector = [np.nan] * 60
                         scheme_vector[23] = num
-                    elif scheme_name == "strong_word_labeling":
+                    elif "strong_word_labeling" in scheme_name or "density_word_labeling" in scheme_name:
                         num = scheme_vector[0]
                         scheme_vector = [np.nan] * 60
                         scheme_vector[15] = num
@@ -280,11 +305,11 @@ def plot_hashfunction(dumps, benchname, suitename, schemes_to_plot=None, plot_ev
                 l = lines[0]
                 scheme_vector = list(map(float, l.split()))
                 if len(scheme_vector) == 1:
-                    if scheme_name == "epc_word_labeling":
+                    if "epc_word_labeling" in scheme_name or "hycomp_word_labeling" in scheme_name or "semantic_word_labeling" in scheme_name:
                         num = scheme_vector[0]
                         scheme_vector = [np.nan] * 60
                         scheme_vector[23] = num
-                    elif scheme_name == "strong_word_labeling":
+                    elif "strong_word_labeling" in scheme_name or "density_word_labeling" in scheme_name:
                         num = scheme_vector[0]
                         scheme_vector = [np.nan] * 60
                         scheme_vector[15] = num
@@ -301,11 +326,11 @@ def plot_hashfunction(dumps, benchname, suitename, schemes_to_plot=None, plot_ev
                 l = lines[0]
                 scheme_vector = list(map(float, l.split()))
                 if len(scheme_vector) == 1:
-                    if scheme_name == "epc_word_labeling":
+                    if "epc_word_labeling" in scheme_name or "hycomp_word_labeling" in scheme_name or "semantic_word_labeling" in scheme_name:
                         num = scheme_vector[0]
                         scheme_vector = [np.nan] * 60
                         scheme_vector[23] = num
-                    elif scheme_name == "strong_word_labeling":
+                    elif "strong_word_labeling" in scheme_name or "density_word_labeling" in scheme_name:
                         num = scheme_vector[0]
                         scheme_vector = [np.nan] * 60
                         scheme_vector[15] = num
@@ -322,11 +347,11 @@ def plot_hashfunction(dumps, benchname, suitename, schemes_to_plot=None, plot_ev
                 l = lines[0]
                 scheme_vector = list(map(float, l.split()))
                 if len(scheme_vector) == 1:
-                    if scheme_name == "epc_word_labeling":
+                    if "epc_word_labeling" in scheme_name or "hycomp_word_labeling" in scheme_name or "semantic_word_labeling" in scheme_name:
                         num = scheme_vector[0]
                         scheme_vector = [np.nan] * 60
                         scheme_vector[23] = num
-                    elif scheme_name == "strong_word_labeling":
+                    elif "strong_word_labeling" in scheme_name or "density_word_labeling" in scheme_name:
                         num = scheme_vector[0]
                         scheme_vector = [np.nan] * 60
                         scheme_vector[15] = num
@@ -345,11 +370,11 @@ def plot_hashfunction(dumps, benchname, suitename, schemes_to_plot=None, plot_ev
                 for data in scheme_vector:
                     assert data >= 0, f"Negative data: {data}, scheme: {scheme}, file: {file_path}"
                 if len(scheme_vector) == 1:
-                    if scheme_name == "epc_word_labeling":
+                    if "epc_word_labeling" in scheme_name or "hycomp_word_labeling" in scheme_name or "semantic_word_labeling" in scheme_name:
                         num = scheme_vector[0]
                         scheme_vector = [np.nan] * 60
                         scheme_vector[23] = num
-                    elif scheme_name == "strong_word_labeling":
+                    elif "strong_word_labeling" in scheme_name or "density_word_labeling" in scheme_name:
                         num = scheme_vector[0]
                         scheme_vector = [np.nan] * 60
                         scheme_vector[15] = num
@@ -578,8 +603,11 @@ def plot_profiling(dumps, benchname, suitename, stats_to_plot=None):
         "entropy byte position<br>after xor thesaurus": "entropy_byte_position_afterxor12_thesaurus",
         "entropy byte position<br>after xor lowentropy_8_16(BCD)": "entropy_byte_position_afterxor12_lowentropy_8_16",
         "entropy byte position<br>after xor lowentropy_8_16(BCD) only xored": "entropy_byte_position_afterxor12_lowentropy_8_16-onlyxored",
-        "histogram word pattern epc": "histogram_word_pattern_epc",
+        "histogram word pattern epc": "histogram_word_pattern",
         "histogram word pattern strong": "histogram_word_pattern_strong",
+        "histogram word pattern hycomp": "histogram_word_pattern_hycomp",
+        "histogram word pattern semantic": "histogram_word_pattern_semantic",
+        "histogram word pattern density": "histogram_word_pattern_density",
     }
     stat_arr = {
         "entropy byte position": [],
@@ -593,6 +621,9 @@ def plot_profiling(dumps, benchname, suitename, stats_to_plot=None):
         "entropy byte position<br>after xor lowentropy_8_16(BCD) only xored": [],
         "histogram word pattern epc": [],
         "histogram word pattern strong": [],
+        "histogram word pattern hycomp": [],
+        "histogram word pattern semantic": [],
+        "histogram word pattern density": [],
     }
 
     for d in dumps:
@@ -655,6 +686,7 @@ def plot_profiling(dumps, benchname, suitename, stats_to_plot=None):
                 go.Bar(x=list(range(len(data))),
                         y=data,
                         marker=dict(color=color_sequence[0]),
+                        showlegend=False,
                         ),
 
                 row=1, col=num)
@@ -818,13 +850,30 @@ def plot_profiling(dumps, benchname, suitename, stats_to_plot=None):
     )
     fig.write_image(f"img/{suitename}/profiling-{benchname}.pdf")
 
-
 if __name__ == "__main__":
-    benchname = "*"
-    suitename = "allsuite"
-    launch_flag = False
+    # add argument to specify suitename, launch_flag, and plot
+    parser = argparse.ArgumentParser(description='run and plot script')
+    parser.add_argument('--suitename', 
+                        help='suitename',
+                        choices=["parsec", "spec", "perfect", "allsuite"])
+    parser.add_argument('--launch', 
+                        help='launch the simulations',
+                        default=False,
+                        action='store_true')
+    parser.add_argument('--plot', 
+                        help='plot the results',
+                        default="hash",
+                        choices=["hash", "profiling"])
+    parser.add_argument('--benchname',
+                        help='benchmark name',
+                        default="*")
+    args = parser.parse_args()
+
+    benchname = args.benchname
+    suitename = args.suitename
+    launch_flag = args.launch
     # plot="profiling"
-    plot="hash"
+    plot=args.plot
 
     num_banks = None
     kb_per_bank = None
@@ -863,8 +912,11 @@ if __name__ == "__main__":
                             #    "entropy byte position<br>after xor thesaurus",
                             #    "entropy byte position<br>after xor lowentropy_8_16(BCD)",
                             #    "entropy byte position<br>after xor lowentropy_8_16(BCD) only xored",
-                            #    "histogram word pattern epc",
+                               "histogram word pattern epc",
                                "histogram word pattern strong",
+                               "histogram word pattern hycomp",
+                               "histogram word pattern semantic",
+                               "histogram word pattern density",
                            ])
         elif plot == "hash":
             plot_hashfunction(dumps, benchname, suitename, 
@@ -890,10 +942,14 @@ if __name__ == "__main__":
                         # "sparseshuffledbytemap_4_3",
                         # "sparseshuffledbytemap_4_3-bpc",
                         # "sparseshuffledbytemap_4_2",
-                        # "ternarybytemap-shuffle-xorfold",
+                        "ternarybytemap-shuffle-xorfold",
                         # "lowentropy_8_4",
                         # "lowentropy_8_16(BCD)",
                         # "lowentropy_8_16(BCD)-immo",
                         "EPC word labeling",
                         "strong word labeling",
+                        "hycomp word labeling",
+                        "semantic word labeling",
+                        "density word labeling",
+                        # "density word labeling bpc",
                         ])

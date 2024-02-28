@@ -41,7 +41,7 @@ int main(int argc, char *argv[]){
     vector<string> legends;
 
 
-    string name = "strong_word_labeling";
+    string name = "shuffledtbytemap";
     bool use_xorcache = true;
     bool use_little_e = true;
     bool allow_immo = false;
@@ -74,13 +74,27 @@ int main(int argc, char *argv[]){
         } else if (name.find("strong_word_labeling") != string::npos) {
             map_all(num_banks, KB_per_bank, dir, crs6, ers6, frs6, intras6, hammings6, {16.0}, use_xorcache, use_little_e, allow_immo, type,
                 &create_hashfunctions_strong_word_labeling);
+        } else if (name.find("hycomp_word_labeling") != string::npos) {
+            map_all(num_banks, KB_per_bank, dir, crs6, ers6, frs6, intras6, hammings6, {24.0}, use_xorcache, use_little_e, allow_immo, type,
+                &create_hashfunctions_hycomp_word_labeling);
+        } else if (name.find("semantic_word_labeling") != string::npos) {
+            map_all(num_banks, KB_per_bank, dir, crs6, ers6, frs6, intras6, hammings6, {24.0}, use_xorcache, use_little_e, allow_immo, type,
+                &create_hashfunctions_semantic_word_labeling);
+        } else if (name.find("density_word_labeling") != string::npos) {
+            map_all(num_banks, KB_per_bank, dir, crs6, ers6, frs6, intras6, hammings6, {16.0}, use_xorcache, use_little_e, allow_immo, type,
+                &create_hashfunctions_density_word_labeling);
         } else {
             map_all(num_banks, KB_per_bank, dir, crs6, ers6, frs6, intras6, hammings6, fbs, use_xorcache, use_little_e, allow_immo, type,
-                &create_hashfunctions_shuffledbytemap);
+                &create_hashfunctions_shuffledtbytemap);
         }
     } else {
-        vanila_x(num_banks, KB_per_bank, dir, crs6, ers6, frs6, intras6, hammings6, fbs, use_xorcache, use_little_e, allow_immo, 
-            &create_vanila_bdi);
+        if (name.find("bpc") != string::npos) {
+            vanila_x(num_banks, KB_per_bank, dir, crs6, ers6, frs6, intras6, hammings6, fbs, use_xorcache, use_little_e, allow_immo, 
+                &create_vanila_bpc);
+        } else {
+            vanila_x(num_banks, KB_per_bank, dir, crs6, ers6, frs6, intras6, hammings6, fbs, use_xorcache, use_little_e, allow_immo, 
+                &create_vanila_bdi);
+        }
     }
 
     string crss_filename = dir + "/crss-" + name +".txt";
