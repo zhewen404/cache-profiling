@@ -5,3 +5,4 @@ test.*
 bin/*
 img/*
 *.pdf
+*__pycache__/

@@ -7,19 +7,20 @@
 #include "function/clustercache.hh"
 
 int main(int argc, char *argv[]){
-    if (argc < 2){
-        printf("Usage: %s <dir>\n", argv[0]);
+    if (argc < 3){
+        printf("Usage: %s <dir> <scheme>\n", argv[0]);
         return 1;
     }
     string dir = argv[1];
+    string name = argv[2];
     
     int num_banks = 4;
     int KB_per_bank = 256;
-    if (argc >= 3) {
-        num_banks = atoi(argv[2]);
-    }
     if (argc >= 4) {
-        KB_per_bank = atoi(argv[3]);
+        num_banks = atoi(argv[3]);
+    }
+    if (argc >= 5) {
+        KB_per_bank = atoi(argv[4]);
     }
 
     vector<double> fbs = {
@@ -28,25 +29,32 @@ int main(int argc, char *argv[]){
         6,7, 8, 9, 10, 
         11, 12, 13,14,15,16,17,18,19,20,
         21,22,23,24,25,26,27,28,29,30,
-        31,32,33,34,35,36,37,38,39,40,
-        41,42,43,44,45,46,47,48,49,50,
-        51,52,53,53,55,56,57,58,59,60
+        31,32,
+        // 33,34,35,36,37,38,39,40,
+        // 41,42,43,44,45,46,47,48,49,50,
+        // 51,52,53,53,55,56,57,58,59,60
     };
     // vector<double> fbs = {
     //     2,4,6,8,10,12,14,16,18,20,
     //     22,24,26,28,30,32,34,36,38,40,
     //     42,44,46,48,50,52,54,58,60
     // };
+    vector<unsigned> defined_seeds = {9, 10, 11, 12};
 
     vector<string> legends;
 
 
-    string name = "sparseshuffledbytemap_8_7";
+    void (*create_hash_functions_x)(vector<HashFunction *> &, int &, bool &, int &, int, int);
+
+    
+
     bool use_xorcache = true;
     bool use_little_e = true;
     bool allow_immo = false;
 
     vector<double> crs6, ers6, frs6, intras6, hammings6;
+    vector<double> crs6_max, ers6_max, frs6_max, intras6_max, hammings6_max;
+    vector<double> crs6_min, ers6_min, frs6_min, intras6_min, hammings6_min;
 
     // print crss to file dir/crss.txt
     if (name.find("vanila") == string::npos) {
@@ -69,32 +77,90 @@ int main(int argc, char *argv[]){
         }
 
         if (name.find("epc_word_labeling") != string::npos) {
-            map_all(num_banks, KB_per_bank, dir, crs6, ers6, frs6, intras6, hammings6, {24.0}, use_xorcache, use_little_e, allow_immo, type,
+            map_all(defined_seeds, num_banks, KB_per_bank, dir, 
+                crs6, ers6, frs6, intras6, hammings6, 
+                crs6_max, ers6_max, frs6_max, intras6_max, hammings6_max, 
+                crs6_min, ers6_min, frs6_min, intras6_min, hammings6_min, 
+                {24.0}, use_xorcache, use_little_e, allow_immo, type,
                 &create_hashfunctions_epc_word_labeling);
         } else if (name.find("strong_word_labeling") != string::npos) {
-            map_all(num_banks, KB_per_bank, dir, crs6, ers6, frs6, intras6, hammings6, {16.0}, use_xorcache, use_little_e, allow_immo, type,
+            map_all(defined_seeds, num_banks, KB_per_bank, dir, 
+                crs6, ers6, frs6, intras6, hammings6, 
+                crs6_max, ers6_max, frs6_max, intras6_max, hammings6_max, 
+                crs6_min, ers6_min, frs6_min, intras6_min, hammings6_min, 
+                {16.0}, use_xorcache, use_little_e, allow_immo, type,
                 &create_hashfunctions_strong_word_labeling);
         } else if (name.find("hycomp_word_labeling") != string::npos) {
-            map_all(num_banks, KB_per_bank, dir, crs6, ers6, frs6, intras6, hammings6, {24.0}, use_xorcache, use_little_e, allow_immo, type,
+            map_all(defined_seeds, num_banks, KB_per_bank, dir, 
+                crs6, ers6, frs6, intras6, hammings6, 
+                crs6_max, ers6_max, frs6_max, intras6_max, hammings6_max, 
+                crs6_min, ers6_min, frs6_min, intras6_min, hammings6_min, 
+                {24.0}, use_xorcache, use_little_e, allow_immo, type,
                 &create_hashfunctions_hycomp_word_labeling);
         } else if (name.find("semantic_word_labeling") != string::npos) {
-            map_all(num_banks, KB_per_bank, dir, crs6, ers6, frs6, intras6, hammings6, {24.0}, use_xorcache, use_little_e, allow_immo, type,
+            map_all(defined_seeds, num_banks, KB_per_bank, dir, 
+                crs6, ers6, frs6, intras6, hammings6, 
+                crs6_max, ers6_max, frs6_max, intras6_max, hammings6_max, 
+                crs6_min, ers6_min, frs6_min, intras6_min, hammings6_min, 
+                {24.0}, use_xorcache, use_little_e, allow_immo, type,
                 &create_hashfunctions_semantic_word_labeling);
         } else if (name.find("density_word_labeling") != string::npos) {
-            map_all(num_banks, KB_per_bank, dir, crs6, ers6, frs6, intras6, hammings6, {16.0}, use_xorcache, use_little_e, allow_immo, type,
+            map_all(defined_seeds, num_banks, KB_per_bank, dir, 
+                crs6, ers6, frs6, intras6, hammings6, 
+                crs6_max, ers6_max, frs6_max, intras6_max, hammings6_max, 
+                crs6_min, ers6_min, frs6_min, intras6_min, hammings6_min, 
+                {16.0}, use_xorcache, use_little_e, allow_immo, type,
                 &create_hashfunctions_density_word_labeling);
         } else if (name.find("averagebytemsb_word_labeling_32") != string::npos) {
-            map_all(num_banks, KB_per_bank, dir, crs6, ers6, frs6, intras6, hammings6, {32.0}, use_xorcache, use_little_e, allow_immo, type,
+            map_all(defined_seeds, num_banks, KB_per_bank, dir, 
+                crs6, ers6, frs6, intras6, hammings6, 
+                crs6_max, ers6_max, frs6_max, intras6_max, hammings6_max, 
+                crs6_min, ers6_min, frs6_min, intras6_min, hammings6_min, 
+                {32.0}, use_xorcache, use_little_e, allow_immo, type,
                 &create_hashfunctions_averagebytemsb_word_labeling_32);
         } else if (name.find("averagebytemsb_word_labeling_24") != string::npos) {
-            map_all(num_banks, KB_per_bank, dir, crs6, ers6, frs6, intras6, hammings6, {24.0}, use_xorcache, use_little_e, allow_immo, type,
+            map_all(defined_seeds, num_banks, KB_per_bank, dir, 
+                crs6, ers6, frs6, intras6, hammings6, 
+                crs6_max, ers6_max, frs6_max, intras6_max, hammings6_max, 
+                crs6_min, ers6_min, frs6_min, intras6_min, hammings6_min, 
+                {24.0}, use_xorcache, use_little_e, allow_immo, type,
                 &create_hashfunctions_averagebytemsb_word_labeling_24);
         } else if (name.find("averagebytemsb_word_labeling_16") != string::npos) {
-            map_all(num_banks, KB_per_bank, dir, crs6, ers6, frs6, intras6, hammings6, {16.0}, use_xorcache, use_little_e, allow_immo, type,
+            map_all(defined_seeds, num_banks, KB_per_bank, dir, 
+                crs6, ers6, frs6, intras6, hammings6, 
+                crs6_max, ers6_max, frs6_max, intras6_max, hammings6_max, 
+                crs6_min, ers6_min, frs6_min, intras6_min, hammings6_min, 
+                {16.0}, use_xorcache, use_little_e, allow_immo, type,
                 &create_hashfunctions_averagebytemsb_word_labeling_16);
         } else {
-            map_all(num_banks, KB_per_bank, dir, crs6, ers6, frs6, intras6, hammings6, fbs, use_xorcache, use_little_e, allow_immo, type,
-                &create_hashfunctions_sparseshuffledbytemap_8_7);
+            // compare string name with the following
+            if (name.compare("shuffledbytemap") == 0) {
+                create_hash_functions_x = &create_hashfunctions_shuffledbytemap;
+            } else if (name.compare("sparseshuffledbytemap_8_6") == 0) {
+                create_hash_functions_x = &create_hashfunctions_sparseshuffledbytemap_8_6;
+            } else if (name.compare("fbsxf") == 0) {
+                create_hash_functions_x = &create_hashfunctions_fbsxf;
+            } else if (name.compare("thesaurus") == 0) {
+                create_hash_functions_x = &create_hashfunctions_thesaurus;
+            } else if (name.compare("bs") == 0) {
+                create_hash_functions_x = &create_hashfunctions_bs;
+            } else if (name.compare("maskedbs_8_32") == 0) {
+                create_hash_functions_x = &create_hashfunctions_maskedbs_8_32;
+            } else if (name.compare("maskedbs_8_16") == 0) {
+                create_hash_functions_x = &create_hashfunctions_maskedbs_8_16;
+            } else if (name.compare("2bytemap") == 0) {
+                create_hash_functions_x = &create_hashfunctions_2bytemap;
+            } else {
+                printf("Unknown scheme %s\n", name.c_str());
+                assert(false);
+            }
+
+            map_all(defined_seeds, num_banks, KB_per_bank, dir, 
+                crs6, ers6, frs6, intras6, hammings6, 
+                crs6_max, ers6_max, frs6_max, intras6_max, hammings6_max, 
+                crs6_min, ers6_min, frs6_min, intras6_min, hammings6_min, 
+                fbs, use_xorcache, use_little_e, allow_immo, type,
+                create_hash_functions_x);
         }
     } else {
         if (name.find("bpc") != string::npos) {
@@ -112,6 +178,14 @@ int main(int argc, char *argv[]){
         fprintf(crss_file, "%f ", crs6[j]);
     }
     fprintf(crss_file, "\n");
+    for (unsigned j = 0; j < crs6_max.size(); j++){
+        fprintf(crss_file, "%f ", crs6_max[j]);
+    }
+    fprintf(crss_file, "\n");
+    for (unsigned j = 0; j < crs6_min.size(); j++){
+        fprintf(crss_file, "%f ", crs6_min[j]);
+    }
+    fprintf(crss_file, "\n");
     fclose(crss_file);
 
 
@@ -120,6 +194,14 @@ int main(int argc, char *argv[]){
     FILE * erss_file = fopen(erss_filename.c_str(), "w");
     for (unsigned j = 0; j < ers6.size(); j++){
         fprintf(erss_file, "%f ", ers6[j]);
+    }
+    fprintf(erss_file, "\n");
+    for (unsigned j = 0; j < ers6_max.size(); j++){
+        fprintf(erss_file, "%f ", ers6_max[j]);
+    }
+    fprintf(erss_file, "\n");
+    for (unsigned j = 0; j < ers6_min.size(); j++){
+        fprintf(erss_file, "%f ", ers6_min[j]);
     }
     fprintf(erss_file, "\n");
     fclose(erss_file);
@@ -132,6 +214,14 @@ int main(int argc, char *argv[]){
         fprintf(frss_file, "%f ", frs6[j]);
     }
     fprintf(frss_file, "\n");
+    for (unsigned j = 0; j < frs6_max.size(); j++){
+        fprintf(frss_file, "%f ", frs6_max[j]);
+    }
+    fprintf(frss_file, "\n");
+    for (unsigned j = 0; j < frs6_min.size(); j++){
+        fprintf(frss_file, "%f ", frs6_min[j]);
+    }
+    fprintf(frss_file, "\n");
     fclose(frss_file);
 
 
@@ -140,6 +230,14 @@ int main(int argc, char *argv[]){
     FILE * instras_file = fopen(intras_filename.c_str(), "w");
     for (unsigned j = 0; j < intras6.size(); j++){
         fprintf(instras_file, "%f ", intras6[j]);
+    }
+    fprintf(instras_file, "\n");
+    for (unsigned j = 0; j < intras6_max.size(); j++){
+        fprintf(instras_file, "%f ", intras6_max[j]);
+    }
+    fprintf(instras_file, "\n");
+    for (unsigned j = 0; j < intras6_min.size(); j++){
+        fprintf(instras_file, "%f ", intras6_min[j]);
     }
     fprintf(instras_file, "\n");
     fclose(instras_file);
@@ -152,6 +250,14 @@ int main(int argc, char *argv[]){
         fprintf(hammings_file, "%f ", hammings6[j]);
     }
     fprintf(hammings_file, "\n");
+    for (unsigned j = 0; j < hammings6_max.size(); j++){
+        fprintf(hammings_file, "%f ", hammings6_max[j]);
+    }
+    fprintf(hammings_file, "\n");
+    for (unsigned j = 0; j < hammings6_min.size(); j++){
+        fprintf(hammings_file, "%f ", hammings6_min[j]);
+    }
+    fprintf(hammings_file, "\n");
     fclose(hammings_file);
 
     // string plot_name = dir + "/" + name + ".pdf";
@@ -162,11 +268,25 @@ int main(int argc, char *argv[]){
 
     fbs.clear();
     legends.clear();
+    defined_seeds.clear();
+
     crs6.clear();
     ers6.clear();
     frs6.clear();
     intras6.clear();
     hammings6.clear();
+
+    crs6_min.clear();
+    ers6_min.clear();
+    frs6_min.clear();
+    intras6_min.clear();
+    hammings6_min.clear();
+
+    crs6_max.clear();
+    ers6_max.clear();
+    frs6_max.clear();
+    intras6_max.clear();
+    hammings6_max.clear();
 
     return 0;
 

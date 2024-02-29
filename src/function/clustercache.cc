@@ -1,6 +1,7 @@
 #include "function/clustercache.hh"
 #include "cache/xorCache.hh"
 #include "common/file/file_read.hh"
+#include "common/vector/vector.hh"
 #include <stdio.h>
 #include <assert.h>
 
@@ -24,16 +25,16 @@ ClusteredCache * create_clustered_cache(int num_banks, int KB_per_bank, int asso
     return cache;
 }
 
-HashXORCache * create_hashed_inter_cache_from_clustered_cache_xor(ClusteredCache * cache)
+HashXORCache * create_hashed_inter_cache_from_clustered_cache_xor(ClusteredCache * cache, unsigned defined_seed)
 {
     HashXORCache * hxorCache;
-    hxorCache = new HashXORCache(*cache);
+    hxorCache = new HashXORCache(*cache, defined_seed);
     return hxorCache;
 }
-HashDeltaCache * create_hashed_inter_cache_from_clustered_cache_delta(ClusteredCache * cache)
+HashDeltaCache * create_hashed_inter_cache_from_clustered_cache_delta(ClusteredCache * cache, unsigned defined_seed)
 {
     HashDeltaCache * hxorCache;
-    hxorCache = new HashDeltaCache(*cache);
+    hxorCache = new HashDeltaCache(*cache, defined_seed);
     return hxorCache;
 }
 
@@ -595,28 +596,71 @@ void create_vanila_bpc(int num_banks, int KB_per_bank, string dir,
 
 ////////////////////////////////////////////////////////////////
 // for hash functions
-void map_all(int num_banks, int KB_per_bank, string dir, 
+void map_all(vector<unsigned> defined_seeds, int num_banks, int KB_per_bank, string dir, 
     vector <double> &crs, vector <double> &ers, vector <double> &frs, vector <double> &intras, vector <double> &hammings, 
+    vector <double> &crs_max, vector <double> &ers_max, vector <double> &frs_max, vector <double> &intras_max, vector <double> &hammings_max, 
+    vector <double> &crs_min, vector <double> &ers_min, vector <double> &frs_min, vector <double> &intras_min, vector <double> &hammings_min, 
     vector<double> fbs, bool use_xorcache, bool use_little_e, bool allow_immo, intracomp_t type,
     void (*create_hash_functions_x)(vector<HashFunction *> &, int &, bool &, int &, int, int))
 {
-    double cr, entropy_reduction;
-    double fr;
-    double intra;
-    double hamming;
+    vector<double> crs_temp, ers_temp, frs_temp, intras_temp, hammings_temp;
 
-    for (unsigned i = 0; i < fbs.size(); i++){
-        map_x(num_banks, KB_per_bank, dir, fbs[i], cr, entropy_reduction, fr, intra, hamming, use_xorcache, use_little_e, allow_immo, type, create_hash_functions_x);
-        crs.push_back(cr);
-        ers.push_back(entropy_reduction);
-        frs.push_back(fr);
-        intras.push_back(intra);
-        hammings.push_back(hamming);
+    for (unsigned i = 0; i < fbs.size(); i++) {
+        double cr, entropy_reduction;
+        double fr;
+        double intra;
+        double hamming;
+        for (unsigned j = 0; j < defined_seeds.size(); j++) {
+            unsigned defined_seed = defined_seeds[j];
+            map_x(defined_seed, num_banks, KB_per_bank, dir, fbs[i], cr, entropy_reduction, fr, intra, hamming, use_xorcache, use_little_e, allow_immo, type, create_hash_functions_x);
+            
+            assert(cr > 0); // gmean
+            // assert(entropy_reduction >= 0); // amean
+            assert(fr >= 0); // amean
+            assert(intra > 0); // gmean
+            assert(hamming >= 0); // amean
+
+            crs_temp.push_back(cr);
+            ers_temp.push_back(entropy_reduction);
+            frs_temp.push_back(fr);
+            intras_temp.push_back(intra);
+            hammings_temp.push_back(hamming);
+        }
+        // printf("fb: %f, crs_temp:", fbs[i]);
+        // for (unsigned j = 0; j < crs_temp.size(); j++) {
+        //     printf(" %f", crs_temp[j]);
+        // }
+        // printf("\n");
+        
+        crs.push_back(calculateGeoMean(crs_temp));
+        ers.push_back(calculateMean(ers_temp));
+        frs.push_back(calculateMean(frs_temp));
+        intras.push_back(calculateGeoMean(intras_temp));
+        hammings.push_back(calculateMean(hammings_temp));
+
+        crs_max.push_back(*max_element(crs_temp.begin(), crs_temp.end()));
+        ers_max.push_back(*max_element(ers_temp.begin(), ers_temp.end()));
+        frs_max.push_back(*max_element(frs_temp.begin(), frs_temp.end()));
+        intras_max.push_back(*max_element(intras_temp.begin(), intras_temp.end()));
+        hammings_max.push_back(*max_element(hammings_temp.begin(), hammings_temp.end()));
+
+        crs_min.push_back(*min_element(crs_temp.begin(), crs_temp.end()));
+        ers_min.push_back(*min_element(ers_temp.begin(), ers_temp.end()));
+        frs_min.push_back(*min_element(frs_temp.begin(), frs_temp.end()));
+        intras_min.push_back(*min_element(intras_temp.begin(), intras_temp.end()));
+        hammings_min.push_back(*min_element(hammings_temp.begin(), hammings_temp.end()));
+        
+        crs_temp.clear();
+        ers_temp.clear();
+        frs_temp.clear();
+        intras_temp.clear();
+        hammings_temp.clear();
+
     }
 }
 
 // for hash functions
-void map_x(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, 
+void map_x(unsigned defined_seed, int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, 
     double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, double &hamming, 
     bool use_xorcache, bool use_little_e, bool allow_immo, intracomp_t type,
     void (*create_hash_functions_x)(vector<HashFunction *> &, int &, bool &, int &, int, int)
@@ -642,7 +686,7 @@ void map_x(int num_banks, int KB_per_bank, string dir, int fp_size_in_bits,
     double vanilla_bit_entropy = cache->get_bit_entropy();
 
 
-    HashXORCache * hxorCache = create_hashed_inter_cache_from_clustered_cache_xor(cache);
+    HashXORCache * hxorCache = create_hashed_inter_cache_from_clustered_cache_xor(cache, defined_seed);
     
     double bit_entropy = hxorCache->get_bit_entropy();
     entropy_reduction = vanilla_bit_entropy - bit_entropy;
