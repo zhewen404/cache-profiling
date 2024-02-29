@@ -165,6 +165,7 @@ class ThesaurusLSHash : public HashFunction
     }
 
     void gen_lsh_matrix(int data_size) {
+        srand(m_seed);
         for (int i=0; i < m_fingerprint_size_bit; i++) {
             vector<int> row;
             for (int j=0; j < data_size; j++) {

@@ -53,7 +53,7 @@ def launch(dir, launch_flag, num_banks=None, kb_per_bank=None):
     print(f"Launching {cmd}")
     os.system(cmd)
 
-def plot_hashfunction(dumps, benchname, suitename, schemes_to_plot=None, plot_even_only=False):
+def plot_hashfunction(dumps, benchname, suitename, schemes_to_plot=None, plot_even_only=False, plot_errorbar=True):
     hashSchemeMaps = HashSchemeMaps(schemes_to_plot)
 
     num_points = 0
@@ -75,19 +75,19 @@ def plot_hashfunction(dumps, benchname, suitename, schemes_to_plot=None, plot_ev
                         if "epc_word_labeling" in scheme_name or "hycomp_word_labeling" in scheme_name or "semantic_word_labeling" in scheme_name or \
                             "averagebytemsb_word_labeling_24" in scheme_name:
                             num = scheme_vector[0]
-                            scheme_vector = [np.nan] * length
+                            scheme_vector = [np.nan] * 32
                             scheme_vector[23] = num
                         elif "strong_word_labeling" in scheme_name or "density_word_labeling" in scheme_name or \
                             "averagebytemsb_word_labeling_16" in scheme_name:
                             num = scheme_vector[0]
-                            scheme_vector = [np.nan] * length
+                            scheme_vector = [np.nan] * 32
                             scheme_vector[15] = num
                         elif "averagebytemsb_word_labeling_32" in scheme_name:
                             num = scheme_vector[0]
-                            scheme_vector = [np.nan] * length
+                            scheme_vector = [np.nan] * 32
                             scheme_vector[31] = num
                         else:
-                            scheme_vector = [np.nan] * length
+                            scheme_vector = [np.nan] * 32
                     num_points = len(scheme_vector)
                     crs_arr[i][scheme].append(scheme_vector)
 
@@ -105,19 +105,19 @@ def plot_hashfunction(dumps, benchname, suitename, schemes_to_plot=None, plot_ev
                         if "epc_word_labeling" in scheme_name or "hycomp_word_labeling" in scheme_name or "semantic_word_labeling" in scheme_name or \
                             "averagebytemsb_word_labeling_24" in scheme_name:
                             num = scheme_vector[0]
-                            scheme_vector = [np.nan] * length
+                            scheme_vector = [np.nan] * 32
                             scheme_vector[23] = num
                         elif "strong_word_labeling" in scheme_name or "density_word_labeling" in scheme_name or \
                             "averagebytemsb_word_labeling_16" in scheme_name:
                             num = scheme_vector[0]
-                            scheme_vector = [np.nan] * length
+                            scheme_vector = [np.nan] * 32
                             scheme_vector[15] = num
                         elif "averagebytemsb_word_labeling_32" in scheme_name:
                             num = scheme_vector[0]
-                            scheme_vector = [np.nan] * length
+                            scheme_vector = [np.nan] * 32
                             scheme_vector[31] = num
                         else:
-                            scheme_vector = [np.nan] * length
+                            scheme_vector = [np.nan] * 32
                     num_points = len(scheme_vector)
                     ers_arr[i][scheme].append(scheme_vector)
 
@@ -135,19 +135,19 @@ def plot_hashfunction(dumps, benchname, suitename, schemes_to_plot=None, plot_ev
                         if "epc_word_labeling" in scheme_name or "hycomp_word_labeling" in scheme_name or "semantic_word_labeling" in scheme_name or \
                             "averagebytemsb_word_labeling_24" in scheme_name:
                             num = scheme_vector[0]
-                            scheme_vector = [np.nan] * length
+                            scheme_vector = [np.nan] * 32
                             scheme_vector[23] = num
                         elif "strong_word_labeling" in scheme_name or "density_word_labeling" in scheme_name or \
                             "averagebytemsb_word_labeling_16" in scheme_name:
                             num = scheme_vector[0]
-                            scheme_vector = [np.nan] * length
+                            scheme_vector = [np.nan] * 32
                             scheme_vector[15] = num
                         elif "averagebytemsb_word_labeling_32" in scheme_name:
                             num = scheme_vector[0]
-                            scheme_vector = [np.nan] * length
+                            scheme_vector = [np.nan] * 32
                             scheme_vector[31] = num
                         else:
-                            scheme_vector = [np.nan] * length
+                            scheme_vector = [np.nan] * 32
                     num_points = len(scheme_vector)
                     frs_arr[i][scheme].append(scheme_vector)
 
@@ -165,19 +165,20 @@ def plot_hashfunction(dumps, benchname, suitename, schemes_to_plot=None, plot_ev
                         if "epc_word_labeling" in scheme_name or "hycomp_word_labeling" in scheme_name or "semantic_word_labeling" in scheme_name or \
                             "averagebytemsb_word_labeling_24" in scheme_name:
                             num = scheme_vector[0]
-                            scheme_vector = [np.nan] * length
+                            scheme_vector = [np.nan] * 32
                             scheme_vector[23] = num
                         elif "strong_word_labeling" in scheme_name or "density_word_labeling" in scheme_name or \
                             "averagebytemsb_word_labeling_16" in scheme_name:
                             num = scheme_vector[0]
-                            scheme_vector = [np.nan] * length
+                            scheme_vector = [np.nan] * 32
                             scheme_vector[15] = num
                         elif "averagebytemsb_word_labeling_32" in scheme_name:
                             num = scheme_vector[0]
-                            scheme_vector = [np.nan] * length
+                            scheme_vector = [np.nan] * 32
                             scheme_vector[31] = num
                         else:
-                            scheme_vector = [np.nan] * length
+                            num = scheme_vector[0]
+                            scheme_vector = [num] * 32
                     num_points = len(scheme_vector)
                     intras_arr[i][scheme].append(scheme_vector)
 
@@ -185,7 +186,7 @@ def plot_hashfunction(dumps, benchname, suitename, schemes_to_plot=None, plot_ev
             file_path = f"{d}hammings-{scheme_name}.txt"
             with open(file_path, "r") as file:
                 lines = file.readlines()
-                assert len(lines) == 3
+                assert len(lines) == 3, f"len(lines) = {len(lines)}"
                 hammings_arr = [hashSchemeMaps.hammings_schemes, hashSchemeMaps.hammings_max_schemes, hashSchemeMaps.hammings_min_schemes]
                 for i in range(3):
                     l = lines[i]
@@ -195,19 +196,19 @@ def plot_hashfunction(dumps, benchname, suitename, schemes_to_plot=None, plot_ev
                         if "epc_word_labeling" in scheme_name or "hycomp_word_labeling" in scheme_name or "semantic_word_labeling" in scheme_name or \
                             "averagebytemsb_word_labeling_24" in scheme_name:
                             num = scheme_vector[0]
-                            scheme_vector = [np.nan] * length
+                            scheme_vector = [np.nan] * 32
                             scheme_vector[23] = num
                         elif "strong_word_labeling" in scheme_name or "density_word_labeling" in scheme_name or \
                             "averagebytemsb_word_labeling_16" in scheme_name:
                             num = scheme_vector[0]
-                            scheme_vector = [np.nan] * length
+                            scheme_vector = [np.nan] * 32
                             scheme_vector[15] = num
                         elif "averagebytemsb_word_labeling_32" in scheme_name:
                             num = scheme_vector[0]
-                            scheme_vector = [np.nan] * length
+                            scheme_vector = [np.nan] * 32
                             scheme_vector[31] = num
                         else:
-                            scheme_vector = [np.nan] * length
+                            scheme_vector = [np.nan] * 32
                     num_points = len(scheme_vector)
                     hammings_arr[i][scheme].append(scheme_vector)
 
@@ -348,25 +349,24 @@ def plot_hashfunction(dumps, benchname, suitename, schemes_to_plot=None, plot_ev
                         line=dict(color=color_sequence[i]), 
                         ),
                 row=1, col=1)
-            
-            fig.add_trace(
-                go.Scatter(x=xaxis, y=max_[i],
-                        mode='lines',
-                        showlegend=False,
-                        legendgroup=scheme,
-                        line=dict(color=color_sequence[i], width=0), 
-                        ),
-                row=1, col=1)
-            
-            fig.add_trace(
-                go.Scatter(x=xaxis, y=min_[i],
-                        mode='lines',
-                        showlegend=False,
-                        fill='tonexty',
-                        legendgroup=scheme,
-                        line=dict(color=color_sequence[i], width=0), 
-                        ),
-                row=1, col=1)
+            if plot_errorbar:
+                fig.add_trace(
+                    go.Scatter(x=xaxis, y=max_[i],
+                            mode='lines',
+                            showlegend=False,
+                            legendgroup=scheme,
+                            line=dict(color=color_sequence[i], width=0), 
+                            ),
+                    row=1, col=1)
+                fig.add_trace(
+                    go.Scatter(x=xaxis, y=min_[i],
+                            mode='lines',
+                            showlegend=False,
+                            fill='tonexty',
+                            legendgroup=scheme,
+                            line=dict(color=color_sequence[i], width=0), 
+                            ),
+                    row=1, col=1)
             i += 1
     fig.update_yaxes(title="inter comp. ratio", row=1, col=1)
     
@@ -387,24 +387,24 @@ def plot_hashfunction(dumps, benchname, suitename, schemes_to_plot=None, plot_ev
                         ),
                 row=1, col=2)
             
-            fig.add_trace(
-                go.Scatter(x=xaxis, y=max_[i],
-                        mode='lines',
-                        showlegend=False,
-                        legendgroup=scheme,
-                        line=dict(color=color_sequence[i], width=0), 
-                        ),
-                row=1, col=2)
-            
-            fig.add_trace(
-                go.Scatter(x=xaxis, y=min_[i],
-                        mode='lines',
-                        showlegend=False,
-                        fill='tonexty',
-                        legendgroup=scheme,
-                        line=dict(color=color_sequence[i], width=0), 
-                        ),
-                row=1, col=2)
+            if plot_errorbar:
+                fig.add_trace(
+                    go.Scatter(x=xaxis, y=max_[i],
+                            mode='lines',
+                            showlegend=False,
+                            legendgroup=scheme,
+                            line=dict(color=color_sequence[i], width=0), 
+                            ),
+                    row=1, col=2)
+                fig.add_trace(
+                    go.Scatter(x=xaxis, y=min_[i],
+                            mode='lines',
+                            showlegend=False,
+                            fill='tonexty',
+                            legendgroup=scheme,
+                            line=dict(color=color_sequence[i], width=0), 
+                            ),
+                    row=1, col=2)
             i += 1
     fig.update_yaxes(title="entropy reduction", row=1, col=2, title_standoff = 0)
     
@@ -425,24 +425,24 @@ def plot_hashfunction(dumps, benchname, suitename, schemes_to_plot=None, plot_ev
                         ),
                 row=1, col=3)
             
-            fig.add_trace(
-                go.Scatter(x=xaxis, y=max_[i],
-                        mode='lines',
-                        showlegend=False,
-                        legendgroup=scheme,
-                        line=dict(color=color_sequence[i], width=0), 
-                        ),
-                row=1, col=3)
-            
-            fig.add_trace(
-                go.Scatter(x=xaxis, y=min_[i],
-                        mode='lines',
-                        showlegend=False,
-                        fill='tonexty',
-                        legendgroup=scheme,
-                        line=dict(color=color_sequence[i], width=0), 
-                        ),
-                row=1, col=3)
+            if plot_errorbar:
+                fig.add_trace(
+                    go.Scatter(x=xaxis, y=max_[i],
+                            mode='lines',
+                            showlegend=False,
+                            legendgroup=scheme,
+                            line=dict(color=color_sequence[i], width=0), 
+                            ),
+                    row=1, col=3)
+                fig.add_trace(
+                    go.Scatter(x=xaxis, y=min_[i],
+                            mode='lines',
+                            showlegend=False,
+                            fill='tonexty',
+                            legendgroup=scheme,
+                            line=dict(color=color_sequence[i], width=0), 
+                            ),
+                    row=1, col=3)
             i += 1
     fig.update_yaxes(title="false positive rate", row=1, col=3, title_standoff = 0)
 
@@ -463,24 +463,24 @@ def plot_hashfunction(dumps, benchname, suitename, schemes_to_plot=None, plot_ev
                         ),
                 row=1, col=4)
             
-            fig.add_trace(
-                go.Scatter(x=xaxis, y=max_[i],
-                        mode='lines',
-                        showlegend=False,
-                        legendgroup=scheme,
-                        line=dict(color=color_sequence[i], width=0), 
-                        ),
-                row=1, col=4)
-            
-            fig.add_trace(
-                go.Scatter(x=xaxis, y=min_[i],
-                        mode='lines',
-                        showlegend=False,
-                        fill='tonexty',
-                        legendgroup=scheme,
-                        line=dict(color=color_sequence[i], width=0), 
-                        ),
-                row=1, col=4)
+            if plot_errorbar:
+                fig.add_trace(
+                    go.Scatter(x=xaxis, y=max_[i],
+                            mode='lines',
+                            showlegend=False,
+                            legendgroup=scheme,
+                            line=dict(color=color_sequence[i], width=0), 
+                            ),
+                    row=1, col=4)
+                fig.add_trace(
+                    go.Scatter(x=xaxis, y=min_[i],
+                            mode='lines',
+                            showlegend=False,
+                            fill='tonexty',
+                            legendgroup=scheme,
+                            line=dict(color=color_sequence[i], width=0), 
+                            ),
+                    row=1, col=4)
             i += 1
     fig.update_yaxes(title="intra comp. ratio", row=1, col=4, title_standoff = 0)
 
@@ -501,24 +501,24 @@ def plot_hashfunction(dumps, benchname, suitename, schemes_to_plot=None, plot_ev
                         ),
                 row=1, col=5)
             
-            fig.add_trace(
-                go.Scatter(x=xaxis, y=max_[i],
-                        mode='lines',
-                        showlegend=False,
-                        legendgroup=scheme,
-                        line=dict(color=color_sequence[i], width=0), 
-                        ),
-                row=1, col=5)
-            
-            fig.add_trace(
-                go.Scatter(x=xaxis, y=min_[i],
-                        mode='lines',
-                        showlegend=False,
-                        fill='tonexty',
-                        legendgroup=scheme,
-                        line=dict(color=color_sequence[i], width=0), 
-                        ),
-                row=1, col=5)
+            if plot_errorbar:
+                fig.add_trace(
+                    go.Scatter(x=xaxis, y=max_[i],
+                            mode='lines',
+                            showlegend=False,
+                            legendgroup=scheme,
+                            line=dict(color=color_sequence[i], width=0), 
+                            ),
+                    row=1, col=5)
+                fig.add_trace(
+                    go.Scatter(x=xaxis, y=min_[i],
+                            mode='lines',
+                            showlegend=False,
+                            fill='tonexty',
+                            legendgroup=scheme,
+                            line=dict(color=color_sequence[i], width=0), 
+                            ),
+                    row=1, col=5)
             i += 1
     fig.update_yaxes(title="hamming distance", row=1, col=5, title_standoff = 0)
 
@@ -858,12 +858,12 @@ if __name__ == "__main__":
             plot_hashfunction(dumps, benchname, suitename, 
                     schemes_to_plot=[
                         # "bpc",
-                        # "bdi",
+                        "bdi",
                         # "BDI",
                         # "bdi-immo",
-                        # "thesaurus",
+                        "thesaurus",
                         # "shuffle-xorfold",
-                        # "bit-sampling",
+                        "bit-sampling",
                         # "masked-bit-sampling_8_32",
                         # "masked-bit-sampling_4_16",
                         # "masked-bit-sampling_8_16",
@@ -874,7 +874,7 @@ if __name__ == "__main__":
                         # "bytemap-shuffle-xorfold-bpc", 
                         # "bytemap-shuffle-xorfold-immo", 
                         # "sparseshuffledbytemap_8_7",
-                        # "sparseshuffledbytemap_8_6",
+                        "sparseshuffledbytemap_8_6",
                         # "sparseshuffledbytemap_8_4",
                         # "sparseshuffledbytemap_4_3",
                         # "sparseshuffledbytemap_4_3-bpc",
@@ -883,9 +883,9 @@ if __name__ == "__main__":
                         # "lowentropy_8_4",
                         # "lowentropy_8_16(BCD)",
                         # "lowentropy_8_16(BCD)-immo",
-                        # "EPC word labeling",
+                        "EPC word labeling",
                         # "strong word labeling",
-                        # "hycomp word labeling",
+                        "hycomp word labeling",
                         # "semantic word labeling",
                         # "density word labeling",
                         # "density word labeling bpc",
