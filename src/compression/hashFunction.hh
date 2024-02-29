@@ -713,5 +713,20 @@ class DensityWordLabelingHash : public BaseWordLabelingHash<DensityWordPatternRe
     }
 };
 
+class AverageByteMSBWordLabelingHash : public BaseWordLabelingHash<AverageByteMSBWordPatternRecognizer>
+{
+    public:
+    AverageByteMSBWordLabelingHash(int num_msbs) : 
+        BaseWordLabelingHash<AverageByteMSBWordPatternRecognizer>(new AverageByteMSBWordPatternRecognizer(num_msbs)) 
+    {
+    }
+    ~AverageByteMSBWordLabelingHash() {
+    }
+    void print() const {
+        printf("AverageByteMSBWordLabelingHash\n");
+        m_word_recognizer->print();
+    }
+};
+
 
 #endif

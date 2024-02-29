@@ -41,7 +41,7 @@ int main(int argc, char *argv[]){
     vector<string> legends;
 
 
-    string name = "shuffledtbytemap";
+    string name = "sparseshuffledbytemap_8_7";
     bool use_xorcache = true;
     bool use_little_e = true;
     bool allow_immo = false;
@@ -83,9 +83,18 @@ int main(int argc, char *argv[]){
         } else if (name.find("density_word_labeling") != string::npos) {
             map_all(num_banks, KB_per_bank, dir, crs6, ers6, frs6, intras6, hammings6, {16.0}, use_xorcache, use_little_e, allow_immo, type,
                 &create_hashfunctions_density_word_labeling);
+        } else if (name.find("averagebytemsb_word_labeling_32") != string::npos) {
+            map_all(num_banks, KB_per_bank, dir, crs6, ers6, frs6, intras6, hammings6, {32.0}, use_xorcache, use_little_e, allow_immo, type,
+                &create_hashfunctions_averagebytemsb_word_labeling_32);
+        } else if (name.find("averagebytemsb_word_labeling_24") != string::npos) {
+            map_all(num_banks, KB_per_bank, dir, crs6, ers6, frs6, intras6, hammings6, {24.0}, use_xorcache, use_little_e, allow_immo, type,
+                &create_hashfunctions_averagebytemsb_word_labeling_24);
+        } else if (name.find("averagebytemsb_word_labeling_16") != string::npos) {
+            map_all(num_banks, KB_per_bank, dir, crs6, ers6, frs6, intras6, hammings6, {16.0}, use_xorcache, use_little_e, allow_immo, type,
+                &create_hashfunctions_averagebytemsb_word_labeling_16);
         } else {
             map_all(num_banks, KB_per_bank, dir, crs6, ers6, frs6, intras6, hammings6, fbs, use_xorcache, use_little_e, allow_immo, type,
-                &create_hashfunctions_shuffledtbytemap);
+                &create_hashfunctions_sparseshuffledbytemap_8_7);
         }
     } else {
         if (name.find("bpc") != string::npos) {

@@ -87,6 +87,9 @@ def plot_hashfunction(dumps, benchname, suitename, schemes_to_plot=None, plot_ev
         "semantic word labeling": "semantic_word_labeling",
         "density word labeling": "density_word_labeling",
         "density word labeling bpc": "density_word_labeling-bpc",
+        "average byte msb(4) word labeling": "averagebytemsb_word_labeling_32",
+        "average byte msb(3) word labeling": "averagebytemsb_word_labeling_24",
+        "average byte msb(2) word labeling": "averagebytemsb_word_labeling_16",
     }
     crs_schemes = {
         "bpc": [],
@@ -123,6 +126,9 @@ def plot_hashfunction(dumps, benchname, suitename, schemes_to_plot=None, plot_ev
         "semantic word labeling": [],
         "density word labeling": [],
         "density word labeling bpc": [],
+        "average byte msb(4) word labeling": [],
+        "average byte msb(3) word labeling": [],
+        "average byte msb(2) word labeling": [],
     }
 
     ers_schemes = {
@@ -160,6 +166,9 @@ def plot_hashfunction(dumps, benchname, suitename, schemes_to_plot=None, plot_ev
         "semantic word labeling": [],
         "density word labeling": [],
         "density word labeling bpc": [],
+        "average byte msb(4) word labeling": [],
+        "average byte msb(3) word labeling": [],
+        "average byte msb(2) word labeling": [],
     }
 
     frs_schemes = {
@@ -197,6 +206,9 @@ def plot_hashfunction(dumps, benchname, suitename, schemes_to_plot=None, plot_ev
         "semantic word labeling": [],
         "density word labeling": [],
         "density word labeling bpc": [],
+        "average byte msb(4) word labeling": [],
+        "average byte msb(3) word labeling": [],
+        "average byte msb(2) word labeling": [],
     }
     intras_schemes = {
         "bpc": [],
@@ -233,6 +245,9 @@ def plot_hashfunction(dumps, benchname, suitename, schemes_to_plot=None, plot_ev
         "semantic word labeling": [],
         "density word labeling": [],
         "density word labeling bpc": [],
+        "average byte msb(4) word labeling": [],
+        "average byte msb(3) word labeling": [],
+        "average byte msb(2) word labeling": [],
     }
     hammings_schemes = {
         "bpc": [],
@@ -269,6 +284,9 @@ def plot_hashfunction(dumps, benchname, suitename, schemes_to_plot=None, plot_ev
         "semantic word labeling": [],
         "density word labeling": [],
         "density word labeling bpc": [],
+        "average byte msb(4) word labeling": [],
+        "average byte msb(3) word labeling": [],
+        "average byte msb(2) word labeling": [],
     }
 
     num_points = 0
@@ -284,14 +302,20 @@ def plot_hashfunction(dumps, benchname, suitename, schemes_to_plot=None, plot_ev
                 l = lines[0]
                 scheme_vector = list(map(float, l.split()))
                 if len(scheme_vector) == 1:
-                    if "epc_word_labeling" in scheme_name or "hycomp_word_labeling" in scheme_name or "semantic_word_labeling" in scheme_name:
+                    if "epc_word_labeling" in scheme_name or "hycomp_word_labeling" in scheme_name or "semantic_word_labeling" in scheme_name or \
+                        "averagebytemsb_word_labeling_24" in scheme_name:
                         num = scheme_vector[0]
                         scheme_vector = [np.nan] * 60
                         scheme_vector[23] = num
-                    elif "strong_word_labeling" in scheme_name or "density_word_labeling" in scheme_name:
+                    elif "strong_word_labeling" in scheme_name or "density_word_labeling" in scheme_name or \
+                        "averagebytemsb_word_labeling_16" in scheme_name:
                         num = scheme_vector[0]
                         scheme_vector = [np.nan] * 60
                         scheme_vector[15] = num
+                    elif "averagebytemsb_word_labeling_32" in scheme_name:
+                        num = scheme_vector[0]
+                        scheme_vector = [np.nan] * 60
+                        scheme_vector[31] = num
                     else:
                         scheme_vector = [np.nan] * 60
                 num_points = len(scheme_vector)
@@ -305,14 +329,20 @@ def plot_hashfunction(dumps, benchname, suitename, schemes_to_plot=None, plot_ev
                 l = lines[0]
                 scheme_vector = list(map(float, l.split()))
                 if len(scheme_vector) == 1:
-                    if "epc_word_labeling" in scheme_name or "hycomp_word_labeling" in scheme_name or "semantic_word_labeling" in scheme_name:
+                    if "epc_word_labeling" in scheme_name or "hycomp_word_labeling" in scheme_name or "semantic_word_labeling" in scheme_name or \
+                        "averagebytemsb_word_labeling_24" in scheme_name:
                         num = scheme_vector[0]
                         scheme_vector = [np.nan] * 60
                         scheme_vector[23] = num
-                    elif "strong_word_labeling" in scheme_name or "density_word_labeling" in scheme_name:
+                    elif "strong_word_labeling" in scheme_name or "density_word_labeling" in scheme_name or \
+                        "averagebytemsb_word_labeling_16" in scheme_name:
                         num = scheme_vector[0]
                         scheme_vector = [np.nan] * 60
                         scheme_vector[15] = num
+                    elif "averagebytemsb_word_labeling_32" in scheme_name:
+                        num = scheme_vector[0]
+                        scheme_vector = [np.nan] * 60
+                        scheme_vector[31] = num
                     else:
                         scheme_vector = [np.nan] * 60
                     # scheme_vector = [np.nan] * 60
@@ -326,14 +356,20 @@ def plot_hashfunction(dumps, benchname, suitename, schemes_to_plot=None, plot_ev
                 l = lines[0]
                 scheme_vector = list(map(float, l.split()))
                 if len(scheme_vector) == 1:
-                    if "epc_word_labeling" in scheme_name or "hycomp_word_labeling" in scheme_name or "semantic_word_labeling" in scheme_name:
+                    if "epc_word_labeling" in scheme_name or "hycomp_word_labeling" in scheme_name or "semantic_word_labeling" in scheme_name or \
+                        "averagebytemsb_word_labeling_24" in scheme_name:
                         num = scheme_vector[0]
                         scheme_vector = [np.nan] * 60
                         scheme_vector[23] = num
-                    elif "strong_word_labeling" in scheme_name or "density_word_labeling" in scheme_name:
+                    elif "strong_word_labeling" in scheme_name or "density_word_labeling" in scheme_name or \
+                        "averagebytemsb_word_labeling_16" in scheme_name:
                         num = scheme_vector[0]
                         scheme_vector = [np.nan] * 60
                         scheme_vector[15] = num
+                    elif "averagebytemsb_word_labeling_32" in scheme_name:
+                        num = scheme_vector[0]
+                        scheme_vector = [np.nan] * 60
+                        scheme_vector[31] = num
                     else:
                         scheme_vector = [np.nan] * 60
                     # scheme_vector = [np.nan] * 60
@@ -347,14 +383,20 @@ def plot_hashfunction(dumps, benchname, suitename, schemes_to_plot=None, plot_ev
                 l = lines[0]
                 scheme_vector = list(map(float, l.split()))
                 if len(scheme_vector) == 1:
-                    if "epc_word_labeling" in scheme_name or "hycomp_word_labeling" in scheme_name or "semantic_word_labeling" in scheme_name:
+                    if "epc_word_labeling" in scheme_name or "hycomp_word_labeling" in scheme_name or "semantic_word_labeling" in scheme_name or \
+                        "averagebytemsb_word_labeling_24" in scheme_name:
                         num = scheme_vector[0]
                         scheme_vector = [np.nan] * 60
                         scheme_vector[23] = num
-                    elif "strong_word_labeling" in scheme_name or "density_word_labeling" in scheme_name:
+                    elif "strong_word_labeling" in scheme_name or "density_word_labeling" in scheme_name or \
+                        "averagebytemsb_word_labeling_16" in scheme_name:
                         num = scheme_vector[0]
                         scheme_vector = [np.nan] * 60
                         scheme_vector[15] = num
+                    elif "averagebytemsb_word_labeling_32" in scheme_name:
+                        num = scheme_vector[0]
+                        scheme_vector = [np.nan] * 60
+                        scheme_vector[31] = num
                     else:
                         scheme_vector = [scheme_vector[0]] * 60
                     # scheme_vector = [scheme_vector[0]] * 60
@@ -370,14 +412,20 @@ def plot_hashfunction(dumps, benchname, suitename, schemes_to_plot=None, plot_ev
                 for data in scheme_vector:
                     assert data >= 0, f"Negative data: {data}, scheme: {scheme}, file: {file_path}"
                 if len(scheme_vector) == 1:
-                    if "epc_word_labeling" in scheme_name or "hycomp_word_labeling" in scheme_name or "semantic_word_labeling" in scheme_name:
+                    if "epc_word_labeling" in scheme_name or "hycomp_word_labeling" in scheme_name or "semantic_word_labeling" in scheme_name or \
+                        "averagebytemsb_word_labeling_24" in scheme_name:
                         num = scheme_vector[0]
                         scheme_vector = [np.nan] * 60
                         scheme_vector[23] = num
-                    elif "strong_word_labeling" in scheme_name or "density_word_labeling" in scheme_name:
+                    elif "strong_word_labeling" in scheme_name or "density_word_labeling" in scheme_name or \
+                        "averagebytemsb_word_labeling_16" in scheme_name:
                         num = scheme_vector[0]
                         scheme_vector = [np.nan] * 60
                         scheme_vector[15] = num
+                    elif "averagebytemsb_word_labeling_32" in scheme_name:
+                        num = scheme_vector[0]
+                        scheme_vector = [np.nan] * 60
+                        scheme_vector[31] = num
                     else:
                         scheme_vector = [np.nan] * 60
                     # scheme_vector = [np.nan] * 60
@@ -483,7 +531,7 @@ def plot_hashfunction(dumps, benchname, suitename, schemes_to_plot=None, plot_ev
                            vertical_spacing=0,)
 
     color_sequence = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', 
-                      '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf']
+                      '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf',]
     i = 0
     for scheme, data in crs_scheme_vs_avg.items():
         fig.add_trace(
@@ -608,6 +656,9 @@ def plot_profiling(dumps, benchname, suitename, stats_to_plot=None):
         "histogram word pattern hycomp": "histogram_word_pattern_hycomp",
         "histogram word pattern semantic": "histogram_word_pattern_semantic",
         "histogram word pattern density": "histogram_word_pattern_density",
+        "histogram word pattern averagebytemsb 4": "histogram_word_pattern_averagebytemsb_32",
+        "histogram word pattern averagebytemsb 3": "histogram_word_pattern_averagebytemsb_24",
+        "histogram word pattern averagebytemsb 2": "histogram_word_pattern_averagebytemsb_16",
     }
     stat_arr = {
         "entropy byte position": [],
@@ -624,6 +675,9 @@ def plot_profiling(dumps, benchname, suitename, stats_to_plot=None):
         "histogram word pattern hycomp": [],
         "histogram word pattern semantic": [],
         "histogram word pattern density": [],
+        "histogram word pattern averagebytemsb 4": [],
+        "histogram word pattern averagebytemsb 3": [],
+        "histogram word pattern averagebytemsb 2": [],
     }
 
     for d in dumps:
@@ -913,10 +967,13 @@ if __name__ == "__main__":
                             #    "entropy byte position<br>after xor lowentropy_8_16(BCD)",
                             #    "entropy byte position<br>after xor lowentropy_8_16(BCD) only xored",
                                "histogram word pattern epc",
-                               "histogram word pattern strong",
+                            #    "histogram word pattern strong",
                                "histogram word pattern hycomp",
-                               "histogram word pattern semantic",
+                            #    "histogram word pattern semantic",
                                "histogram word pattern density",
+                               "histogram word pattern averagebytemsb 4",
+                               "histogram word pattern averagebytemsb 3",
+                               "histogram word pattern averagebytemsb 2",
                            ])
         elif plot == "hash":
             plot_hashfunction(dumps, benchname, suitename, 
@@ -926,6 +983,7 @@ if __name__ == "__main__":
                         # "BDI",
                         # "bdi-immo",
                         # "thesaurus",
+                        # "shuffle-xorfold",
                         "bit-sampling",
                         # "masked-bit-sampling_8_32",
                         # "masked-bit-sampling_4_16",
@@ -936,20 +994,23 @@ if __name__ == "__main__":
                         # "maxbytemap-shuffle-xorfold", 
                         # "bytemap-shuffle-xorfold-bpc", 
                         # "bytemap-shuffle-xorfold-immo", 
-                        # "sparseshuffledbytemap_8_7",
+                        "sparseshuffledbytemap_8_7",
                         # "sparseshuffledbytemap_8_6",
                         # "sparseshuffledbytemap_8_4",
                         # "sparseshuffledbytemap_4_3",
                         # "sparseshuffledbytemap_4_3-bpc",
                         # "sparseshuffledbytemap_4_2",
-                        "ternarybytemap-shuffle-xorfold",
+                        # "ternarybytemap-shuffle-xorfold",
                         # "lowentropy_8_4",
                         # "lowentropy_8_16(BCD)",
                         # "lowentropy_8_16(BCD)-immo",
                         "EPC word labeling",
-                        "strong word labeling",
+                        # "strong word labeling",
                         "hycomp word labeling",
-                        "semantic word labeling",
+                        # "semantic word labeling",
                         "density word labeling",
                         # "density word labeling bpc",
+                        "average byte msb(4) word labeling",
+                        "average byte msb(3) word labeling",
+                        "average byte msb(2) word labeling",
                         ])

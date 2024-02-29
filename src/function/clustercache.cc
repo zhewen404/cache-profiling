@@ -479,6 +479,46 @@ void create_hashfunctions_density_word_labeling(vector<HashFunction *>& hash_fun
     hash_functions.push_back(se);
     true_hash += 1;
 }
+
+void create_hashfunctions_averagebytemsb_word_labeling_32(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact,
+    int fp_size_in_bits, int line_size)
+{
+    (void) line_size;
+    (void) fp_size_in_bits;
+    true_hash = 0;
+    funct_to_concact = 0;
+    cascade = true;
+
+    AverageByteMSBWordLabelingHash * se = new AverageByteMSBWordLabelingHash(4);
+    hash_functions.push_back(se);
+    true_hash += 1;
+}
+void create_hashfunctions_averagebytemsb_word_labeling_24(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact,
+    int fp_size_in_bits, int line_size)
+{
+    (void) line_size;
+    (void) fp_size_in_bits;
+    true_hash = 0;
+    funct_to_concact = 0;
+    cascade = true;
+
+    AverageByteMSBWordLabelingHash * se = new AverageByteMSBWordLabelingHash(3);
+    hash_functions.push_back(se);
+    true_hash += 1;
+}
+void create_hashfunctions_averagebytemsb_word_labeling_16(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact,
+    int fp_size_in_bits, int line_size)
+{
+    (void) line_size;
+    (void) fp_size_in_bits;
+    true_hash = 0;
+    funct_to_concact = 0;
+    cascade = true;
+
+    AverageByteMSBWordLabelingHash * se = new AverageByteMSBWordLabelingHash(2);
+    hash_functions.push_back(se);
+    true_hash += 1;
+}
 ////////////////////////////////////////////////////////////////
 void create_vanila_bdi(int num_banks, int KB_per_bank, string dir, 
     double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, double &hamming,

@@ -30,10 +30,10 @@
 //     }
 
 
-//     string name = "histogram_word_pattern_density";
+//     string name = "histogram_word_pattern_averagebytemsb_16";
 
 //     vector<double> results;
-//     profiling_x(num_banks, KB_per_bank, dir, only_those_xored, results, &profiling_histogram_word_pattern_density);
+//     profiling_x(num_banks, KB_per_bank, dir, only_those_xored, results, &profiling_histogram_word_pattern_averagebytemsb_16);
 
     
 

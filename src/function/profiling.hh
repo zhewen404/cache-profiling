@@ -18,6 +18,9 @@ void profiling_histogram_word_pattern_strong(int num_banks, int KB_per_bank, str
 void profiling_histogram_word_pattern_hycomp(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &histogram);
 void profiling_histogram_word_pattern_semantic(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &histogram);
 void profiling_histogram_word_pattern_density(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &histogram);
+void profiling_histogram_word_pattern_averagebytemsb_32(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &histogram);
+void profiling_histogram_word_pattern_averagebytemsb_24(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &histogram);
+void profiling_histogram_word_pattern_averagebytemsb_16(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &histogram);
 
 template <class Treg, typename Tpat>
 class WordPatternCacheProfiler
@@ -128,6 +131,20 @@ class DensityWordPatternCacheProfiler : public WordPatternCacheProfiler<DensityW
         void print() const
         {
             printf("DensityWordPatternCacheProfiler\n");
+            m_rec->print();
+        }
+};
+class AverageByteMSBWordPatternCacheProfiler : public WordPatternCacheProfiler<AverageByteMSBWordPatternRecognizer, unsigned>
+{
+    public:
+        AverageByteMSBWordPatternCacheProfiler(const Cache * cache, int num_msbs) : 
+            WordPatternCacheProfiler<AverageByteMSBWordPatternRecognizer, unsigned>(new AverageByteMSBWordPatternRecognizer(num_msbs), cache) {
+        }
+        virtual ~AverageByteMSBWordPatternCacheProfiler() {
+        }
+        void print() const
+        {
+            printf("AverageByteMSBWordPatternCacheProfiler\n");
             m_rec->print();
         }
 };

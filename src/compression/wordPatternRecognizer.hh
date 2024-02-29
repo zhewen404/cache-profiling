@@ -4,6 +4,7 @@
 #include <vector>
 #include <cmath>
 #include <cstring>
+#include <assert.h>
 #include "common/bit/bitvec.hh"
 
 template <typename T>
@@ -295,4 +296,55 @@ class DensityWordPatternRecognizer : public BaseWordPatternRecognizer<DensityWor
         
 };
 
+class AverageByteMSBWordPatternRecognizer : public BaseWordPatternRecognizer<unsigned>
+{
+    public:
+        int m_num_msbs;
+        AverageByteMSBWordPatternRecognizer(int num_msbs) : BaseWordPatternRecognizer<unsigned>(int(pow(2, num_msbs))), m_num_msbs(num_msbs) {
+        }
+
+        ~AverageByteMSBWordPatternRecognizer() {
+        }
+
+        void print() const
+        {
+            printf("AverageByteMSBWordPatternRecognizer, total %d patterns\n", m_num_patterns);
+            // list all patterns
+        }
+
+        unsigned get_word_pattern_type(const u_int8_t* word) const
+        {   
+            // init an array of int of size m_num_msbs for registering count of 1s in each msb
+            int *msb_count = new int[m_num_msbs];
+            memset(msb_count, 0, m_num_msbs * sizeof(int));
+            // for every byte in the word
+            for (int i = 0; i < 8; i++) {
+                // for every bit in the n_num_msb
+                for (int j = 0; j < m_num_msbs; j++) {
+                    int bit_index = 7-j;
+                    if (word[i] & (1 << bit_index)) {
+                        msb_count[j]++;
+                    }
+                }
+            }
+
+            // for every msb, if the count is greater than 4, set the bit to 1
+            unsigned pattern = 0;
+            for (int i = 0; i < m_num_msbs; i++) {
+                int index = m_num_msbs - 1 - i;
+                int weight = int(pow(2, index));
+                if (msb_count[i] >= 4) {
+                    msb_count[i] = 1;
+                    pattern += weight;
+                } else {
+                    msb_count[i] = 0;
+                }
+            }
+            delete [] msb_count;
+            // test to make sure the pattern does not exceed limit
+            assert(pattern < (unsigned)m_num_patterns);
+            return pattern;
+        }
+        
+};
 #endif

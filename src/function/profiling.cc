@@ -429,6 +429,91 @@ void profiling_histogram_word_pattern_density(int num_banks, int KB_per_bank, st
     delete cache;
 }
 
+void profiling_histogram_word_pattern_averagebytemsb_32(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &histogram)
+{
+    (void)only_those_xored;
+
+    int line_size = 64;
+    int assoc = 16;
+    int shift_bank = 0;
+    int shift_set = 0;
+
+    vector<string> filenames_data;
+    vector<string> filenames_addr;
+    fill_string_arrays_data_addr(filenames_data, filenames_addr, dir, num_banks);
+
+    Cache * cache;
+    cache = new Cache(num_banks, KB_per_bank, assoc, line_size, shift_bank, shift_set);
+    cache->populate_lines(filenames_data, filenames_addr);
+
+    AverageByteMSBWordPatternCacheProfiler * cache_profiler;
+    cache_profiler = new AverageByteMSBWordPatternCacheProfiler(cache, 4);
+    vector<int> hist = cache_profiler->profile_cache_word_pattern();
+
+    for (unsigned i = 0; i < hist.size(); i++){
+        histogram.push_back(hist[i]);
+    }
+    delete cache_profiler;
+    hist.clear();
+    delete cache;
+}
+void profiling_histogram_word_pattern_averagebytemsb_24(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &histogram)
+{
+    (void)only_those_xored;
+
+    int line_size = 64;
+    int assoc = 16;
+    int shift_bank = 0;
+    int shift_set = 0;
+
+    vector<string> filenames_data;
+    vector<string> filenames_addr;
+    fill_string_arrays_data_addr(filenames_data, filenames_addr, dir, num_banks);
+
+    Cache * cache;
+    cache = new Cache(num_banks, KB_per_bank, assoc, line_size, shift_bank, shift_set);
+    cache->populate_lines(filenames_data, filenames_addr);
+
+    AverageByteMSBWordPatternCacheProfiler * cache_profiler;
+    cache_profiler = new AverageByteMSBWordPatternCacheProfiler(cache, 3);
+    vector<int> hist = cache_profiler->profile_cache_word_pattern();
+
+    for (unsigned i = 0; i < hist.size(); i++){
+        histogram.push_back(hist[i]);
+    }
+    delete cache_profiler;
+    hist.clear();
+    delete cache;
+}
+void profiling_histogram_word_pattern_averagebytemsb_16(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &histogram)
+{
+    (void)only_those_xored;
+
+    int line_size = 64;
+    int assoc = 16;
+    int shift_bank = 0;
+    int shift_set = 0;
+
+    vector<string> filenames_data;
+    vector<string> filenames_addr;
+    fill_string_arrays_data_addr(filenames_data, filenames_addr, dir, num_banks);
+
+    Cache * cache;
+    cache = new Cache(num_banks, KB_per_bank, assoc, line_size, shift_bank, shift_set);
+    cache->populate_lines(filenames_data, filenames_addr);
+
+    AverageByteMSBWordPatternCacheProfiler * cache_profiler;
+    cache_profiler = new AverageByteMSBWordPatternCacheProfiler(cache, 2);
+    vector<int> hist = cache_profiler->profile_cache_word_pattern();
+
+    for (unsigned i = 0; i < hist.size(); i++){
+        histogram.push_back(hist[i]);
+    }
+    delete cache_profiler;
+    hist.clear();
+    delete cache;
+}
+
 
 
 void profiling_x(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &results, 
