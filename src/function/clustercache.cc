@@ -53,14 +53,14 @@ BPCCompressedXORCache * create_bpccompressedxorcache_from_hashedxorcache(HashXOR
 ////////////////////////////////////////////////////////////////
 
 void create_hashfunctions_bbsxf(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact,
-    int fp_size_in_bits, int line_size)
+    int fp_size_in_bits, int line_size, unsigned defined_seed)
 {
     (void) line_size;
     true_hash = 0;
     funct_to_concact = 0;
     cascade = true;
 
-    ByteBitShuffleHash * bbs = new ByteBitShuffleHash(true);
+    ByteBitShuffleHash * bbs = new ByteBitShuffleHash(true, defined_seed);
     hash_functions.push_back(bbs);
     true_hash += 1;
     XORFoldingHash * x = new XORFoldingHash(fp_size_in_bits);
@@ -68,14 +68,14 @@ void create_hashfunctions_bbsxf(vector<HashFunction *>& hash_functions, int& tru
 }
 
 void create_hashfunctions_fbsxf(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact,
-    int fp_size_in_bits, int line_size)
+    int fp_size_in_bits, int line_size, unsigned defined_seed)
 {
     (void) line_size;
     true_hash = 0;
     funct_to_concact = 0;
     cascade = true;
 
-    FullBitShuffleHash * fbs = new FullBitShuffleHash();
+    FullBitShuffleHash * fbs = new FullBitShuffleHash(defined_seed);
     hash_functions.push_back(fbs);
     true_hash += 1;
     XORFoldingHash * x = new XORFoldingHash(fp_size_in_bits);
@@ -83,73 +83,74 @@ void create_hashfunctions_fbsxf(vector<HashFunction *>& hash_functions, int& tru
 }
 
 void create_hashfunctions_thesaurus(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact,
-    int fp_size_in_bits, int line_size)
+    int fp_size_in_bits, int line_size, unsigned defined_seed)
 {
     true_hash = 0;
     funct_to_concact = 0;
     cascade = true;
 
-    ThesaurusLSHash * the = new ThesaurusLSHash(fp_size_in_bits, line_size);
+    ThesaurusLSHash * the = new ThesaurusLSHash(fp_size_in_bits, line_size, defined_seed);
     hash_functions.push_back(the);
     true_hash += 1;
 }
 
 void create_hashfunctions_bs(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact,
-    int fp_size_in_bits, int line_size)
+    int fp_size_in_bits, int line_size, unsigned defined_seed)
 {
     (void) line_size;
     true_hash = 0;
     funct_to_concact = 0;
     cascade = true;
 
-    BitSamplingLSHash * bs = new BitSamplingLSHash(fp_size_in_bits);
+    BitSamplingLSHash * bs = new BitSamplingLSHash(fp_size_in_bits, defined_seed);
     hash_functions.push_back(bs);
     true_hash += 1;
 }
 
 void maskedbs(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact,
     int fp_size_in_bits, int line_size,
-    int everyNbyte, int bits_to_take)
+    int everyNbyte, int bits_to_take, unsigned defined_seed)
 {
     (void) line_size;
     true_hash = 0;
     funct_to_concact = 0;
     cascade = true;
 
-    MaskedBitSamplingLSHash * bs = new MaskedBitSamplingLSHash(fp_size_in_bits, everyNbyte, bits_to_take);
+    MaskedBitSamplingLSHash * bs = new MaskedBitSamplingLSHash(fp_size_in_bits, everyNbyte, bits_to_take, defined_seed);
     hash_functions.push_back(bs);
     true_hash += 1;
 }
 void create_hashfunctions_maskedbs_8_32(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact,
-    int fp_size_in_bits, int line_size)
+    int fp_size_in_bits, int line_size, unsigned defined_seed)
 {
-    maskedbs(hash_functions, true_hash, cascade, funct_to_concact, fp_size_in_bits, line_size, 8, 32);
+    maskedbs(hash_functions, true_hash, cascade, funct_to_concact, fp_size_in_bits, line_size, 8, 32, defined_seed);
 }
 void create_hashfunctions_maskedbs_8_16(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact,
-    int fp_size_in_bits, int line_size)
+    int fp_size_in_bits, int line_size, unsigned defined_seed)
 {
-    maskedbs(hash_functions, true_hash, cascade, funct_to_concact, fp_size_in_bits, line_size, 8, 16);
+    maskedbs(hash_functions, true_hash, cascade, funct_to_concact, fp_size_in_bits, line_size, 8, 16, defined_seed);
 }
 void create_hashfunctions_maskedbs_8_8(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact,
-    int fp_size_in_bits, int line_size)
+    int fp_size_in_bits, int line_size, unsigned defined_seed)
 {
-    maskedbs(hash_functions, true_hash, cascade, funct_to_concact, fp_size_in_bits, line_size, 8, 8);
+    maskedbs(hash_functions, true_hash, cascade, funct_to_concact, fp_size_in_bits, line_size, 8, 8, defined_seed);
 }
 void create_hashfunctions_maskedbs_4_16(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact,
-    int fp_size_in_bits, int line_size)
+    int fp_size_in_bits, int line_size, unsigned defined_seed)
 {
-    maskedbs(hash_functions, true_hash, cascade, funct_to_concact, fp_size_in_bits, line_size, 4, 16);
+    maskedbs(hash_functions, true_hash, cascade, funct_to_concact, fp_size_in_bits, line_size, 4, 16, defined_seed);
 }
 void create_hashfunctions_maskedbs_4_8(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact,
-    int fp_size_in_bits, int line_size)
+    int fp_size_in_bits, int line_size, unsigned defined_seed)
 {
-    maskedbs(hash_functions, true_hash, cascade, funct_to_concact, fp_size_in_bits, line_size, 4, 8);
+    maskedbs(hash_functions, true_hash, cascade, funct_to_concact, fp_size_in_bits, line_size, 4, 8, defined_seed);
 }
 
 void create_hashfunctions_bytemap(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact,
-    int fp_size_in_bits, int line_size)
+    int fp_size_in_bits, int line_size, unsigned defined_seed)
 {
     (void) line_size;
+    (void) defined_seed;
     true_hash = 0;
     funct_to_concact = 0;
     cascade = true;
@@ -163,7 +164,7 @@ void create_hashfunctions_bytemap(vector<HashFunction *>& hash_functions, int& t
 
 void sparsebytemap(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact,
     int fp_size_in_bits, int line_size,
-    bool shuffle, int everyNByte, int bytes_to_take)
+    bool shuffle, int everyNByte, int bytes_to_take, unsigned defined_seed)
 {
     (void) line_size;
     true_hash = 0;
@@ -174,7 +175,7 @@ void sparsebytemap(vector<HashFunction *>& hash_functions, int& true_hash, bool&
     hash_functions.push_back(bm);
     true_hash += 1;
     if (shuffle) {
-        FullBitShuffleHash * fbs = new FullBitShuffleHash();
+        FullBitShuffleHash * fbs = new FullBitShuffleHash(defined_seed);
         hash_functions.push_back(fbs);
         true_hash += 1;
     }
@@ -183,76 +184,77 @@ void sparsebytemap(vector<HashFunction *>& hash_functions, int& true_hash, bool&
 
 }
 void create_hashfunctions_sparsebytemap_2_1(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact,
-    int fp_size_in_bits, int line_size)
+    int fp_size_in_bits, int line_size, unsigned defined_seed)
 {
     (void) line_size;
-    sparsebytemap(hash_functions, true_hash, cascade, funct_to_concact, fp_size_in_bits, line_size, false, 2, 1);
+    sparsebytemap(hash_functions, true_hash, cascade, funct_to_concact, fp_size_in_bits, line_size, false, 2, 1, defined_seed);
 }
 void create_hashfunctions_sparseshuffledbytemap_2_1(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact,
-    int fp_size_in_bits, int line_size)
+    int fp_size_in_bits, int line_size, unsigned defined_seed)
 {
     (void) line_size;
-    sparsebytemap(hash_functions, true_hash, cascade, funct_to_concact, fp_size_in_bits, line_size, true, 4, 1);
+    sparsebytemap(hash_functions, true_hash, cascade, funct_to_concact, fp_size_in_bits, line_size, true, 4, 1, defined_seed);
 }
 void create_hashfunctions_sparsebytemap_4_1(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact,
-    int fp_size_in_bits, int line_size)
+    int fp_size_in_bits, int line_size, unsigned defined_seed)
 {
     (void) line_size;
-    sparsebytemap(hash_functions, true_hash, cascade, funct_to_concact, fp_size_in_bits, line_size, false, 4, 1);
+    sparsebytemap(hash_functions, true_hash, cascade, funct_to_concact, fp_size_in_bits, line_size, false, 4, 1, defined_seed);
 }
 void create_hashfunctions_sparseshuffledbytemap_4_1(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact,
-    int fp_size_in_bits, int line_size)
+    int fp_size_in_bits, int line_size, unsigned defined_seed)
 {
     (void) line_size;
-    sparsebytemap(hash_functions, true_hash, cascade, funct_to_concact, fp_size_in_bits, line_size, true, 4, 1);
+    sparsebytemap(hash_functions, true_hash, cascade, funct_to_concact, fp_size_in_bits, line_size, true, 4, 1, defined_seed);
 }
 void create_hashfunctions_sparsebytemap_8_1(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact,
-    int fp_size_in_bits, int line_size)
+    int fp_size_in_bits, int line_size, unsigned defined_seed)
 {
     (void) line_size;
-    sparsebytemap(hash_functions, true_hash, cascade, funct_to_concact, fp_size_in_bits, line_size, false, 8, 1);
+    sparsebytemap(hash_functions, true_hash, cascade, funct_to_concact, fp_size_in_bits, line_size, false, 8, 1, defined_seed);
 }
 void create_hashfunctions_sparseshuffledbytemap_8_1(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact,
-    int fp_size_in_bits, int line_size)
+    int fp_size_in_bits, int line_size, unsigned defined_seed)
 {
     (void) line_size;
-    sparsebytemap(hash_functions, true_hash, cascade, funct_to_concact, fp_size_in_bits, line_size, true, 8, 1);
+    sparsebytemap(hash_functions, true_hash, cascade, funct_to_concact, fp_size_in_bits, line_size, true, 8, 1, defined_seed);
 }
 void create_hashfunctions_sparseshuffledbytemap_8_7(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact,
-    int fp_size_in_bits, int line_size)
+    int fp_size_in_bits, int line_size, unsigned defined_seed)
 {
     (void) line_size;
-    sparsebytemap(hash_functions, true_hash, cascade, funct_to_concact, fp_size_in_bits, line_size, true, 8, 7);
+    sparsebytemap(hash_functions, true_hash, cascade, funct_to_concact, fp_size_in_bits, line_size, true, 8, 7, defined_seed);
 }
 void create_hashfunctions_sparseshuffledbytemap_8_6(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact,
-    int fp_size_in_bits, int line_size)
+    int fp_size_in_bits, int line_size, unsigned defined_seed)
 {
     (void) line_size;
-    sparsebytemap(hash_functions, true_hash, cascade, funct_to_concact, fp_size_in_bits, line_size, true, 8, 6);
+    sparsebytemap(hash_functions, true_hash, cascade, funct_to_concact, fp_size_in_bits, line_size, true, 8, 6, defined_seed);
 }
 void create_hashfunctions_sparseshuffledbytemap_8_4(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact,
-    int fp_size_in_bits, int line_size)
+    int fp_size_in_bits, int line_size, unsigned defined_seed)
 {
     (void) line_size;
-    sparsebytemap(hash_functions, true_hash, cascade, funct_to_concact, fp_size_in_bits, line_size, true, 8, 4);
+    sparsebytemap(hash_functions, true_hash, cascade, funct_to_concact, fp_size_in_bits, line_size, true, 8, 4, defined_seed);
 }
 void create_hashfunctions_sparseshuffledbytemap_4_3(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact,
-    int fp_size_in_bits, int line_size)
+    int fp_size_in_bits, int line_size, unsigned defined_seed)
 {
     (void) line_size;
-    sparsebytemap(hash_functions, true_hash, cascade, funct_to_concact, fp_size_in_bits, line_size, true, 4, 3);
+    sparsebytemap(hash_functions, true_hash, cascade, funct_to_concact, fp_size_in_bits, line_size, true, 4, 3, defined_seed);
 }
 void create_hashfunctions_sparseshuffledbytemap_4_2(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact,
-    int fp_size_in_bits, int line_size)
+    int fp_size_in_bits, int line_size, unsigned defined_seed)
 {
     (void) line_size;
-    sparsebytemap(hash_functions, true_hash, cascade, funct_to_concact, fp_size_in_bits, line_size, true, 4, 2);
+    sparsebytemap(hash_functions, true_hash, cascade, funct_to_concact, fp_size_in_bits, line_size, true, 4, 2, defined_seed);
 }
 
 void create_hashfunctions_2bytemap(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact,
-    int fp_size_in_bits, int line_size)
+    int fp_size_in_bits, int line_size, unsigned defined_seed)
 {
     (void) line_size;
+    (void) defined_seed;
     true_hash = 0;
     funct_to_concact = 0;
     cascade = true;
@@ -264,9 +266,10 @@ void create_hashfunctions_2bytemap(vector<HashFunction *>& hash_functions, int& 
     hash_functions.push_back(x);
 }
 void create_hashfunctions_4bytemap(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact,
-    int fp_size_in_bits, int line_size)
+    int fp_size_in_bits, int line_size, unsigned defined_seed)
 {
     (void) line_size;
+    (void) defined_seed;
     true_hash = 0;
     funct_to_concact = 0;
     cascade = true;
@@ -279,9 +282,10 @@ void create_hashfunctions_4bytemap(vector<HashFunction *>& hash_functions, int& 
 }
 
 void create_hashfunctions_tbytemap(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact,
-    int fp_size_in_bits, int line_size)
+    int fp_size_in_bits, int line_size, unsigned defined_seed)
 {
     (void) line_size;
+    (void) defined_seed;
     true_hash = 0;
     funct_to_concact = 0;
     cascade = true;
@@ -293,14 +297,14 @@ void create_hashfunctions_tbytemap(vector<HashFunction *>& hash_functions, int& 
     hash_functions.push_back(x);
 }
 void create_hashfunctions_shuffledtbytemap(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact,
-    int fp_size_in_bits, int line_size)
+    int fp_size_in_bits, int line_size, unsigned defined_seed)
 {
     (void) line_size;
     true_hash = 0;
     funct_to_concact = 0;
     cascade = true;
 
-    ShuffledTernaryByteMapHash * tbm = new ShuffledTernaryByteMapHash();
+    ShuffledTernaryByteMapHash * tbm = new ShuffledTernaryByteMapHash(defined_seed);
     hash_functions.push_back(tbm);
     true_hash += 1;
     XORFoldingHash * x = new XORFoldingHash(fp_size_in_bits);
@@ -310,7 +314,7 @@ void create_hashfunctions_shuffledtbytemap(vector<HashFunction *>& hash_function
 
 
 void create_hashfunctions_shuffledbytemap(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact,
-    int fp_size_in_bits, int line_size)
+    int fp_size_in_bits, int line_size, unsigned defined_seed)
 {
     (void) line_size;
     true_hash = 0;
@@ -320,7 +324,7 @@ void create_hashfunctions_shuffledbytemap(vector<HashFunction *>& hash_functions
     ByteMapHash * bm = new ByteMapHash();
     hash_functions.push_back(bm);
     true_hash += 1;
-    FullBitShuffleHash * fbs = new FullBitShuffleHash();
+    FullBitShuffleHash * fbs = new FullBitShuffleHash(defined_seed);
     hash_functions.push_back(fbs);
     true_hash += 1;
     XORFoldingHash * x = new XORFoldingHash(fp_size_in_bits);
@@ -328,7 +332,7 @@ void create_hashfunctions_shuffledbytemap(vector<HashFunction *>& hash_functions
 }
 
 void create_hashfunctions_shuffledmaxbytemap(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact,
-    int fp_size_in_bits, int line_size)
+    int fp_size_in_bits, int line_size, unsigned defined_seed)
 {
     (void) line_size;
     true_hash = 0;
@@ -338,7 +342,7 @@ void create_hashfunctions_shuffledmaxbytemap(vector<HashFunction *>& hash_functi
     MaxByteMapHash * bm = new MaxByteMapHash();
     hash_functions.push_back(bm);
     true_hash += 1;
-    FullBitShuffleHash * fbs = new FullBitShuffleHash();
+    FullBitShuffleHash * fbs = new FullBitShuffleHash(defined_seed);
     hash_functions.push_back(fbs);
     true_hash += 1;
     XORFoldingHash * x = new XORFoldingHash(fp_size_in_bits);
@@ -347,7 +351,7 @@ void create_hashfunctions_shuffledmaxbytemap(vector<HashFunction *>& hash_functi
 
 void lowentropy(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact,
     int fp_size_in_bits, int line_size,
-    int seg_size, int bits_to_take)
+    int seg_size, int bits_to_take, unsigned defined_seed)
 {
     true_hash = 0;
     funct_to_concact = 0;
@@ -366,60 +370,61 @@ void lowentropy(vector<HashFunction *>& hash_functions, int& true_hash, bool& ca
             true_hash++;
         }
     }
-    hash_functions.push_back(new FullBitShuffleHash()); // with shuffling
+    hash_functions.push_back(new FullBitShuffleHash(defined_seed)); // with shuffling
     true_hash++;
     hash_functions.push_back(new XORFoldingHash(fp_size_in_bits));
 }
 
 void create_hashfunctions_lowentropy_2_8(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact,
-    int fp_size_in_bits, int line_size)
+    int fp_size_in_bits, int line_size, unsigned defined_seed)
 {
-    lowentropy(hash_functions, true_hash, cascade, funct_to_concact, fp_size_in_bits, line_size, 2, 8);
+    lowentropy(hash_functions, true_hash, cascade, funct_to_concact, fp_size_in_bits, line_size, 2, 8, defined_seed);
 }
 void create_hashfunctions_lowentropy_2_4(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact,
-    int fp_size_in_bits, int line_size)
+    int fp_size_in_bits, int line_size, unsigned defined_seed)
 {
-    lowentropy(hash_functions, true_hash, cascade, funct_to_concact, fp_size_in_bits, line_size, 2, 4);
+    lowentropy(hash_functions, true_hash, cascade, funct_to_concact, fp_size_in_bits, line_size, 2, 4, defined_seed);
 }
 void create_hashfunctions_lowentropy_2_2(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact,
-    int fp_size_in_bits, int line_size)
+    int fp_size_in_bits, int line_size, unsigned defined_seed)
 {
-    lowentropy(hash_functions, true_hash, cascade, funct_to_concact, fp_size_in_bits, line_size, 2, 2);
+    lowentropy(hash_functions, true_hash, cascade, funct_to_concact, fp_size_in_bits, line_size, 2, 2, defined_seed);
 }
 
 void create_hashfunctions_lowentropy_4_8(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact,
-    int fp_size_in_bits, int line_size)
+    int fp_size_in_bits, int line_size, unsigned defined_seed)
 {
-    lowentropy(hash_functions, true_hash, cascade, funct_to_concact, fp_size_in_bits, line_size, 4, 8);
+    lowentropy(hash_functions, true_hash, cascade, funct_to_concact, fp_size_in_bits, line_size, 4, 8, defined_seed);
 }
 void create_hashfunctions_lowentropy_4_4(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact,
-    int fp_size_in_bits, int line_size)
+    int fp_size_in_bits, int line_size, unsigned defined_seed)
 {
-    lowentropy(hash_functions, true_hash, cascade, funct_to_concact, fp_size_in_bits, line_size, 4, 4);
+    lowentropy(hash_functions, true_hash, cascade, funct_to_concact, fp_size_in_bits, line_size, 4, 4, defined_seed);
 }
 
 
 void create_hashfunctions_lowentropy_8_16(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact,
-    int fp_size_in_bits, int line_size)
+    int fp_size_in_bits, int line_size, unsigned defined_seed)
 {
-    lowentropy(hash_functions, true_hash, cascade, funct_to_concact, fp_size_in_bits, line_size, 8, 16);
+    lowentropy(hash_functions, true_hash, cascade, funct_to_concact, fp_size_in_bits, line_size, 8, 16, defined_seed);
 }
 void create_hashfunctions_lowentropy_8_8(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact,
-    int fp_size_in_bits, int line_size)
+    int fp_size_in_bits, int line_size, unsigned defined_seed)
 {
-    lowentropy(hash_functions, true_hash, cascade, funct_to_concact, fp_size_in_bits, line_size, 8, 8);
+    lowentropy(hash_functions, true_hash, cascade, funct_to_concact, fp_size_in_bits, line_size, 8, 8, defined_seed);
 }
 void create_hashfunctions_lowentropy_8_4(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact,
-    int fp_size_in_bits, int line_size)
+    int fp_size_in_bits, int line_size, unsigned defined_seed)
 {
-    lowentropy(hash_functions, true_hash, cascade, funct_to_concact, fp_size_in_bits, line_size, 8, 4);
+    lowentropy(hash_functions, true_hash, cascade, funct_to_concact, fp_size_in_bits, line_size, 8, 4, defined_seed);
 }
 
 void create_hashfunctions_epc_word_labeling(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact,
-    int fp_size_in_bits, int line_size)
+    int fp_size_in_bits, int line_size, unsigned defined_seed)
 {
     (void) line_size;
     (void) fp_size_in_bits;
+    (void) defined_seed;
     true_hash = 0;
     funct_to_concact = 0;
     cascade = true;
@@ -429,10 +434,11 @@ void create_hashfunctions_epc_word_labeling(vector<HashFunction *>& hash_functio
     true_hash += 1;
 }
 void create_hashfunctions_strong_word_labeling(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact,
-    int fp_size_in_bits, int line_size)
+    int fp_size_in_bits, int line_size, unsigned defined_seed)
 {
     (void) line_size;
     (void) fp_size_in_bits;
+    (void) defined_seed;
     true_hash = 0;
     funct_to_concact = 0;
     cascade = true;
@@ -442,10 +448,11 @@ void create_hashfunctions_strong_word_labeling(vector<HashFunction *>& hash_func
     true_hash += 1;
 }
 void create_hashfunctions_hycomp_word_labeling(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact,
-    int fp_size_in_bits, int line_size)
+    int fp_size_in_bits, int line_size, unsigned defined_seed)
 {
     (void) line_size;
     (void) fp_size_in_bits;
+    (void) defined_seed;
     true_hash = 0;
     funct_to_concact = 0;
     cascade = true;
@@ -455,10 +462,11 @@ void create_hashfunctions_hycomp_word_labeling(vector<HashFunction *>& hash_func
     true_hash += 1;
 }
 void create_hashfunctions_semantic_word_labeling(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact,
-    int fp_size_in_bits, int line_size)
+    int fp_size_in_bits, int line_size, unsigned defined_seed)
 {
     (void) line_size;
     (void) fp_size_in_bits;
+    (void) defined_seed;
     true_hash = 0;
     funct_to_concact = 0;
     cascade = true;
@@ -468,10 +476,11 @@ void create_hashfunctions_semantic_word_labeling(vector<HashFunction *>& hash_fu
     true_hash += 1;
 }
 void create_hashfunctions_density_word_labeling(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact,
-    int fp_size_in_bits, int line_size)
+    int fp_size_in_bits, int line_size, unsigned defined_seed)
 {
     (void) line_size;
     (void) fp_size_in_bits;
+    (void) defined_seed;
     true_hash = 0;
     funct_to_concact = 0;
     cascade = true;
@@ -482,10 +491,11 @@ void create_hashfunctions_density_word_labeling(vector<HashFunction *>& hash_fun
 }
 
 void create_hashfunctions_averagebytemsb_word_labeling_32(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact,
-    int fp_size_in_bits, int line_size)
+    int fp_size_in_bits, int line_size, unsigned defined_seed)
 {
     (void) line_size;
     (void) fp_size_in_bits;
+    (void) defined_seed;
     true_hash = 0;
     funct_to_concact = 0;
     cascade = true;
@@ -495,10 +505,11 @@ void create_hashfunctions_averagebytemsb_word_labeling_32(vector<HashFunction *>
     true_hash += 1;
 }
 void create_hashfunctions_averagebytemsb_word_labeling_24(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact,
-    int fp_size_in_bits, int line_size)
+    int fp_size_in_bits, int line_size, unsigned defined_seed)
 {
     (void) line_size;
     (void) fp_size_in_bits;
+    (void) defined_seed;
     true_hash = 0;
     funct_to_concact = 0;
     cascade = true;
@@ -508,10 +519,11 @@ void create_hashfunctions_averagebytemsb_word_labeling_24(vector<HashFunction *>
     true_hash += 1;
 }
 void create_hashfunctions_averagebytemsb_word_labeling_16(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact,
-    int fp_size_in_bits, int line_size)
+    int fp_size_in_bits, int line_size, unsigned defined_seed)
 {
     (void) line_size;
     (void) fp_size_in_bits;
+    (void) defined_seed;
     true_hash = 0;
     funct_to_concact = 0;
     cascade = true;
@@ -601,7 +613,7 @@ void map_all(vector<unsigned> defined_seeds, int num_banks, int KB_per_bank, str
     vector <double> &crs_max, vector <double> &ers_max, vector <double> &frs_max, vector <double> &intras_max, vector <double> &hammings_max, 
     vector <double> &crs_min, vector <double> &ers_min, vector <double> &frs_min, vector <double> &intras_min, vector <double> &hammings_min, 
     vector<double> fbs, bool use_xorcache, bool use_little_e, bool allow_immo, intracomp_t type,
-    void (*create_hash_functions_x)(vector<HashFunction *> &, int &, bool &, int &, int, int))
+    void (*create_hash_functions_x)(vector<HashFunction *> &, int &, bool &, int &, int, int, unsigned))
 {
     vector<double> crs_temp, ers_temp, frs_temp, intras_temp, hammings_temp;
 
@@ -663,7 +675,7 @@ void map_all(vector<unsigned> defined_seeds, int num_banks, int KB_per_bank, str
 void map_x(unsigned defined_seed, int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, 
     double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, double &hamming, 
     bool use_xorcache, bool use_little_e, bool allow_immo, intracomp_t type,
-    void (*create_hash_functions_x)(vector<HashFunction *> &, int &, bool &, int &, int, int)
+    void (*create_hash_functions_x)(vector<HashFunction *> &, int &, bool &, int &, int, int, unsigned)
     )
 {
     assert(use_xorcache);
@@ -677,7 +689,7 @@ void map_x(unsigned defined_seed, int num_banks, int KB_per_bank, string dir, in
     int funct_to_concact = 0;
     bool cascade = true;
     vector<HashFunction *> hash_functions;
-    create_hash_functions_x(hash_functions, true_hash, cascade, funct_to_concact, fp_size_in_bits, line_size);
+    create_hash_functions_x(hash_functions, true_hash, cascade, funct_to_concact, fp_size_in_bits, line_size, defined_seed);
 
     ClusteredCache *cache = create_clustered_cache(
         num_banks, KB_per_bank, assoc, line_size, shift_bank, shift_set, fp_size_in_bits, 

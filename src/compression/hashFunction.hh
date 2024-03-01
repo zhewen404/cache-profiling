@@ -42,10 +42,7 @@ class HashFunction
 class FullBitShuffleHash : public HashFunction
 {
     public:
-    FullBitShuffleHash() : HashFunction() 
-    {
-    }
-
+    // pass in seed explicitly
     FullBitShuffleHash(unsigned seed) : HashFunction(seed) 
     {
     }
@@ -70,11 +67,6 @@ class FullBitShuffleHash : public HashFunction
 class ByteBitShuffleHash : public HashFunction
 {
     public:
-    ByteBitShuffleHash(bool use_same_seed_for_all_byte) : HashFunction() 
-    {
-        m_use_same_seed_for_all_bytes = use_same_seed_for_all_byte;
-    }
-
     ByteBitShuffleHash(bool use_same_seed_for_all_byte, unsigned seed) : HashFunction(seed) 
     {
         m_use_same_seed_for_all_bytes = use_same_seed_for_all_byte;
@@ -144,12 +136,7 @@ class XORFoldingHash : public HashFunction
 class ThesaurusLSHash : public HashFunction
 {
     public:
-    ThesaurusLSHash(int fingerprint_size_bit, int data_size) : HashFunction() 
-    {
-        m_fingerprint_size_bit = fingerprint_size_bit;
-        m_data_size = data_size;
-        gen_lsh_matrix(data_size);
-    }
+    // pass in seed explicitly
     ThesaurusLSHash(int fingerprint_size_bit, int data_size, unsigned seed) : HashFunction(seed) 
     {
         m_fingerprint_size_bit = fingerprint_size_bit;
@@ -225,10 +212,6 @@ class ThesaurusLSHash : public HashFunction
 class BitSamplingLSHash : public HashFunction
 {
     public:
-    BitSamplingLSHash(int fingerprint_size_bit) : HashFunction() 
-    {
-        m_fingerprint_size_bit = fingerprint_size_bit;
-    }
     BitSamplingLSHash(int fingerprint_size_bit, unsigned seed) : HashFunction(seed) 
     {
         m_fingerprint_size_bit = fingerprint_size_bit;
@@ -265,12 +248,6 @@ class MaskedBitSamplingLSHash : public HashFunction
     int m_everyNbyte;
     int m_bits_to_take;
 
-    MaskedBitSamplingLSHash(int fingerprint_size_bit, int everyNbyte, int bits_to_take) : HashFunction() 
-    {
-        m_fingerprint_size_bit = fingerprint_size_bit;
-        m_everyNbyte = everyNbyte;
-        m_bits_to_take = bits_to_take;
-    }
     MaskedBitSamplingLSHash(int fingerprint_size_bit, int everyNbyte, int bits_to_take, unsigned seed) : HashFunction(seed) 
     {
         m_fingerprint_size_bit = fingerprint_size_bit;
@@ -487,9 +464,7 @@ class TernaryByteMapHash : public HashFunction
 class ShuffledTernaryByteMapHash : public HashFunction
 {
     public:
-    ShuffledTernaryByteMapHash() : HashFunction() 
-    {
-    }
+    // pass in seed explicitly
     ShuffledTernaryByteMapHash(unsigned seed) : HashFunction(seed) 
     {
     }
@@ -601,6 +576,7 @@ class BitSelectionHash : public HashFunction
     int m_index;
 
 };
+
 template <class T>
 class BaseWordLabelingHash : public HashFunction
 {

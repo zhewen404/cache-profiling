@@ -53,7 +53,7 @@ def launch(dir, launch_flag, num_banks=None, kb_per_bank=None):
     print(f"Launching {cmd}")
     os.system(cmd)
 
-def plot_hashfunction(dumps, benchname, suitename, schemes_to_plot=None, plot_even_only=False, plot_errorbar=True):
+def plot_hashfunction(dumps, benchname, suitename, schemes_to_plot=None, plot_even_only=False, plot_errorbar=True, plot_final=False):
     hashSchemeMaps = HashSchemeMaps(schemes_to_plot)
 
     num_points = 0
@@ -65,7 +65,7 @@ def plot_hashfunction(dumps, benchname, suitename, schemes_to_plot=None, plot_ev
             file_path = f"{d}crss-{scheme_name}.txt"
             with open(file_path, "r") as file:
                 lines = file.readlines()
-                assert len(lines) == 3
+                assert len(lines) == 3, print(f"len(lines) = {len(lines)}")
                 crs_arr = [hashSchemeMaps.crs_schemes, hashSchemeMaps.crs_max_schemes, hashSchemeMaps.crs_min_schemes]
                 for i in range(3):
                     l = lines[i]
@@ -326,7 +326,10 @@ def plot_hashfunction(dumps, benchname, suitename, schemes_to_plot=None, plot_ev
     import plotly.io as pio
     pio.kaleido.scope.mathjax = None
 
-    fig = sp.make_subplots(rows=1, cols=5, 
+    if plot_final: col_ct = 2
+    else: col_ct = 5
+
+    fig = sp.make_subplots(rows=1, cols=col_ct, 
                         #    subplot_titles=("Compression Ratio", "Entropy Reduction", "False Positive Rate"),
                            shared_yaxes=False,
                            horizontal_spacing=0.05,
@@ -368,14 +371,14 @@ def plot_hashfunction(dumps, benchname, suitename, schemes_to_plot=None, plot_ev
                             ),
                     row=1, col=1)
             i += 1
-    fig.update_yaxes(title="inter comp. ratio", row=1, col=1)
+    fig.update_yaxes(title="Inter comp. ratio", row=1, col=1)
     
     i=0
-    for i in range(len(ers_scheme_vs_avg.items())):
-            scheme = list(ers_scheme_vs_avg.keys())[i]
-            avg_ = list(ers_scheme_vs_avg.values())
-            max_ = list(ers_max_scheme_vs_avg.values())
-            min_ = list(ers_min_scheme_vs_avg.values())
+    for i in range(len(intras_scheme_vs_avg.items())):
+            scheme = list(intras_scheme_vs_avg.keys())[i]
+            avg_ = list(intras_scheme_vs_avg.values())
+            max_ = list(intras_max_scheme_vs_avg.values())
+            min_ = list(intras_min_scheme_vs_avg.values())
 
             fig.add_trace(
                 go.Scatter(x=xaxis, y=avg_[i],
@@ -406,121 +409,122 @@ def plot_hashfunction(dumps, benchname, suitename, schemes_to_plot=None, plot_ev
                             ),
                     row=1, col=2)
             i += 1
-    fig.update_yaxes(title="entropy reduction", row=1, col=2, title_standoff = 0)
+    fig.update_yaxes(title="Intra comp. ratio", row=1, col=2, title_standoff = 0)
+
+    if not plot_final:
+        i=0
+        for i in range(len(ers_scheme_vs_avg.items())):
+                scheme = list(ers_scheme_vs_avg.keys())[i]
+                avg_ = list(ers_scheme_vs_avg.values())
+                max_ = list(ers_max_scheme_vs_avg.values())
+                min_ = list(ers_min_scheme_vs_avg.values())
+
+                fig.add_trace(
+                    go.Scatter(x=xaxis, y=avg_[i],
+                            mode='markers+lines',
+                            name=scheme,
+                            showlegend=False,
+                            legendgroup=scheme,
+                            line=dict(color=color_sequence[i]), 
+                            ),
+                    row=1, col=4)
+                
+                if plot_errorbar:
+                    fig.add_trace(
+                        go.Scatter(x=xaxis, y=max_[i],
+                                mode='lines',
+                                showlegend=False,
+                                legendgroup=scheme,
+                                line=dict(color=color_sequence[i], width=0), 
+                                ),
+                        row=1, col=4)
+                    fig.add_trace(
+                        go.Scatter(x=xaxis, y=min_[i],
+                                mode='lines',
+                                showlegend=False,
+                                fill='tonexty',
+                                legendgroup=scheme,
+                                line=dict(color=color_sequence[i], width=0), 
+                                ),
+                        row=1, col=4)
+                i += 1
+        fig.update_yaxes(title="entropy reduction", row=1, col=4, title_standoff = 0)
     
-    i=0
-    for i in range(len(frs_scheme_vs_avg.items())):
-            scheme = list(frs_scheme_vs_avg.keys())[i]
-            avg_ = list(frs_scheme_vs_avg.values())
-            max_ = list(frs_max_scheme_vs_avg.values())
-            min_ = list(frs_min_scheme_vs_avg.values())
+        i=0
+        for i in range(len(frs_scheme_vs_avg.items())):
+                scheme = list(frs_scheme_vs_avg.keys())[i]
+                avg_ = list(frs_scheme_vs_avg.values())
+                max_ = list(frs_max_scheme_vs_avg.values())
+                min_ = list(frs_min_scheme_vs_avg.values())
 
-            fig.add_trace(
-                go.Scatter(x=xaxis, y=avg_[i],
-                        mode='markers+lines',
-                        name=scheme,
-                        showlegend=False,
-                        legendgroup=scheme,
-                        line=dict(color=color_sequence[i]), 
-                        ),
-                row=1, col=3)
-            
-            if plot_errorbar:
                 fig.add_trace(
-                    go.Scatter(x=xaxis, y=max_[i],
-                            mode='lines',
+                    go.Scatter(x=xaxis, y=avg_[i],
+                            mode='markers+lines',
+                            name=scheme,
                             showlegend=False,
                             legendgroup=scheme,
-                            line=dict(color=color_sequence[i], width=0), 
+                            line=dict(color=color_sequence[i]), 
                             ),
                     row=1, col=3)
-                fig.add_trace(
-                    go.Scatter(x=xaxis, y=min_[i],
-                            mode='lines',
-                            showlegend=False,
-                            fill='tonexty',
-                            legendgroup=scheme,
-                            line=dict(color=color_sequence[i], width=0), 
-                            ),
-                    row=1, col=3)
-            i += 1
-    fig.update_yaxes(title="false positive rate", row=1, col=3, title_standoff = 0)
+                
+                if plot_errorbar:
+                    fig.add_trace(
+                        go.Scatter(x=xaxis, y=max_[i],
+                                mode='lines',
+                                showlegend=False,
+                                legendgroup=scheme,
+                                line=dict(color=color_sequence[i], width=0), 
+                                ),
+                        row=1, col=3)
+                    fig.add_trace(
+                        go.Scatter(x=xaxis, y=min_[i],
+                                mode='lines',
+                                showlegend=False,
+                                fill='tonexty',
+                                legendgroup=scheme,
+                                line=dict(color=color_sequence[i], width=0), 
+                                ),
+                        row=1, col=3)
+                i += 1
+        fig.update_yaxes(title="false positive rate", row=1, col=3, title_standoff = 0)
 
-    i=0
-    for i in range(len(intras_scheme_vs_avg.items())):
-            scheme = list(intras_scheme_vs_avg.keys())[i]
-            avg_ = list(intras_scheme_vs_avg.values())
-            max_ = list(intras_max_scheme_vs_avg.values())
-            min_ = list(intras_min_scheme_vs_avg.values())
+        i=0
+        for i in range(len(hammings_scheme_vs_avg.items())):
+                scheme = list(hammings_scheme_vs_avg.keys())[i]
+                avg_ = list(hammings_scheme_vs_avg.values())
+                max_ = list(hammings_max_scheme_vs_avg.values())
+                min_ = list(hammings_min_scheme_vs_avg.values())
 
-            fig.add_trace(
-                go.Scatter(x=xaxis, y=avg_[i],
-                        mode='markers+lines',
-                        name=scheme,
-                        showlegend=False,
-                        legendgroup=scheme,
-                        line=dict(color=color_sequence[i]), 
-                        ),
-                row=1, col=4)
-            
-            if plot_errorbar:
                 fig.add_trace(
-                    go.Scatter(x=xaxis, y=max_[i],
-                            mode='lines',
-                            showlegend=False,
-                            legendgroup=scheme,
-                            line=dict(color=color_sequence[i], width=0), 
-                            ),
-                    row=1, col=4)
-                fig.add_trace(
-                    go.Scatter(x=xaxis, y=min_[i],
-                            mode='lines',
-                            showlegend=False,
-                            fill='tonexty',
-                            legendgroup=scheme,
-                            line=dict(color=color_sequence[i], width=0), 
-                            ),
-                    row=1, col=4)
-            i += 1
-    fig.update_yaxes(title="intra comp. ratio", row=1, col=4, title_standoff = 0)
-
-    i=0
-    for i in range(len(hammings_scheme_vs_avg.items())):
-            scheme = list(hammings_scheme_vs_avg.keys())[i]
-            avg_ = list(hammings_scheme_vs_avg.values())
-            max_ = list(hammings_max_scheme_vs_avg.values())
-            min_ = list(hammings_min_scheme_vs_avg.values())
-
-            fig.add_trace(
-                go.Scatter(x=xaxis, y=avg_[i],
-                        mode='markers+lines',
-                        name=scheme,
-                        showlegend=False,
-                        legendgroup=scheme,
-                        line=dict(color=color_sequence[i]), 
-                        ),
-                row=1, col=5)
-            
-            if plot_errorbar:
-                fig.add_trace(
-                    go.Scatter(x=xaxis, y=max_[i],
-                            mode='lines',
+                    go.Scatter(x=xaxis, y=avg_[i],
+                            mode='markers+lines',
+                            name=scheme,
                             showlegend=False,
                             legendgroup=scheme,
-                            line=dict(color=color_sequence[i], width=0), 
+                            line=dict(color=color_sequence[i]), 
                             ),
                     row=1, col=5)
-                fig.add_trace(
-                    go.Scatter(x=xaxis, y=min_[i],
-                            mode='lines',
-                            showlegend=False,
-                            fill='tonexty',
-                            legendgroup=scheme,
-                            line=dict(color=color_sequence[i], width=0), 
-                            ),
-                    row=1, col=5)
-            i += 1
-    fig.update_yaxes(title="hamming distance", row=1, col=5, title_standoff = 0)
+                
+                if plot_errorbar:
+                    fig.add_trace(
+                        go.Scatter(x=xaxis, y=max_[i],
+                                mode='lines',
+                                showlegend=False,
+                                legendgroup=scheme,
+                                line=dict(color=color_sequence[i], width=0), 
+                                ),
+                        row=1, col=5)
+                    fig.add_trace(
+                        go.Scatter(x=xaxis, y=min_[i],
+                                mode='lines',
+                                showlegend=False,
+                                fill='tonexty',
+                                legendgroup=scheme,
+                                line=dict(color=color_sequence[i], width=0), 
+                                ),
+                        row=1, col=5)
+                i += 1
+        fig.update_yaxes(title="hamming distance", row=1, col=5, title_standoff = 0)
 
 
     dpi = 300
@@ -530,16 +534,21 @@ def plot_hashfunction(dumps, benchname, suitename, schemes_to_plot=None, plot_ev
                  ticklen=0,  # adjust length of the tick = distance from axis
                  )
     # make the legend horizontal at the bottom
-    fig.update_layout(legend=dict(
+    fig.update_layout(
+        legend=dict(
         orientation="h",
         yanchor="bottom",
         y=-0.4,
         xanchor="right",
         x=1
     ))
+
+    if plot_final: width = w
+    else: width = 2*w
+
     fig.update_layout(
         template="plotly_white",
-        width=2*w*dpi,
+        width=width*dpi,
         height=h*dpi,
         paper_bgcolor='rgba(0,0,0,0)',
         title=None,
@@ -556,7 +565,8 @@ def plot_hashfunction(dumps, benchname, suitename, schemes_to_plot=None, plot_ev
     if plot_even_only:
         fig.write_image(f"img/{suitename}/hash-{benchname}-even.pdf")
     else:
-        fig.write_image(f"img/{suitename}/hash-{benchname}.pdf")
+        if plot_final: fig.write_image(f"img/{suitename}/hash-{benchname}-final.pdf")
+        else: fig.write_image(f"img/{suitename}/hash-{benchname}.pdf")
 
 def plot_profiling(dumps, benchname, suitename, stats_to_plot=None):
     profileStatMaps = ProfileStatMaps(stats_to_plot)
@@ -800,6 +810,9 @@ if __name__ == "__main__":
     parser.add_argument('--benchname',
                         help='benchmark name',
                         default="*")
+    parser.add_argument('--plot_final',
+                        help='plot the final results',
+                        action='store_true')
     args = parser.parse_args()
 
     benchname = args.benchname
@@ -892,4 +905,6 @@ if __name__ == "__main__":
                         # "average byte msb(4) word labeling",
                         # "average byte msb(3) word labeling",
                         # "average byte msb(2) word labeling",
-                        ])
+                        ],
+                    plot_final=args.plot_final,
+                    )

@@ -2,9 +2,10 @@
 #include "cache/xorCache.hh"
 #include "common/file/file_read.hh"
 
-void profiling_entropy_byte_position(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &entropies)
+void profiling_entropy_byte_position(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &entropies, unsigned seed)
 {
     (void)only_those_xored;
+    (void) seed;
     int line_size = 64;
     int assoc = 16;
     int shift_bank = 0;
@@ -27,7 +28,7 @@ void profiling_entropy_byte_position(int num_banks, int KB_per_bank, string dir,
     delete cache;
 }
 
-void profiling_entropy_byte_position_afterxor12_bytemap(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &entropies)
+void profiling_entropy_byte_position_afterxor12_bytemap(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &entropies, unsigned seed)
 {
     int line_size = 64;
     int assoc = 16;
@@ -45,7 +46,7 @@ void profiling_entropy_byte_position_afterxor12_bytemap(int num_banks, int KB_pe
     vector<HashFunction *> hash_functions;
     ByteMapHash * bm = new ByteMapHash();
     hash_functions.push_back(bm);
-    FullBitShuffleHash * fbs = new FullBitShuffleHash();
+    FullBitShuffleHash * fbs = new FullBitShuffleHash(seed);
     hash_functions.push_back(fbs);
     XORFoldingHash * x = new XORFoldingHash(fp_size_in_bits);
     hash_functions.push_back(x);
@@ -77,7 +78,7 @@ void profiling_entropy_byte_position_afterxor12_bytemap(int num_banks, int KB_pe
     delete cache;
 }
 
-void profiling_entropy_byte_position_afterxor12_sparseshuffledbytemap_4_3(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &entropies)
+void profiling_entropy_byte_position_afterxor12_sparseshuffledbytemap_4_3(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &entropies, unsigned seed)
 {
     int line_size = 64;
     int assoc = 16;
@@ -104,7 +105,7 @@ void profiling_entropy_byte_position_afterxor12_sparseshuffledbytemap_4_3(int nu
     SparseByteMapHash * bm = new SparseByteMapHash(everyNByte, bytes_to_take);
     hash_functions.push_back(bm);
     true_hash += 1;
-    FullBitShuffleHash * fbs = new FullBitShuffleHash();
+    FullBitShuffleHash * fbs = new FullBitShuffleHash(seed);
     hash_functions.push_back(fbs);
     true_hash += 1;
     XORFoldingHash * x = new XORFoldingHash(fp_size_in_bits);
@@ -138,8 +139,9 @@ void profiling_entropy_byte_position_afterxor12_sparseshuffledbytemap_4_3(int nu
     delete cache;
 }
 
-void profiling_entropy_byte_position_afterxor_randbank(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &entropies)
+void profiling_entropy_byte_position_afterxor_randbank(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &entropies, unsigned seed)
 {
+    (void)seed; //TODO: use seed
     int line_size = 64;
     int assoc = 16;
     int shift_bank = 0;
@@ -173,7 +175,7 @@ void profiling_entropy_byte_position_afterxor_randbank(int num_banks, int KB_per
     delete cache;
 }
 
-void profiling_entropy_byte_position_afterxor12_thesaurus(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &entropies)
+void profiling_entropy_byte_position_afterxor12_thesaurus(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &entropies, unsigned seed)
 {
     int line_size = 64;
     int assoc = 16;
@@ -189,7 +191,7 @@ void profiling_entropy_byte_position_afterxor12_thesaurus(int num_banks, int KB_
     ClusteredCache * cache;
 
     vector<HashFunction *> hash_functions;
-    ThesaurusLSHash * the = new ThesaurusLSHash(fp_size_in_bits, line_size);
+    ThesaurusLSHash * the = new ThesaurusLSHash(fp_size_in_bits, line_size, seed);
     hash_functions.push_back(the);
 
 
@@ -220,7 +222,7 @@ void profiling_entropy_byte_position_afterxor12_thesaurus(int num_banks, int KB_
     delete cache;
 }
 
-void profiling_entropy_byte_position_afterxor12_lowentropy_8_16(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &entropies)
+void profiling_entropy_byte_position_afterxor12_lowentropy_8_16(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &entropies, unsigned seed)
 {
     int line_size = 64;
     int assoc = 16;
@@ -254,7 +256,7 @@ void profiling_entropy_byte_position_afterxor12_lowentropy_8_16(int num_banks, i
             funct_true_hash++;
         }
     }
-    hash_functions.push_back(new FullBitShuffleHash()); // with shuffling
+    hash_functions.push_back(new FullBitShuffleHash(seed)); // with shuffling
     funct_true_hash++;
     hash_functions.push_back(new XORFoldingHash(fp_size_in_bits));
 
@@ -286,9 +288,10 @@ void profiling_entropy_byte_position_afterxor12_lowentropy_8_16(int num_banks, i
     delete cache;
 }
 
-void profiling_histogram_word_pattern_epc(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &histogram)
+void profiling_histogram_word_pattern_epc(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &histogram, unsigned seed)
 {
     (void)only_those_xored;
+    (void)seed;
 
     int line_size = 64;
     int assoc = 16;
@@ -314,9 +317,10 @@ void profiling_histogram_word_pattern_epc(int num_banks, int KB_per_bank, string
     hist.clear();
     delete cache;
 }
-void profiling_histogram_word_pattern_strong(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &histogram)
+void profiling_histogram_word_pattern_strong(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &histogram, unsigned seed)
 {
     (void)only_those_xored;
+    (void)seed;
 
     int line_size = 64;
     int assoc = 16;
@@ -342,9 +346,10 @@ void profiling_histogram_word_pattern_strong(int num_banks, int KB_per_bank, str
     hist.clear();
     delete cache;
 }
-void profiling_histogram_word_pattern_hycomp(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &histogram)
+void profiling_histogram_word_pattern_hycomp(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &histogram, unsigned seed)
 {
     (void)only_those_xored;
+    (void)seed;
 
     int line_size = 64;
     int assoc = 16;
@@ -370,9 +375,10 @@ void profiling_histogram_word_pattern_hycomp(int num_banks, int KB_per_bank, str
     hist.clear();
     delete cache;
 }
-void profiling_histogram_word_pattern_semantic(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &histogram)
+void profiling_histogram_word_pattern_semantic(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &histogram, unsigned seed)
 {
     (void)only_those_xored;
+    (void)seed;
 
     int line_size = 64;
     int assoc = 16;
@@ -400,9 +406,10 @@ void profiling_histogram_word_pattern_semantic(int num_banks, int KB_per_bank, s
 }
 
 
-void profiling_histogram_word_pattern_density(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &histogram)
+void profiling_histogram_word_pattern_density(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &histogram, unsigned seed)
 {
     (void)only_those_xored;
+    (void)seed;
 
     int line_size = 64;
     int assoc = 16;
@@ -429,9 +436,10 @@ void profiling_histogram_word_pattern_density(int num_banks, int KB_per_bank, st
     delete cache;
 }
 
-void profiling_histogram_word_pattern_averagebytemsb_32(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &histogram)
+void profiling_histogram_word_pattern_averagebytemsb_32(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &histogram, unsigned seed)
 {
     (void)only_those_xored;
+    (void)seed;
 
     int line_size = 64;
     int assoc = 16;
@@ -457,9 +465,10 @@ void profiling_histogram_word_pattern_averagebytemsb_32(int num_banks, int KB_pe
     hist.clear();
     delete cache;
 }
-void profiling_histogram_word_pattern_averagebytemsb_24(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &histogram)
+void profiling_histogram_word_pattern_averagebytemsb_24(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &histogram, unsigned seed)
 {
     (void)only_those_xored;
+    (void)seed;
 
     int line_size = 64;
     int assoc = 16;
@@ -485,9 +494,10 @@ void profiling_histogram_word_pattern_averagebytemsb_24(int num_banks, int KB_pe
     hist.clear();
     delete cache;
 }
-void profiling_histogram_word_pattern_averagebytemsb_16(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &histogram)
+void profiling_histogram_word_pattern_averagebytemsb_16(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &histogram, unsigned seed)
 {
     (void)only_those_xored;
+    (void)seed;
 
     int line_size = 64;
     int assoc = 16;
@@ -516,8 +526,8 @@ void profiling_histogram_word_pattern_averagebytemsb_16(int num_banks, int KB_pe
 
 
 
-void profiling_x(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &results, 
-    void(*profiling_function)(int, int, string, bool, vector <double> &))
+void profiling_x(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &results, unsigned seed,
+    void(*profiling_function)(int, int, string, bool, vector <double> &, unsigned))
 {
-    profiling_function(num_banks, KB_per_bank, dir, only_those_xored, results);
+    profiling_function(num_banks, KB_per_bank, dir, only_those_xored, results, seed);
 }

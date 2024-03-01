@@ -44,7 +44,7 @@ int main(int argc, char *argv[]){
     vector<string> legends;
 
 
-    void (*create_hash_functions_x)(vector<HashFunction *> &, int &, bool &, int &, int, int);
+    void (*create_hash_functions_x)(vector<HashFunction *> &, int &, bool &, int &, int, int, unsigned);
 
     
 

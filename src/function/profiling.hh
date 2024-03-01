@@ -6,21 +6,21 @@
 #include "cache/cache.hh"
 using namespace std;
 
-void profiling_entropy_byte_position(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &entropies);
-void profiling_entropy_byte_position_afterxor_randbank(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &entropies);
-void profiling_entropy_byte_position_afterxor12_bytemap(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &entropies);
-void profiling_entropy_byte_position_afterxor12_sparseshuffledbytemap_4_3(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &entropies);
-void profiling_entropy_byte_position_afterxor12_thesaurus(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &entropies);
-void profiling_entropy_byte_position_afterxor12_lowentropy_8_16(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &entropies);
+void profiling_entropy_byte_position(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &entropies, unsigned seed);
+void profiling_entropy_byte_position_afterxor_randbank(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &entropies, unsigned seed);
+void profiling_entropy_byte_position_afterxor12_bytemap(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &entropies, unsigned seed);
+void profiling_entropy_byte_position_afterxor12_sparseshuffledbytemap_4_3(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &entropies, unsigned seed);
+void profiling_entropy_byte_position_afterxor12_thesaurus(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &entropies, unsigned seed);
+void profiling_entropy_byte_position_afterxor12_lowentropy_8_16(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &entropies, unsigned seed);
 
-void profiling_histogram_word_pattern_epc(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &histogram);
-void profiling_histogram_word_pattern_strong(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &histogram);
-void profiling_histogram_word_pattern_hycomp(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &histogram);
-void profiling_histogram_word_pattern_semantic(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &histogram);
-void profiling_histogram_word_pattern_density(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &histogram);
-void profiling_histogram_word_pattern_averagebytemsb_32(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &histogram);
-void profiling_histogram_word_pattern_averagebytemsb_24(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &histogram);
-void profiling_histogram_word_pattern_averagebytemsb_16(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &histogram);
+void profiling_histogram_word_pattern_epc(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &histogram, unsigned seed);
+void profiling_histogram_word_pattern_strong(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &histogram, unsigned seed);
+void profiling_histogram_word_pattern_hycomp(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &histogram, unsigned seed);
+void profiling_histogram_word_pattern_semantic(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &histogram, unsigned seed);
+void profiling_histogram_word_pattern_density(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &histogram, unsigned seed);
+void profiling_histogram_word_pattern_averagebytemsb_32(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &histogram, unsigned seed);
+void profiling_histogram_word_pattern_averagebytemsb_24(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &histogram, unsigned seed);
+void profiling_histogram_word_pattern_averagebytemsb_16(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &histogram, unsigned seed);
 
 template <class Treg, typename Tpat>
 class WordPatternCacheProfiler
@@ -149,7 +149,7 @@ class AverageByteMSBWordPatternCacheProfiler : public WordPatternCacheProfiler<A
         }
 };
 
-void profiling_x(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &results, 
-    void(*profiling_function)(int, int, string, bool, vector <double> &));
+void profiling_x(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &results, unsigned seed, 
+    void(*profiling_function)(int, int, string, bool, vector <double> &, double));
 
 #endif
