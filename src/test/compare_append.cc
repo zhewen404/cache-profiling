@@ -142,10 +142,10 @@ int main(int argc, char *argv[]){
                 &create_hashfunctions_averagebytemsb_word_labeling_16);
         } else {
             // compare string name with the following
-            if (name.find("shuffledbytemap") != string::npos) {
-                create_hash_functions_x = &create_hashfunctions_shuffledbytemap;
-            } else if (name.find("sparseshuffledbytemap_8_6") != string::npos) {
+            if (name.find("sparseshuffledbytemap_8_6") != string::npos) {
                 create_hash_functions_x = &create_hashfunctions_sparseshuffledbytemap_8_6;
+            } else if (name.find("shuffledbytemap") != string::npos) {
+                create_hash_functions_x = &create_hashfunctions_shuffledbytemap;
             } else if (name.find("fbsxf") != string::npos) {
                 create_hash_functions_x = &create_hashfunctions_fbsxf;
             } else if (name.find("thesaurus") != string::npos) {
