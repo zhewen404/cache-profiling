@@ -332,11 +332,15 @@ def plot_hashfunction(dumps, benchname, suitename, schemes_to_plot=None, plot_ev
     fig = sp.make_subplots(rows=1, cols=col_ct, 
                         #    subplot_titles=("Compression Ratio", "Entropy Reduction", "False Positive Rate"),
                            shared_yaxes=False,
-                           horizontal_spacing=0.05,
+                           horizontal_spacing=0.1,
                            vertical_spacing=0,)
+    
+    if plot_final:
+        color_sequence = [scheme_to_color[s] for s in schemes_to_plot]
+    else:
+        color_sequence = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', 
+                        '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf',]
 
-    color_sequence = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', 
-                      '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf',]
     i = 0
     for i in range(len(crs_scheme_vs_avg.items())):
             scheme = list(crs_scheme_vs_avg.keys())[i]
@@ -380,9 +384,12 @@ def plot_hashfunction(dumps, benchname, suitename, schemes_to_plot=None, plot_ev
             max_ = list(intras_max_scheme_vs_avg.values())
             min_ = list(intras_min_scheme_vs_avg.values())
 
+            if "bdi" in scheme: mode = "lines"
+            else: mode = "markers+lines"
+
             fig.add_trace(
                 go.Scatter(x=xaxis, y=avg_[i],
-                        mode='markers+lines',
+                        mode=mode,
                         name=scheme,
                         showlegend=False,
                         legendgroup=scheme,
@@ -617,7 +624,7 @@ def plot_profiling(dumps, benchname, suitename, stats_to_plot=None):
     fig = sp.make_subplots(rows=1, cols=len(stats_to_plot), 
                         #    subplot_titles=("Compression Ratio", "Entropy Reduction", "False Positive Rate"),
                            shared_yaxes=False,
-                           horizontal_spacing=0.1,
+                           horizontal_spacing=0.15,
                            vertical_spacing=0,)
 
     color_sequence = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', 
@@ -882,12 +889,10 @@ if __name__ == "__main__":
                         # "masked-bit-sampling_8_16",
                         # "masked-bit-sampling_4_8",
                         # "thesaurus-immo",
-                        "bytemap-shuffle-xorfold", 
                         # "maxbytemap-shuffle-xorfold", 
                         # "bytemap-shuffle-xorfold-bpc", 
                         # "bytemap-shuffle-xorfold-immo", 
                         # "sparseshuffledbytemap_8_7",
-                        "sparseshuffledbytemap_8_6",
                         # "sparseshuffledbytemap_8_4",
                         # "sparseshuffledbytemap_4_3",
                         # "sparseshuffledbytemap_4_3-bpc",
@@ -905,6 +910,8 @@ if __name__ == "__main__":
                         # "average byte msb(4) word labeling",
                         # "average byte msb(3) word labeling",
                         # "average byte msb(2) word labeling",
+                        "bytemap-shuffle-xorfold", 
+                        "sparsebytemap(8,6)-shuffle-xorfold",
                         ],
                     plot_final=args.plot_final,
                     )

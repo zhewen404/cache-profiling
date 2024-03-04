@@ -52,14 +52,22 @@ int main(int argc, char *argv[]){
     bool use_little_e = true;
     bool allow_immo = false;
 
+
     vector<double> crs6, ers6, frs6, intras6, hammings6;
     vector<double> crs6_max, ers6_max, frs6_max, intras6_max, hammings6_max;
     vector<double> crs6_min, ers6_min, frs6_min, intras6_min, hammings6_min;
 
     // print crss to file dir/crss.txt
     if (name.find("vanila") == string::npos) {
-        intracomp_t type = BDI;
         // no vanila in name
+        
+        intracomp_t type = BDI;
+        bool banked = false;
+
+        if (banked == true){
+            name += "-banked";
+        }
+
         if (!use_xorcache){
             name += "-deltacache";
         }
@@ -77,56 +85,56 @@ int main(int argc, char *argv[]){
         }
 
         if (name.find("epc_word_labeling") != string::npos) {
-            map_all(defined_seeds, num_banks, KB_per_bank, dir, 
+            map_all(banked, defined_seeds, num_banks, KB_per_bank, dir, 
                 crs6, ers6, frs6, intras6, hammings6, 
                 crs6_max, ers6_max, frs6_max, intras6_max, hammings6_max, 
                 crs6_min, ers6_min, frs6_min, intras6_min, hammings6_min, 
                 {24.0}, use_xorcache, use_little_e, allow_immo, type,
                 &create_hashfunctions_epc_word_labeling);
         } else if (name.find("strong_word_labeling") != string::npos) {
-            map_all(defined_seeds, num_banks, KB_per_bank, dir, 
+            map_all(banked, defined_seeds, num_banks, KB_per_bank, dir, 
                 crs6, ers6, frs6, intras6, hammings6, 
                 crs6_max, ers6_max, frs6_max, intras6_max, hammings6_max, 
                 crs6_min, ers6_min, frs6_min, intras6_min, hammings6_min, 
                 {16.0}, use_xorcache, use_little_e, allow_immo, type,
                 &create_hashfunctions_strong_word_labeling);
         } else if (name.find("hycomp_word_labeling") != string::npos) {
-            map_all(defined_seeds, num_banks, KB_per_bank, dir, 
+            map_all(banked, defined_seeds, num_banks, KB_per_bank, dir, 
                 crs6, ers6, frs6, intras6, hammings6, 
                 crs6_max, ers6_max, frs6_max, intras6_max, hammings6_max, 
                 crs6_min, ers6_min, frs6_min, intras6_min, hammings6_min, 
                 {24.0}, use_xorcache, use_little_e, allow_immo, type,
                 &create_hashfunctions_hycomp_word_labeling);
         } else if (name.find("semantic_word_labeling") != string::npos) {
-            map_all(defined_seeds, num_banks, KB_per_bank, dir, 
+            map_all(banked, defined_seeds, num_banks, KB_per_bank, dir, 
                 crs6, ers6, frs6, intras6, hammings6, 
                 crs6_max, ers6_max, frs6_max, intras6_max, hammings6_max, 
                 crs6_min, ers6_min, frs6_min, intras6_min, hammings6_min, 
                 {24.0}, use_xorcache, use_little_e, allow_immo, type,
                 &create_hashfunctions_semantic_word_labeling);
         } else if (name.find("density_word_labeling") != string::npos) {
-            map_all(defined_seeds, num_banks, KB_per_bank, dir, 
+            map_all(banked, defined_seeds, num_banks, KB_per_bank, dir, 
                 crs6, ers6, frs6, intras6, hammings6, 
                 crs6_max, ers6_max, frs6_max, intras6_max, hammings6_max, 
                 crs6_min, ers6_min, frs6_min, intras6_min, hammings6_min, 
                 {16.0}, use_xorcache, use_little_e, allow_immo, type,
                 &create_hashfunctions_density_word_labeling);
         } else if (name.find("averagebytemsb_word_labeling_32") != string::npos) {
-            map_all(defined_seeds, num_banks, KB_per_bank, dir, 
+            map_all(banked, defined_seeds, num_banks, KB_per_bank, dir, 
                 crs6, ers6, frs6, intras6, hammings6, 
                 crs6_max, ers6_max, frs6_max, intras6_max, hammings6_max, 
                 crs6_min, ers6_min, frs6_min, intras6_min, hammings6_min, 
                 {32.0}, use_xorcache, use_little_e, allow_immo, type,
                 &create_hashfunctions_averagebytemsb_word_labeling_32);
         } else if (name.find("averagebytemsb_word_labeling_24") != string::npos) {
-            map_all(defined_seeds, num_banks, KB_per_bank, dir, 
+            map_all(banked, defined_seeds, num_banks, KB_per_bank, dir, 
                 crs6, ers6, frs6, intras6, hammings6, 
                 crs6_max, ers6_max, frs6_max, intras6_max, hammings6_max, 
                 crs6_min, ers6_min, frs6_min, intras6_min, hammings6_min, 
                 {24.0}, use_xorcache, use_little_e, allow_immo, type,
                 &create_hashfunctions_averagebytemsb_word_labeling_24);
         } else if (name.find("averagebytemsb_word_labeling_16") != string::npos) {
-            map_all(defined_seeds, num_banks, KB_per_bank, dir, 
+            map_all(banked, defined_seeds, num_banks, KB_per_bank, dir, 
                 crs6, ers6, frs6, intras6, hammings6, 
                 crs6_max, ers6_max, frs6_max, intras6_max, hammings6_max, 
                 crs6_min, ers6_min, frs6_min, intras6_min, hammings6_min, 
@@ -155,7 +163,7 @@ int main(int argc, char *argv[]){
                 assert(false);
             }
 
-            map_all(defined_seeds, num_banks, KB_per_bank, dir, 
+            map_all(banked, defined_seeds, num_banks, KB_per_bank, dir, 
                 crs6, ers6, frs6, intras6, hammings6, 
                 crs6_max, ers6_max, frs6_max, intras6_max, hammings6_max, 
                 crs6_min, ers6_min, frs6_min, intras6_min, hammings6_min, 

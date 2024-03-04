@@ -24,8 +24,33 @@ ClusteredCache * create_clustered_cache(int num_banks, int KB_per_bank, int asso
     cache->populate_lines(filenames_data, filenames_addr);
     return cache;
 }
+BankedClusteredCache * create_bankedclustered_cache(int num_banks, int KB_per_bank, int assoc, int line_size, int shift_bank, int shift_set,
+    int fp_size_in_bits,
+    bool cascade, int funct_to_concact, int funct_true_hash,
+    string dir, vector<HashFunction *> &hash_functions)
+{
+    u_int64_t num_clusters = (u_int64_t)pow((u_int64_t)2,(u_int64_t)fp_size_in_bits);
+
+    vector<string> filenames_data;
+    vector<string> filenames_addr;
+    fill_string_arrays_data_addr(filenames_data, filenames_addr, dir, num_banks);
+
+    BankedClusteredCache * cache = new BankedClusteredCache(
+        num_banks, KB_per_bank, assoc, line_size, 
+        shift_bank, shift_set, 
+        num_clusters, hash_functions, cascade, funct_to_concact, funct_true_hash);
+
+    cache->populate_lines(filenames_data, filenames_addr);
+    return cache;
+}
 
 HashXORCache * create_hashed_inter_cache_from_clustered_cache_xor(ClusteredCache * cache, unsigned defined_seed)
+{
+    HashXORCache * hxorCache;
+    hxorCache = new HashXORCache(*cache, defined_seed);
+    return hxorCache;
+}
+HashXORCache * create_hashed_inter_cache_from_clustered_cache_xor(BankedClusteredCache * cache, unsigned defined_seed)
 {
     HashXORCache * hxorCache;
     hxorCache = new HashXORCache(*cache, defined_seed);
@@ -608,7 +633,7 @@ void create_vanila_bpc(int num_banks, int KB_per_bank, string dir,
 
 ////////////////////////////////////////////////////////////////
 // for hash functions
-void map_all(vector<unsigned> defined_seeds, int num_banks, int KB_per_bank, string dir, 
+void map_all(bool banked, vector<unsigned> defined_seeds, int num_banks, int KB_per_bank, string dir, 
     vector <double> &crs, vector <double> &ers, vector <double> &frs, vector <double> &intras, vector <double> &hammings, 
     vector <double> &crs_max, vector <double> &ers_max, vector <double> &frs_max, vector <double> &intras_max, vector <double> &hammings_max, 
     vector <double> &crs_min, vector <double> &ers_min, vector <double> &frs_min, vector <double> &intras_min, vector <double> &hammings_min, 
@@ -624,7 +649,11 @@ void map_all(vector<unsigned> defined_seeds, int num_banks, int KB_per_bank, str
         double hamming;
         for (unsigned j = 0; j < defined_seeds.size(); j++) {
             unsigned defined_seed = defined_seeds[j];
-            map_x(defined_seed, num_banks, KB_per_bank, dir, fbs[i], cr, entropy_reduction, fr, intra, hamming, use_xorcache, use_little_e, allow_immo, type, create_hash_functions_x);
+            if (banked) {
+                map_x_banked(defined_seed, num_banks, KB_per_bank, dir, fbs[i], cr, entropy_reduction, fr, intra, hamming, use_xorcache, use_little_e, allow_immo, type, create_hash_functions_x);
+            } else {
+                map_x_flat(defined_seed, num_banks, KB_per_bank, dir, fbs[i], cr, entropy_reduction, fr, intra, hamming, use_xorcache, use_little_e, allow_immo, type, create_hash_functions_x);
+            }
             
             assert(cr > 0); // gmean
             // assert(entropy_reduction >= 0); // amean
@@ -672,7 +701,7 @@ void map_all(vector<unsigned> defined_seeds, int num_banks, int KB_per_bank, str
 }
 
 // for hash functions
-void map_x(unsigned defined_seed, int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, 
+void map_x_flat(unsigned defined_seed, int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, 
     double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, double &hamming, 
     bool use_xorcache, bool use_little_e, bool allow_immo, intracomp_t type,
     void (*create_hash_functions_x)(vector<HashFunction *> &, int &, bool &, int &, int, int, unsigned)
@@ -692,6 +721,55 @@ void map_x(unsigned defined_seed, int num_banks, int KB_per_bank, string dir, in
     create_hash_functions_x(hash_functions, true_hash, cascade, funct_to_concact, fp_size_in_bits, line_size, defined_seed);
 
     ClusteredCache *cache = create_clustered_cache(
+        num_banks, KB_per_bank, assoc, line_size, shift_bank, shift_set, fp_size_in_bits, 
+        cascade, funct_to_concact, true_hash, dir, hash_functions);
+
+    double vanilla_bit_entropy = cache->get_bit_entropy();
+
+
+    HashXORCache * hxorCache = create_hashed_inter_cache_from_clustered_cache_xor(cache, defined_seed);
+    
+    double bit_entropy = hxorCache->get_bit_entropy();
+    entropy_reduction = vanilla_bit_entropy - bit_entropy;
+    cr = hxorCache->get_compression_ratio();
+    false_rate = hxorCache->get_false_positive_rate();
+    hamming = hxorCache->get_hamming_distance();
+
+    if (type == BDI) {
+        BDICompressedXORCache * bdiXorCache = create_bdicompressedxorcache_from_hashedxorcache(hxorCache, use_little_e, allow_immo);
+        intra_compression_ratio = bdiXorCache->get_intra_compression_ratio();
+        delete bdiXorCache;
+    } else if (type == BPC) {
+        BPCCompressedXORCache * bpcXorCache = create_bpccompressedxorcache_from_hashedxorcache(hxorCache);
+        intra_compression_ratio = bpcXorCache->get_intra_compression_ratio();
+        delete bpcXorCache;
+    } else {
+        assert(false);
+    }
+    delete hxorCache;
+    delete cache;
+}
+
+void map_x_banked(unsigned defined_seed, int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, 
+    double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, double &hamming, 
+    bool use_xorcache, bool use_little_e, bool allow_immo, intracomp_t type,
+    void (*create_hash_functions_x)(vector<HashFunction *> &, int &, bool &, int &, int, int, unsigned)
+    )
+{
+    assert(use_xorcache);
+
+    int line_size = 64;
+    int assoc = 16;
+    int shift_bank = 0;
+    int shift_set = 0;
+    
+    int true_hash = 0;
+    int funct_to_concact = 0;
+    bool cascade = true;
+    vector<HashFunction *> hash_functions;
+    create_hash_functions_x(hash_functions, true_hash, cascade, funct_to_concact, fp_size_in_bits, line_size, defined_seed);
+
+    BankedClusteredCache *cache = create_bankedclustered_cache(
         num_banks, KB_per_bank, assoc, line_size, shift_bank, shift_set, fp_size_in_bits, 
         cascade, funct_to_concact, true_hash, dir, hash_functions);
 

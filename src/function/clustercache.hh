@@ -13,7 +13,11 @@ typedef enum {
 ClusteredCache * create_clustered_cache(int num_banks, int KB_per_bank, int assoc, int line_size, int shift_bank, int shift_set,
     int fp_size_in_bits, bool cascade, int funct_to_concact, int funct_true_hash, string dir, vector<HashFunction *> &hash_functions);
 
+BankedClusteredCache * create_bankedclustered_cache(int num_banks, int KB_per_bank, int assoc, int line_size, int shift_bank, int shift_set,
+    int fp_size_in_bits, bool cascade, int funct_to_concact, int funct_true_hash, string dir, vector<HashFunction *> &hash_functions);
+
 HashXORCache * create_hashed_inter_cache_from_clustered_cache_xor(ClusteredCache * cache, unsigned defined_seed);
+HashXORCache * create_hashed_inter_cache_from_clustered_cache_xor(BankedClusteredCache * cache, unsigned defined_seed);
 HashDeltaCache * create_hashed_inter_cache_from_clustered_cache_delta(ClusteredCache * cache, unsigned defined_seed);
 BDICompressedXORCache * create_bdicompressedxorcache_from_hashedxorcache(HashXORCache * hxorCache, bool use_little_e, bool allow_immo);
 BPCCompressedXORCache * create_bpccompressedxorcache_from_hashedxorcache(HashXORCache * hxorCache);
@@ -76,13 +80,17 @@ void create_vanila_bdi(int num_banks, int KB_per_bank, string dir, double &cr, d
 void create_vanila_bpc(int num_banks, int KB_per_bank, string dir, double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, double &hamming,
     bool use_little_endian, bool allow_immo);
 
-void map_all(vector<unsigned> defined_seeds, int num_banks, int KB_per_bank, string dir, 
+void map_all(bool banked, vector<unsigned> defined_seeds, int num_banks, int KB_per_bank, string dir, 
     vector <double> &crs, vector <double> &ers, vector <double> &frs, vector <double> &intras, vector <double> &hammings, 
     vector <double> &crs_max, vector <double> &ers_max, vector <double> &frs_max, vector <double> &intras_max, vector <double> &hammings_max, 
     vector <double> &crs_min, vector <double> &ers_min, vector <double> &frs_min, vector <double> &intras_min, vector <double> &hammings_min, 
     vector<double> fbs, bool use_xorcache, bool use_little_e, bool allow_immo, intracomp_t type,
     void (*create_hash_functions_x)(vector<HashFunction *> &, int &, bool &, int &, int, int, unsigned));
-void map_x(unsigned defined_seed, int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, 
+void map_x_flat(unsigned defined_seed, int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, 
+    double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, double &hamming,
+    bool use_xorcache, bool use_little_e, bool allow_immo, intracomp_t type,
+    void (*create_hash_functions_x)(vector<HashFunction *> &, int &, bool &, int &, int, int, unsigned));
+void map_x_banked(unsigned defined_seed, int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, 
     double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, double &hamming,
     bool use_xorcache, bool use_little_e, bool allow_immo, intracomp_t type,
     void (*create_hash_functions_x)(vector<HashFunction *> &, int &, bool &, int &, int, int, unsigned));

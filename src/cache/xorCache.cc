@@ -166,7 +166,7 @@ RandSetXORCache::print() const
     }
 }
 
-
+////////////////////////////////////////////////////////////////
 double
 HashXORCache::get_bit_entropy() const
 {
@@ -292,6 +292,7 @@ HashXORCache::print() const
     }
 }
 
+////////////////////////////////////////////////////////////////
 double
 HashDeltaCache::get_bit_entropy() const
 {

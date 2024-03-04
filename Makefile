@@ -19,6 +19,7 @@ run: clean all
 
 $(BIN)/$(EXECUTABLE): $(SRC)/*/*.cc $(SRC)/*/*.hh $(SRC)/*/*/*.cc $(SRC)/*/*/*.hh
 	@echo "🚧 Building..."
+	mkdir -p $(BIN)
 	$(CXX) $(CXX_FLAGS) -I$(INCLUDE) -L$(LIB) $^ -o $@ $(LIBRARIES)
 
 clean:

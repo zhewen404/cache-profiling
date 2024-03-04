@@ -1,3 +1,49 @@
+import plotly.express as px
+scheme_to_color = {
+    "bpc": px.colors.qualitative.Vivid[9],
+    "bdi": px.colors.qualitative.Vivid[9],
+    "BDI": px.colors.qualitative.Vivid[9],
+    "bdi-immo": px.colors.qualitative.Vivid[9],
+
+    "thesaurus": px.colors.qualitative.Vivid[2],
+    "thesaurus-immo": px.colors.qualitative.Vivid[2],
+
+    "shuffle-xorfold": px.colors.qualitative.Vivid[4],
+
+    "bit-sampling": px.colors.qualitative.Vivid[3],
+    "masked-bit-sampling_8_32": px.colors.qualitative.Vivid[3],
+    "masked-bit-sampling_4_16": px.colors.qualitative.Vivid[3],
+    "masked-bit-sampling_8_16": px.colors.qualitative.Vivid[3],
+    "masked-bit-sampling_4_8": px.colors.qualitative.Vivid[3],
+
+    "bytemap-shuffle-xorfold": px.colors.qualitative.Vivid[1],
+    "maxbytemap-shuffle-xorfold": px.colors.qualitative.Vivid[1],
+    "bytemap-shuffle-xorfold-bpc": px.colors.qualitative.Vivid[1],
+    "bytemap-shuffle-xorfold-immo": px.colors.qualitative.Vivid[1],
+    "ternarybytemap-shuffle-xorfold": px.colors.qualitative.Vivid[1],
+
+    "lowentropy_8_4": px.colors.qualitative.Vivid[5],
+    "lowentropy_8_16(BCD)": px.colors.qualitative.Vivid[5],
+    "lowentropy_8_16(BCD)-immo": px.colors.qualitative.Vivid[5],
+
+    "sparseshuffledbytemap_8_7": px.colors.qualitative.Vivid[7],
+    "sparsebytemap(8,6)-shuffle-xorfold": px.colors.qualitative.Vivid[7],
+    "sparseshuffledbytemap_8_4": px.colors.qualitative.Vivid[7],
+    "sparseshuffledbytemap_4_3": px.colors.qualitative.Vivid[7],
+    "sparseshuffledbytemap_4_3-bpc": px.colors.qualitative.Vivid[7],
+    "sparseshuffledbytemap_4_2": px.colors.qualitative.Vivid[7],
+
+    "EPC word labeling": px.colors.qualitative.Vivid[6],
+    "strong word labeling": px.colors.qualitative.Vivid[10],
+    "hycomp word labeling": px.colors.qualitative.Vivid[0],
+    "semantic word labeling": px.colors.qualitative.Vivid[10],
+    "density word labeling": px.colors.qualitative.Vivid[10],
+    "density word labeling bpc": px.colors.qualitative.Vivid[10],
+    "average byte msb(4) word labeling": px.colors.qualitative.Vivid[10],
+    "average byte msb(3) word labeling": px.colors.qualitative.Vivid[10],
+    "average byte msb(2) word labeling": px.colors.qualitative.Vivid[10],
+}
+
 scheme_to_name = {
     "bpc": "vanila_bpc",
     "bdi": "vanila_bdi",
@@ -20,7 +66,7 @@ scheme_to_name = {
     "lowentropy_8_16(BCD)": "lowentropy_8_16",
     "lowentropy_8_16(BCD)-immo": "lowentropy_8_16-immo",
     "sparseshuffledbytemap_8_7": "sparseshuffledbytemap_8_7",
-    "sparseshuffledbytemap_8_6": "sparseshuffledbytemap_8_6",
+    "sparsebytemap(8,6)-shuffle-xorfold": "sparseshuffledbytemap_8_6",
     "sparseshuffledbytemap_8_4": "sparseshuffledbytemap_8_4",
     "sparseshuffledbytemap_4_3": "sparseshuffledbytemap_4_3",
     "sparseshuffledbytemap_4_3-bpc": "sparseshuffledbytemap_4_3-bpc",

@@ -219,8 +219,8 @@ class HashXORCache : public BaseCache
                 if (line_pair.size() == 2) {
                     int line1_true_fingerprint_size_in_bit;
                     int line2_true_fingerprint_size_in_bit;
-                    u_int8_t * line1_true_fingerprint = cc.get_line_true_fingerprint(line_pair[0], line1_true_fingerprint_size_in_bit);
-                    u_int8_t * line2_true_fingerprint = cc.get_line_true_fingerprint(line_pair[1], line2_true_fingerprint_size_in_bit);
+                    u_int8_t * line1_true_fingerprint = cc.m_clustering_manager->get_line_true_fingerprint(line_pair[0], line1_true_fingerprint_size_in_bit);
+                    u_int8_t * line2_true_fingerprint = cc.m_clustering_manager->get_line_true_fingerprint(line_pair[1], line2_true_fingerprint_size_in_bit);
                     
 
                     // test if they are equal
@@ -271,6 +271,110 @@ class HashXORCache : public BaseCache
                 count++;
             }
             
+        }
+        m_num_xored_lines = count;
+        m_num_false_positive = false_positive_count;
+    }
+    HashXORCache(const BankedClusteredCache& cc, unsigned seed) :
+    BaseCache(cc.m_num_banks, cc.m_size_per_bank_KB, cc.m_assoc, cc.m_line_size, cc.m_shift_bank, cc.m_shift_set)
+    {
+        m_uncompressed_size = cc.get_size();
+        int count = 0;
+        int false_positive_count = 0;
+        // vector<Line*> singular_lines;
+        for (unsigned i = 0; i < cc.m_bank_clusters.size(); i++) {
+            for (unsigned j = 0; j < cc.m_bank_clusters[i].size(); j++) {
+                unsigned num_lines_this_bin = cc.m_bank_clusters[i][j].size();
+                if (num_lines_this_bin == 0) continue;
+
+                vector<Line*> lines_in_this_bin;
+                for (unsigned k = 0; k < cc.m_bank_clusters[i][j].size(); k++) {
+                    lines_in_this_bin.push_back(cc.m_bank_clusters[i][j][k]);
+                }
+
+                default_random_engine rng(seed);
+                shuffle(lines_in_this_bin.begin(), lines_in_this_bin.end(), rng);
+
+                // split lines_in_this_bin into a vector of vectors of size 2
+                // printf("spliting into line pairs in cluster %d, num lines %ld\n", i, cc.m_clusters[i].size());
+                vector<vector<Line*>> lines_in_this_bin_split;
+                int number_of_line_pairs = ceil(lines_in_this_bin.size() / 2.0);
+                for (unsigned j = 0; j < (unsigned)number_of_line_pairs; j++) {
+                    vector<Line*> line_pair;
+                    if (j * 2 + 1 < lines_in_this_bin.size()) {
+                        line_pair.push_back(lines_in_this_bin[j * 2]);
+                        line_pair.push_back(lines_in_this_bin[j * 2 + 1]);
+                    } else {
+                        line_pair.push_back(lines_in_this_bin[j * 2]);
+                    }
+                    lines_in_this_bin_split.push_back(line_pair);
+                }
+
+                // for each pair of lines, create a XORedLine object
+                for (vector<Line*> line_pair : lines_in_this_bin_split) {
+                    // printf("number of lines in pair: %ld\n", line_pair.size());
+                    // for (Line* line : line_pair) {
+                    //     line->print();
+                    // }
+                    
+                    // check if the pair is a false positive
+                    if (line_pair.size() == 2) {
+                        int line1_true_fingerprint_size_in_bit;
+                        int line2_true_fingerprint_size_in_bit;
+                        u_int8_t * line1_true_fingerprint = cc.m_clustering_manager->get_line_true_fingerprint(line_pair[0], line1_true_fingerprint_size_in_bit);
+                        u_int8_t * line2_true_fingerprint = cc.m_clustering_manager->get_line_true_fingerprint(line_pair[1], line2_true_fingerprint_size_in_bit);
+                        
+
+                        // test if they are equal
+                        assert(line1_true_fingerprint_size_in_bit == line2_true_fingerprint_size_in_bit);
+                        bool mismatch = (memcmp(line1_true_fingerprint, line2_true_fingerprint, int(ceil(line1_true_fingerprint_size_in_bit/8.0))) != 0);
+                        if (mismatch){
+                            false_positive_count++;
+                        }
+
+                        // if (!mismatch) {
+                        //     // print these two fingerprints
+                        //     printf("line1_true_fingerprint_size_in_bit: %d\n", line1_true_fingerprint_size_in_bit);
+                            
+                        //     // print line1 original data
+                        //     printf("line1 original data: ");
+                        //     for (int i = 0; i < m_line_size; i++) {
+                        //         printf("%02x ", line_pair[0]->m_segs[i]);
+                        //     }
+                        //     printf("\n");
+
+                        //     // print line2 original data
+                        //     printf("line2 original data: ");
+                        //     for (int i = 0; i < m_line_size; i++) {
+                        //         printf("%02x ", line_pair[1]->m_segs[i]);
+                        //     }
+                        //     printf("\n");
+
+                        //     printf("line1_true_fingerprint: ");
+                        //     for (int i = 0; i < int(ceil(line1_true_fingerprint_size_in_bit/8.0)); i++) {
+                        //         printf("%02x ", line1_true_fingerprint[i]);
+                        //     }
+                        //     printf("\n");
+                        //     printf("line2_true_fingerprint: ");
+                        //     for (int i = 0; i < int(ceil(line2_true_fingerprint_size_in_bit/8.0)); i++) {
+                        //         printf("%02x ", line2_true_fingerprint[i]);
+                        //     }
+                        //     printf("\n\n\n");
+                        // }
+
+                        delete line1_true_fingerprint;
+                        delete line2_true_fingerprint;
+                    }
+                    
+                    XORedLine* xor_line = new XORedLine(line_pair);
+                    // printf("created XORedLine object, adding to cache, size=%ld\n", m_lines.size());
+                    // xor_line->print();
+                    m_lines.push_back(xor_line);
+                    count++;
+                }
+            
+            }
+                
         }
         m_num_xored_lines = count;
         m_num_false_positive = false_positive_count;
