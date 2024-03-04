@@ -62,7 +62,7 @@ int main(int argc, char *argv[]){
         // no vanila in name
         
         intracomp_t type = BDI;
-        bool banked = false;
+        bool banked = true;
 
         if (banked == true){
             name += "-banked";
@@ -142,21 +142,21 @@ int main(int argc, char *argv[]){
                 &create_hashfunctions_averagebytemsb_word_labeling_16);
         } else {
             // compare string name with the following
-            if (name.compare("shuffledbytemap") == 0) {
+            if (name.find("shuffledbytemap") != string::npos) {
                 create_hash_functions_x = &create_hashfunctions_shuffledbytemap;
-            } else if (name.compare("sparseshuffledbytemap_8_6") == 0) {
+            } else if (name.find("sparseshuffledbytemap_8_6") != string::npos) {
                 create_hash_functions_x = &create_hashfunctions_sparseshuffledbytemap_8_6;
-            } else if (name.compare("fbsxf") == 0) {
+            } else if (name.find("fbsxf") != string::npos) {
                 create_hash_functions_x = &create_hashfunctions_fbsxf;
-            } else if (name.compare("thesaurus") == 0) {
+            } else if (name.find("thesaurus") != string::npos) {
                 create_hash_functions_x = &create_hashfunctions_thesaurus;
-            } else if (name.compare("bs") == 0) {
+            } else if (name.find("bs") != string::npos) {
                 create_hash_functions_x = &create_hashfunctions_bs;
-            } else if (name.compare("maskedbs_8_32") == 0) {
+            } else if (name.find("maskedbs_8_32") != string::npos) {
                 create_hash_functions_x = &create_hashfunctions_maskedbs_8_32;
-            } else if (name.compare("maskedbs_8_16") == 0) {
+            } else if (name.find("maskedbs_8_16") != string::npos) {
                 create_hash_functions_x = &create_hashfunctions_maskedbs_8_16;
-            } else if (name.compare("2bytemap") == 0) {
+            } else if (name.find("2bytemap") != string::npos) {
                 create_hash_functions_x = &create_hashfunctions_2bytemap;
             } else {
                 printf("Unknown scheme %s\n", name.c_str());
