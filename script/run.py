@@ -569,6 +569,7 @@ def plot_hashfunction(dumps, benchname, suitename, schemes_to_plot=None, plot_ev
         bargroupgap=0.0,
     )
 
+    os.makedirs(f'img/{suitename}', exist_ok=True)
     if plot_even_only:
         fig.write_image(f"img/{suitename}/hash-{benchname}-even.pdf")
     else:
@@ -799,6 +800,7 @@ def plot_profiling(dumps, benchname, suitename, stats_to_plot=None):
         bargap=0.10,
         bargroupgap=0.0,
     )
+    os.makedirs(f'img/{suitename}', exist_ok=True)
     fig.write_image(f"img/{suitename}/profiling-{benchname}.pdf")
 
 if __name__ == "__main__":
@@ -882,8 +884,10 @@ if __name__ == "__main__":
                         # "BDI",
                         # "bdi-immo",
                         "thesaurus",
+                        "thesaurus-bank",
                         # "shuffle-xorfold",
                         "bit-sampling",
+                        "bit-sampling-bank",
                         # "masked-bit-sampling_8_32",
                         # "masked-bit-sampling_4_16",
                         # "masked-bit-sampling_8_16",
@@ -902,8 +906,10 @@ if __name__ == "__main__":
                         # "lowentropy_8_16(BCD)",
                         # "lowentropy_8_16(BCD)-immo",
                         "EPC word labeling",
+                        "EPC word labeling-bank",
                         # "strong word labeling",
                         "hycomp word labeling",
+                        "hycomp word labeling-bank",
                         # "semantic word labeling",
                         # "density word labeling",
                         # "density word labeling bpc",
@@ -911,7 +917,9 @@ if __name__ == "__main__":
                         # "average byte msb(3) word labeling",
                         # "average byte msb(2) word labeling",
                         "bytemap-shuffle-xorfold", 
+                        "bytemap-shuffle-xorfold-bank", 
                         "sparsebytemap(8,6)-shuffle-xorfold",
+                        "sparsebytemap(8,6)-shuffle-xorfold-bank",
                         ],
                     plot_final=args.plot_final,
                     )
