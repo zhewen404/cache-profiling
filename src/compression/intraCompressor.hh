@@ -13,6 +13,12 @@ public:
     virtual T * compress_a_line(Line* line) = 0;
     bool is_line_compressible_zero(Line* line) const;
     bool is_line_compressible_repeatByte(Line* line) const;
+    virtual void print() const = 0;
+
+    // get compressed size ranking of a line
+    virtual int get_rank(Line* line) = 0;
+    // get the maximum rank of a line, i.e., uncompressed rank
+    virtual int get_max_rank() const = 0;
 };
 
 class BitPlaneCompressor : public BaseIntraCompressor <BPCLine>
@@ -22,6 +28,9 @@ public:
     ~BitPlaneCompressor() {};
     BPCLine * compress_a_line(Line* line);
     void print() const;
+    
+    int get_rank(Line* line);
+    int get_max_rank() const;
 };
 
 class BDICompressor : public BaseIntraCompressor <BDILine>
@@ -59,6 +68,9 @@ public:
     BDILine * try_compress_line_imm(Line* line, int base_size, int delta_size);
 
     void print() const;
+    
+    int get_rank(Line* line);
+    int get_max_rank() const;
 
     bool m_use_little_endian;
     bool m_allow_immo;

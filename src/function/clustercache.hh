@@ -75,10 +75,6 @@ void create_hashfunctions_averagebytemsb_word_labeling_32(vector<HashFunction *>
 void create_hashfunctions_averagebytemsb_word_labeling_24(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact, int fp_size_in_bits, int line_size, unsigned defined_seed);
 void create_hashfunctions_averagebytemsb_word_labeling_16(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact, int fp_size_in_bits, int line_size, unsigned defined_seed);
 
-void create_vanila_bdi(int num_banks, int KB_per_bank, string dir, double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, double &hamming,
-    bool use_little_endian, bool allow_immo);
-void create_vanila_bpc(int num_banks, int KB_per_bank, string dir, double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, double &hamming,
-    bool use_little_endian, bool allow_immo);
 
 void map_all(bool banked, vector<unsigned> defined_seeds, int num_banks, int KB_per_bank, string dir, 
     vector <double> &crs, vector <double> &ers, vector <double> &frs, vector <double> &intras, vector <double> &hammings, 
@@ -94,10 +90,5 @@ void map_x_banked(unsigned defined_seed, int num_banks, int KB_per_bank, string 
     double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, double &hamming,
     bool use_xorcache, bool use_little_e, bool allow_immo, intracomp_t type,
     void (*create_hash_functions_x)(vector<HashFunction *> &, int &, bool &, int &, int, int, unsigned));
-
-void vanila_x(int num_banks, int KB_per_bank, string dir, 
-    vector <double> &crs, vector <double> &ers, vector <double> &frs, vector <double> &intras, vector <double> &hamming,
-    vector<double> fbs, bool use_xorcache, bool use_little_e, bool allow_immo,
-    void (*create_vanila_x)(int, int, string, double &, double &, double &, double &, double &, bool, bool));
 
 #endif

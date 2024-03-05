@@ -5,6 +5,8 @@
 #include <string>
 #include <vector>
 #include "function/clustercache.hh"
+#include "function/vanila.hh"
+#include "function/ideal.hh"
 
 int main(int argc, char *argv[]){
     if (argc < 3){
@@ -58,7 +60,25 @@ int main(int argc, char *argv[]){
     vector<double> crs6_min, ers6_min, frs6_min, intras6_min, hammings6_min;
 
     // print crss to file dir/crss.txt
-    if (name.find("vanila") == string::npos) {
+    if (name.find("vanila") != string::npos) {
+        if (name.find("bpc") != string::npos) {
+            vanila_x(num_banks, KB_per_bank, dir, crs6, ers6, frs6, intras6, hammings6, fbs, use_xorcache, use_little_e, allow_immo, 
+                &create_vanila_bpc);
+        } else {
+            vanila_x(num_banks, KB_per_bank, dir, crs6, ers6, frs6, intras6, hammings6, fbs, use_xorcache, use_little_e, allow_immo, 
+                &create_vanila_bdi);
+        }
+    }
+    else if (name.find("idealbank") != string::npos) {
+        if (name.find("bpc") != string::npos) {
+            printf("ideal bank bpc not implemented yet\n");
+            assert(false);
+        } else {
+            ideal_x(num_banks, KB_per_bank, dir, crs6, ers6, frs6, intras6, hammings6, fbs, use_xorcache, use_little_e, allow_immo, 
+                &create_ideal_bank_bdi);
+        }
+    }
+    else {
         // no vanila in name
         
         intracomp_t type = BDI;
@@ -170,15 +190,8 @@ int main(int argc, char *argv[]){
                 fbs, use_xorcache, use_little_e, allow_immo, type,
                 create_hash_functions_x);
         }
-    } else {
-        if (name.find("bpc") != string::npos) {
-            vanila_x(num_banks, KB_per_bank, dir, crs6, ers6, frs6, intras6, hammings6, fbs, use_xorcache, use_little_e, allow_immo, 
-                &create_vanila_bpc);
-        } else {
-            vanila_x(num_banks, KB_per_bank, dir, crs6, ers6, frs6, intras6, hammings6, fbs, use_xorcache, use_little_e, allow_immo, 
-                &create_vanila_bdi);
-        }
-    }
+    } 
+    
 
     string crss_filename = dir + "/crss-" + name +".txt";
     FILE * crss_file = fopen(crss_filename.c_str(), "w");

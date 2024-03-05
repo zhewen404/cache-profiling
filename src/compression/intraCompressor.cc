@@ -41,6 +41,24 @@ BitPlaneCompressor::print() const
     printf("[ BitPlaneCompressor ]\n");
 }
 
+int
+BitPlaneCompressor::get_rank(Line* line)
+{
+    BPCLine * bpcLine = compress_a_line(line);
+    int size = bpcLine->m_compressed_size;
+    int rank = size-1;
+    delete bpcLine;
+
+    return rank;
+}
+
+int 
+BitPlaneCompressor::get_max_rank() const
+{
+    return 64; //0-63
+}
+
+
 BDILine * 
 BDICompressor::compress_a_line(Line* line)
 {
@@ -264,3 +282,110 @@ BDICompressor::print() const
     printf("[ BDICompressor: little endian %d ]\n", m_use_little_endian);
 }
 
+int 
+BDICompressor::get_rank(Line* line)
+{
+    BDILine * bdi = compress_a_line(line);
+    int rank = -1;
+
+    rank += 1;
+    if (bdi->m_type == BDILine::Z) {
+        delete bdi;
+        return rank;
+    }
+
+    rank += 1;
+    if (bdi->m_type == BDILine::B) {
+        delete bdi;
+        return rank;
+    } 
+
+    if (m_allow_immo) {
+        rank += 1;
+        if (bdi->m_base_size == 8 && bdi->m_delta_size == 1) {
+            delete bdi;
+            return rank;
+        }
+
+        rank += 1;
+        if (bdi->m_base_size == 8 && bdi->m_delta_size == 2) {
+            delete bdi;
+            return rank;
+        }
+
+        rank += 1;
+        if (bdi->m_base_size == 4 && bdi->m_delta_size == 1) {
+            delete bdi;
+            return rank;
+        }
+    }
+
+    rank += 1;
+    if (bdi->m_base_size == 8 && bdi->m_delta_size == 1) {
+        delete bdi;
+        return rank;
+    }
+
+    rank += 1;
+    if (bdi->m_base_size == 4 && bdi->m_delta_size == 1) {
+        delete bdi;
+        return rank;
+    }
+
+    rank += 1;
+    if (bdi->m_base_size == 8 && bdi->m_delta_size == 2) {
+        delete bdi;
+        return rank;
+    }
+
+    if (m_allow_immo) {
+        rank += 1;
+        if (bdi->m_base_size == 8 && bdi->m_delta_size == 4) {
+            delete bdi;
+            return rank;
+        }
+
+        rank += 1;
+        if (bdi->m_base_size == 4 && bdi->m_delta_size == 2) {
+            delete bdi;
+            return rank;
+        }
+
+        rank += 1;
+        if (bdi->m_base_size == 2 && bdi->m_delta_size == 1) {
+            delete bdi;
+            return rank;
+        }
+    }
+
+    rank += 1;
+    if (bdi->m_base_size == 2 && bdi->m_delta_size == 1) {
+        delete bdi;
+        return rank;
+    }
+
+    rank += 1;
+    if (bdi->m_base_size == 4 && bdi->m_delta_size == 2) {
+        delete bdi;
+        return rank;
+    }
+
+    rank += 1;
+    if (bdi->m_base_size == 8 && bdi->m_delta_size == 4) {
+        delete bdi;
+        return rank;
+    }
+
+    rank += 1;
+    delete bdi;
+    return rank;
+}
+
+int
+BDICompressor::get_max_rank() const
+{
+    if (m_allow_immo) {
+        return 15; //0-14
+    }
+    return 9; //0-8
+}

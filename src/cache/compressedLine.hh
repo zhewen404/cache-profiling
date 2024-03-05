@@ -181,15 +181,14 @@ class BPCLine : public BaseCompressedLine
 // class for a line that is compressed using BDI algorithm, which contains a base and an array of deltas/immediates
 class BDILine : public BaseCompressedLine
 {
-    int m_base_size;
-    int m_delta_size;
-    int m_num_deltas;
-    vector<bool> m_is_immediate;
-    int8_t * m_base;
-    int8_t * m_d_i;
-    enum { BDI, IMM, B, Z, RAW } m_type;
-
     public:
+        int m_base_size;
+        int m_delta_size;
+        int m_num_deltas;
+        vector<bool> m_is_immediate;
+        int8_t * m_base;
+        int8_t * m_d_i;
+        enum { BDI, IMM, B, Z, RAW } m_type;
         BDILine(
             Line* line, 
             int base_size, 

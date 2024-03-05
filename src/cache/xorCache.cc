@@ -393,3 +393,125 @@ HashDeltaCache::print() const
         m_lines[i]->print();
     }
 }
+
+////////////////////////////////////////////////////////
+double
+IdealBankXORCache::get_bit_entropy() const
+{
+    unsigned num1s = 0;
+    unsigned num0s = 0;
+
+    for (unsigned i=0; i < m_lines.size(); i++) {
+        unsigned num1 = countSetBits(m_lines[i]->m_segs, m_lines[i]->m_size);
+        unsigned num0 = m_lines[i]->m_size * 8 - num1;
+        num1s += num1;
+        num0s += num0;
+    }
+    vector<int> vec = {(int)num1s, (int)num0s};
+    double entropy = calculateEntropy(vec);
+    return entropy;
+}
+
+double
+IdealBankXORCache::get_hamming_distance() const
+{
+    vector<int> hamming_distance;
+
+    for (unsigned i=0; i < m_lines.size(); i++) {
+        if (m_lines[i]->m_line_cluster_size == 1) continue;
+        unsigned num1 = countSetBits(m_lines[i]->m_segs, m_lines[i]->m_size);
+        hamming_distance.push_back((int)num1);
+    }
+    double mean = calculateMean(hamming_distance);
+    return mean;
+}
+
+int 
+IdealBankXORCache::get_compressed_size() const
+{
+    int size = 0;
+    for (unsigned i = 0; i < m_lines.size(); i++) {
+        size += m_lines[i]->m_size;
+    }
+    return size;
+}
+int
+IdealBankXORCache::get_uncompressed_size() const
+{
+    return m_uncompressed_size;
+}
+double 
+IdealBankXORCache::get_compression_ratio() const
+{
+    return (double)get_uncompressed_size() / (double)get_compressed_size();
+}
+
+
+vector<double> * 
+IdealBankXORCache::get_per_byte_entropy() const
+{
+    vector<double> * entropies = new vector<double>();
+    for (int b=0; b < m_lines[0]->m_size; b++) { // for every byte
+        unordered_map<u_int8_t, int> byte_count;
+        for (unsigned i=0; i < m_lines.size(); i++) { // for every line
+            u_int8_t byte = m_lines[i]->m_segs[b];
+            if (byte_count.find(byte) == byte_count.end()) {
+                byte_count[byte] = 1;
+            } else {
+                byte_count[byte]++;
+            }
+        }
+        vector <int> vec;
+        for (auto it = byte_count.begin(); it != byte_count.end(); it++) {
+            vec.push_back(it->second);
+        }
+        double entropy = calculateEntropy(vec);
+        entropies->push_back(entropy);
+    }
+    return entropies;
+}
+vector<double> * 
+IdealBankXORCache::get_per_byte_entropy_only_thoses_xored() const
+{
+    vector<double> * entropies = new vector<double>();
+    for (int b=0; b < m_lines[0]->m_size; b++) { // for every byte
+        unordered_map<u_int8_t, int> byte_count;
+        for (unsigned i=0; i < m_lines.size(); i++) { // for every line
+            if (m_lines[i]->m_line_cluster_size == 1) continue;
+            u_int8_t byte = m_lines[i]->m_segs[b];
+            if (byte_count.find(byte) == byte_count.end()) {
+                byte_count[byte] = 1;
+            } else {
+                byte_count[byte]++;
+            }
+        }
+        vector <int> vec;
+        for (auto it = byte_count.begin(); it != byte_count.end(); it++) {
+            vec.push_back(it->second);
+        }
+        double entropy = calculateEntropy(vec);
+        entropies->push_back(entropy);
+    }
+    return entropies;
+}
+
+void 
+IdealBankXORCache::print() const
+{
+    printf("IdealBankXORCache [ num_xored_lines: %d, bit_entropy: %f, inter_cr: %f ]\n", 
+        m_num_xored_lines, get_bit_entropy(), get_compression_ratio());
+
+    //print per byte entropy
+    vector<double> * entropies = get_per_byte_entropy();
+    printf("[ per byte entropy: ");
+    for (unsigned i=0; i < entropies->size(); i++) {
+        printf("%.2f ", entropies->at(i));
+    }
+    printf(" ]\n");
+    entropies->clear();
+    delete entropies;
+
+    for (unsigned i = 0; i < m_lines.size(); i++) {
+        m_lines[i]->print();
+    }
+}
