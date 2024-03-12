@@ -126,6 +126,8 @@ stat_to_name = {
     "histogram word pattern averagebytemsb 4": "histogram_word_pattern_averagebytemsb_32",
     "histogram word pattern averagebytemsb 3": "histogram_word_pattern_averagebytemsb_24",
     "histogram word pattern averagebytemsb 2": "histogram_word_pattern_averagebytemsb_16",
+
+    "heatcube size change<br>after oracle": "heatcube_bdi_sizechange_oracle",
 }
 
 class HashSchemeMaps:

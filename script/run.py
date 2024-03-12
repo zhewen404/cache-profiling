@@ -981,7 +981,27 @@ def plot_profiling(dumps, benchname, suitename, stats_to_plot=None):
                 bargroupgap=0.0,
             )
             fig_cs.write_image(f"img/{suitename}/profiling-{stat_to_name[stat]}-{benchname}-word-byte-hamming-heatmap-cs.pdf")
-        
+        elif "heatcube" in  stat:
+            import matplotlib.pyplot as plt
+            print(data)
+            print(len(data))
+            data = data[0:9*9*9]
+            # covert data to log scale
+            data = [x+0.000001 if x == 0 else x for x in data ]
+            data = [np.log(x) for x in data]
+
+            data = np.array(data).reshape(9, 9, 9)
+            x = y = z = np.linspace(0, 8, 9)
+            X, Y, Z = np.meshgrid(x, y, z)
+            values = data
+
+            fig_plt = plt.figure()
+            ax = fig_plt.add_subplot(111, projection='3d')
+            scatter = ax.scatter(X, Y, Z, c=values, cmap='Reds')
+            fig_plt.colorbar(scatter, ax=ax)
+
+            # plt.show()
+            plt.savefig(f"img/{suitename}/profiling-{stat_to_name[stat]}-{benchname}-heatcube.pdf")
         num += 1
     
 
@@ -1089,8 +1109,10 @@ if __name__ == "__main__":
                             #    "histogram word pattern averagebytemsb 3",
                             #    "histogram word pattern averagebytemsb 2",
 
-                               "hamming byte position<br>after oracle",
-                               "hamming byte position<br>after xor bytemap",
+                            #    "hamming byte position<br>after oracle",
+                            #    "hamming byte position<br>after xor bytemap",
+
+                               "heatcube size change<br>after oracle",
                            ])
         elif plot == "hash":
             plot_hashfunction(dumps, benchname, suitename, 

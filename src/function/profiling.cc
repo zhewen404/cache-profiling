@@ -1,6 +1,11 @@
 #include "function/profiling.hh"
 #include "cache/xorCache.hh"
 #include "common/file/file_read.hh"
+#include "cache/line.hh"
+#include "compression/intraCompressor.hh"
+#include "cache/compressedLine.hh"
+#include <unordered_map>
+using namespace std;
 
 void profiling_entropy_byte_position(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &entropies, unsigned seed)
 {
@@ -630,6 +635,57 @@ void profiling_hamming_byte_position_oracle(int num_banks, int KB_per_bank, stri
         entropies.push_back((*ham_vec)[i]);
     }
     delete ham_vec;
+    delete xorIdealBankCache;
+    delete cache;
+}
+
+void profiling_heatcube_bdi_sizechange_oracle(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &heatcube, unsigned seed)
+{
+    (void)only_those_xored;
+    (void) seed;
+    int line_size = 64;
+    int assoc = 16;
+    int shift_bank = 0;
+    int shift_set = 0;
+
+    vector<string> filenames_data;
+    vector<string> filenames_addr;
+    fill_string_arrays_data_addr(filenames_data, filenames_addr, dir, num_banks);
+
+    Cache * cache;
+    cache = new Cache(num_banks, KB_per_bank, assoc, line_size, shift_bank, shift_set);
+    cache->populate_lines(filenames_data, filenames_addr);
+    
+    IdealBankXORCache * xorIdealBankCache;
+    xorIdealBankCache = new IdealBankXORCache(*cache, new BDICompressor());
+
+    BDICompressor * bdicomp = new BDICompressor(true, false);
+    int max_rank = bdicomp->get_max_rank();
+    int dim1d = max_rank;
+    for (int i=0; i < dim1d * dim1d * dim1d; i++){
+        heatcube.push_back(0);
+    }
+
+    for (unsigned i=0; i < xorIdealBankCache->m_lines.size(); i++){
+        if (xorIdealBankCache->m_lines[i]->m_line_cluster_size == 2) {
+            Line * line0 = xorIdealBankCache->m_lines[i]->m_line_ptrs[0];
+            Line * line1 = xorIdealBankCache->m_lines[i]->m_line_ptrs[1];
+            int rank0 = bdicomp->get_rank(line0);
+            int rank1 = bdicomp->get_rank(line1);
+            int rankxor = bdicomp->get_rank(xorIdealBankCache->m_lines[i]);
+            int index = -1;
+            if (rank0 < rank1) {
+                // (rankxor, rank0, rank1)
+                index = dim1d * dim1d * rankxor + dim1d * rank0 + rank1;
+            } else {
+                // (rankxor, rank1, rank0)
+                index = dim1d * dim1d * rankxor + dim1d * rank1 + rank0;
+            }
+            heatcube[index] += 1;
+        }
+    }
+
+    delete bdicomp;
     delete xorIdealBankCache;
     delete cache;
 }
