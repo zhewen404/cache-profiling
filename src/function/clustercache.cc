@@ -558,7 +558,52 @@ void create_hashfunctions_averagebytemsb_word_labeling_16(vector<HashFunction *>
     true_hash += 1;
 }
 
+//////////////////// line labeling
+void create_hashfunctions_bdi_line_labeling_4(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact,
+    int fp_size_in_bits, int line_size, unsigned defined_seed)
+{
 
+    (void) line_size;
+    (void) fp_size_in_bits;
+    (void) defined_seed;
+    true_hash = 0;
+    funct_to_concact = 0;
+    cascade = true;
+
+    BDILineLabelingHash * bdi_ll = new BDILineLabelingHash(true, false);
+    hash_functions.push_back(bdi_ll);
+    true_hash += 1;
+}
+void create_hashfunctions_bdi_immo_line_labeling_4(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact,
+    int fp_size_in_bits, int line_size, unsigned defined_seed)
+{
+
+    (void) line_size;
+    (void) fp_size_in_bits;
+    (void) defined_seed;
+    true_hash = 0;
+    funct_to_concact = 0;
+    cascade = true;
+
+    BDILineLabelingHash * bdi_ll = new BDILineLabelingHash(true, true);
+    hash_functions.push_back(bdi_ll);
+    true_hash += 1;
+}
+void create_hashfunctions_bpc_line_labeling_8(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact,
+    int fp_size_in_bits, int line_size, unsigned defined_seed)
+{
+
+    (void) line_size;
+    (void) fp_size_in_bits;
+    (void) defined_seed;
+    true_hash = 0;
+    funct_to_concact = 0;
+    cascade = true;
+
+    BPCLineLabelingHash * bpc_ll = new BPCLineLabelingHash();
+    hash_functions.push_back(bpc_ll);
+    true_hash += 1;
+}
 ////////////////////////////////////////////////////////////////
 // for hash functions
 void map_all(bool banked, vector<unsigned> defined_seeds, int num_banks, int KB_per_bank, string dir, 

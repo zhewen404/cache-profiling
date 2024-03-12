@@ -1137,6 +1137,10 @@ if __name__ == "__main__":
                         "XORCache(BL)", 
                         # "sparsebytemap(8,6)-shuffle-xorfold-flat",
                         "XORCache(SBL)",
+                        
+                        # "bdi line labeling",
+                        # "bdi-immo line labeling",
+                        "bpc line labeling",
                         ],
                     plot_final=args.plot_final,
                     plot_errorbar=False,

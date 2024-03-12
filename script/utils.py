@@ -50,6 +50,9 @@ scheme_to_color = {
     "average byte msb(4) word labeling": px.colors.qualitative.Vivid[10],
     "average byte msb(3) word labeling": px.colors.qualitative.Vivid[10],
     "average byte msb(2) word labeling": px.colors.qualitative.Vivid[10],
+    "bdi line labeling": px.colors.qualitative.Vivid[10],
+    "bdi-immo line labeling": px.colors.qualitative.Vivid[10],
+    "bpc line labeling": px.colors.qualitative.Vivid[10],
 }
 
 scheme_to_name = {
@@ -96,6 +99,9 @@ scheme_to_name = {
     "average byte msb(4) word labeling": "averagebytemsb_word_labeling_32",
     "average byte msb(3) word labeling": "averagebytemsb_word_labeling_24",
     "average byte msb(2) word labeling": "averagebytemsb_word_labeling_16",
+    "bdi line labeling": "bdi_line_labeling_4-banked",
+    "bdi-immo line labeling": "bdi_immo_line_labeling_4-banked",
+    "bpc line labeling": "bpc_line_labeling_8-banked",
 }
 
 stat_to_name = {

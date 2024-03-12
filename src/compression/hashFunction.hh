@@ -9,6 +9,7 @@
 #include <set>
 #include "common/bit/bitvec.hh"
 #include "compression/wordPatternRecognizer.hh"
+#include "compression/linePatternRecognizer.hh"
 
 class HashFunction
 {
@@ -705,5 +706,75 @@ class AverageByteMSBWordLabelingHash : public BaseWordLabelingHash<AverageByteMS
     }
 };
 
+
+template <class T>
+class BaseLineLabelingHash : public HashFunction
+{
+    public:
+    T * m_line_recognizer;
+    BaseLineLabelingHash(T * line_recognizer) : HashFunction(), m_line_recognizer(line_recognizer) 
+    {
+        int np = m_line_recognizer->get_pattern_size_in_bits();
+        assert(np >= 1);
+        assert(np < 64);
+    }
+    ~BaseLineLabelingHash() {
+        delete m_line_recognizer;
+    }
+    int get_fingerprint_size_in_bit() {
+        int pattern_size_in_bit = m_line_recognizer->get_pattern_size_in_bits();
+        return pattern_size_in_bit;
+    }
+    u_int8_t * hash(u_int8_t * line_data, int data_size_in_bit, int &fingerprint_size_in_bit) {
+        (void) data_size_in_bit;
+        Line * line = new Line(64, 0, 0, 0, line_data);
+        assert(line->m_alloc);
+        u_int64_t pat = m_line_recognizer->get_line_pattern_type(line);
+        fingerprint_size_in_bit = m_line_recognizer->get_pattern_size_in_bits();
+        int num_byte = int(ceil(fingerprint_size_in_bit / 8.0));
+
+        u_int8_t * fingerprint = new u_int8_t[num_byte]();
+        memset(fingerprint, 0, num_byte);
+        for (int i = 0; i < fingerprint_size_in_bit; i++) {
+            int write_bit_ind = i % 8;
+            int write_byte_ind = i / 8;
+            u_int8_t val = (pat & (1 << i)) >> i << write_bit_ind;
+            fingerprint[write_byte_ind] |= val;
+        }
+        delete line;
+        return fingerprint;
+    }
+    virtual void print() const = 0;
+};
+
+class BDILineLabelingHash : public BaseLineLabelingHash<BDILinePatternRecognizer>
+{
+    public:
+    BDILineLabelingHash(bool little, bool allow_immo) : 
+        BaseLineLabelingHash<BDILinePatternRecognizer>(new BDILinePatternRecognizer(little, allow_immo)) 
+    {
+    }
+    ~BDILineLabelingHash() {
+    }
+    void print() const {
+        printf("BDILineLabelingHash\n");
+        m_line_recognizer->print();
+    }
+};
+
+class BPCLineLabelingHash : public BaseLineLabelingHash<BPCLinePatternRecognizer>
+{
+    public:
+    BPCLineLabelingHash() : 
+        BaseLineLabelingHash<BPCLinePatternRecognizer>(new BPCLinePatternRecognizer()) 
+    {
+    }
+    ~BPCLineLabelingHash() {
+    }
+    void print() const {
+        printf("BPCLineLabelingHash\n");
+        m_line_recognizer->print();
+    }
+};
 
 #endif

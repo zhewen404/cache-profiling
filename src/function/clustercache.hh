@@ -75,6 +75,9 @@ void create_hashfunctions_averagebytemsb_word_labeling_32(vector<HashFunction *>
 void create_hashfunctions_averagebytemsb_word_labeling_24(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact, int fp_size_in_bits, int line_size, unsigned defined_seed);
 void create_hashfunctions_averagebytemsb_word_labeling_16(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact, int fp_size_in_bits, int line_size, unsigned defined_seed);
 
+void create_hashfunctions_bdi_line_labeling_4(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact, int fp_size_in_bits, int line_size, unsigned defined_seed);
+void create_hashfunctions_bdi_immo_line_labeling_4(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact, int fp_size_in_bits, int line_size, unsigned defined_seed);
+void create_hashfunctions_bpc_line_labeling_8(vector<HashFunction *>& hash_functions, int& true_hash, bool& cascade, int& funct_to_concact, int fp_size_in_bits, int line_size, unsigned defined_seed);
 
 void map_all(bool banked, vector<unsigned> defined_seeds, int num_banks, int KB_per_bank, string dir, 
     vector <double> &crs, vector <double> &ers, vector <double> &frs, vector <double> &intras, vector <double> &hammings, 
