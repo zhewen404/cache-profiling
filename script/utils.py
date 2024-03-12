@@ -1,25 +1,27 @@
 import plotly.express as px
 scheme_to_color = {
+    "oracle": px.colors.qualitative.Vivid[4],
+
     "bpc": px.colors.qualitative.Vivid[9],
     "bdi": px.colors.qualitative.Vivid[9],
     "BDI": px.colors.qualitative.Vivid[9],
     "bdi-immo": px.colors.qualitative.Vivid[9],
 
     "thesaurus-flat": px.colors.qualitative.Vivid[2],
-    "thesaurus": px.colors.qualitative.Vivid[2],
+    "XORCache(LSH-RP)": px.colors.qualitative.Vivid[2],
     "thesaurus-immo": px.colors.qualitative.Vivid[2],
 
-    "shuffle-xorfold": px.colors.qualitative.Vivid[4],
+    "shuffle-xorfold": px.colors.qualitative.Vivid[8],
 
     "bit-sampling-flat": px.colors.qualitative.Vivid[3],
-    "bit-sampling": px.colors.qualitative.Vivid[3],
+    "XORCache(LSH-BS)": px.colors.qualitative.Vivid[3],
     "masked-bit-sampling_8_32": px.colors.qualitative.Vivid[3],
     "masked-bit-sampling_4_16": px.colors.qualitative.Vivid[3],
     "masked-bit-sampling_8_16": px.colors.qualitative.Vivid[3],
     "masked-bit-sampling_4_8": px.colors.qualitative.Vivid[3],
 
-    "bytemap-shuffle-xorfold-flat": px.colors.qualitative.Vivid[1],
-    "bytemap-shuffle-xorfold": px.colors.qualitative.Vivid[1],
+    "byte labeling-flat": px.colors.qualitative.Vivid[1],
+    "XORCache(BL)": px.colors.qualitative.Vivid[1],
     "maxbytemap-shuffle-xorfold": px.colors.qualitative.Vivid[1],
     "bytemap-shuffle-xorfold-bpc": px.colors.qualitative.Vivid[1],
     "bytemap-shuffle-xorfold-immo": px.colors.qualitative.Vivid[1],
@@ -30,8 +32,8 @@ scheme_to_color = {
     "lowentropy_8_16(BCD)-immo": px.colors.qualitative.Vivid[5],
 
     "sparseshuffledbytemap_8_7": px.colors.qualitative.Vivid[7],
-    "sparsebytemap(8,6)-shuffle-xorfold-flat": px.colors.qualitative.Vivid[7],
-    "sparsebytemap(8,6)-shuffle-xorfold": px.colors.qualitative.Vivid[7],
+    "sparse byte labeling-flat": px.colors.qualitative.Vivid[7],
+    "XORCache(SBL)": px.colors.qualitative.Vivid[7],
     "sparseshuffledbytemap_8_4": px.colors.qualitative.Vivid[7],
     "sparseshuffledbytemap_4_3": px.colors.qualitative.Vivid[7],
     "sparseshuffledbytemap_4_3-bpc": px.colors.qualitative.Vivid[7],
@@ -51,22 +53,24 @@ scheme_to_color = {
 }
 
 scheme_to_name = {
+    "oracle": "idealbank_bdi",
+
     "bpc": "vanila_bpc",
     "bdi": "vanila_bdi",
     "BDI": "vanila_bdi_big_end",
     "bdi-immo": "vanila_bdi_allowimmo",
     "thesaurus-flat": "thesaurus",
-    "thesaurus": "thesaurus-banked",
+    "XORCache(LSH-RP)": "thesaurus-banked",
     "thesaurus-immo": "thesaurus-immo",
     "shuffle-xorfold": "fbsxf",
     "bit-sampling-flat": "bs",
-    "bit-sampling": "bs-banked",
+    "XORCache(LSH-BS)": "bs-banked",
     "masked-bit-sampling_8_32": "maskedbs_8_32",
     "masked-bit-sampling_4_16": "maskedbs_4_16",
     "masked-bit-sampling_8_16": "maskedbs_8_16",
     "masked-bit-sampling_4_8": "maskedbs_4_8",
-    "bytemap-shuffle-xorfold-flat": "shuffledbytemap",
-    "bytemap-shuffle-xorfold": "shuffledbytemap-banked",
+    "byte labeling-flat": "shuffledbytemap",
+    "XORCache(BL)": "shuffledbytemap-banked",
     "maxbytemap-shuffle-xorfold": "shuffledmaxbytemap",
     "bytemap-shuffle-xorfold-bpc": "shuffledbytemap-bpc",
     "bytemap-shuffle-xorfold-immo": "shuffledbytemap-immo",
@@ -75,8 +79,8 @@ scheme_to_name = {
     "lowentropy_8_16(BCD)": "lowentropy_8_16",
     "lowentropy_8_16(BCD)-immo": "lowentropy_8_16-immo",
     "sparseshuffledbytemap_8_7": "sparseshuffledbytemap_8_7",
-    "sparsebytemap(8,6)-shuffle-xorfold-flat": "sparseshuffledbytemap_8_6",
-    "sparsebytemap(8,6)-shuffle-xorfold": "sparseshuffledbytemap_8_6-banked",
+    "sparse byte labeling-flat": "sparseshuffledbytemap_8_6",
+    "XORCache(SBL)": "sparseshuffledbytemap_8_6-banked",
     "sparseshuffledbytemap_8_4": "sparseshuffledbytemap_8_4",
     "sparseshuffledbytemap_4_3": "sparseshuffledbytemap_4_3",
     "sparseshuffledbytemap_4_3-bpc": "sparseshuffledbytemap_4_3-bpc",
@@ -95,6 +99,9 @@ scheme_to_name = {
 }
 
 stat_to_name = {
+    "hamming byte position<br>after oracle": "hamming_byte_position_oracle",
+    "hamming byte position<br>after xor bytemap": "hamming_byte_position_afterxor12_bytemap",
+
     "entropy byte position": "entropy_byte_position",
     "entropy byte position<br>after oracle": "entropy_byte_position_oracle",
     "entropy byte position<br>after xor rand bank": "entropy_byte_position_afterxor_randbank",

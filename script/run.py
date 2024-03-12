@@ -86,6 +86,9 @@ def plot_hashfunction(dumps, benchname, suitename, schemes_to_plot=None, plot_ev
                             num = scheme_vector[0]
                             scheme_vector = [np.nan] * 32
                             scheme_vector[31] = num
+                        elif scheme_vector[0] != 0:
+                            num = scheme_vector[0]
+                            scheme_vector = [num] * 32
                         else:
                             scheme_vector = [np.nan] * 32
                     num_points = len(scheme_vector)
@@ -116,6 +119,9 @@ def plot_hashfunction(dumps, benchname, suitename, schemes_to_plot=None, plot_ev
                             num = scheme_vector[0]
                             scheme_vector = [np.nan] * 32
                             scheme_vector[31] = num
+                        elif scheme_vector[0] != 0:
+                            num = scheme_vector[0]
+                            scheme_vector = [num] * 32
                         else:
                             scheme_vector = [np.nan] * 32
                     num_points = len(scheme_vector)
@@ -146,6 +152,9 @@ def plot_hashfunction(dumps, benchname, suitename, schemes_to_plot=None, plot_ev
                             num = scheme_vector[0]
                             scheme_vector = [np.nan] * 32
                             scheme_vector[31] = num
+                        elif scheme_vector[0] != 0:
+                            num = scheme_vector[0]
+                            scheme_vector = [num] * 32
                         else:
                             scheme_vector = [np.nan] * 32
                     num_points = len(scheme_vector)
@@ -207,6 +216,9 @@ def plot_hashfunction(dumps, benchname, suitename, schemes_to_plot=None, plot_ev
                             num = scheme_vector[0]
                             scheme_vector = [np.nan] * 32
                             scheme_vector[31] = num
+                        elif scheme_vector[0] != 0:
+                            num = scheme_vector[0]
+                            scheme_vector = [num] * 32
                         else:
                             scheme_vector = [np.nan] * 32
                     num_points = len(scheme_vector)
@@ -327,12 +339,15 @@ def plot_hashfunction(dumps, benchname, suitename, schemes_to_plot=None, plot_ev
     pio.kaleido.scope.mathjax = None
 
     if plot_final: col_ct = 2
-    else: col_ct = 5
+    else: col_ct = 6
+    
+    if plot_final: spacing = 0.1
+    else: spacing = 0.06
 
     fig = sp.make_subplots(rows=1, cols=col_ct, 
                         #    subplot_titles=("Compression Ratio", "Entropy Reduction", "False Positive Rate"),
                            shared_yaxes=False,
-                           horizontal_spacing=0.1,
+                           horizontal_spacing=spacing,
                            vertical_spacing=0,)
     
     if plot_final:
@@ -340,6 +355,7 @@ def plot_hashfunction(dumps, benchname, suitename, schemes_to_plot=None, plot_ev
     else:
         color_sequence = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', 
                         '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf',]
+        color_sequence = [scheme_to_color[s] for s in schemes_to_plot]
 
     i = 0
     for i in range(len(crs_scheme_vs_avg.items())):
@@ -348,12 +364,22 @@ def plot_hashfunction(dumps, benchname, suitename, schemes_to_plot=None, plot_ev
             max_ = list(crs_max_scheme_vs_avg.values())
             min_ = list(crs_min_scheme_vs_avg.values())
 
+            if "bdi" in scheme or "ideal" in scheme or "oracle" in scheme:
+                mode = "lines"
+            else: 
+                mode = "markers+lines"
+            
+            if "ideal" in scheme or "oracle" in scheme:
+                dash = "dash"
+            else:
+                dash = "solid"
+
             fig.add_trace(
                 go.Scatter(x=xaxis, y=avg_[i],
-                        mode='markers+lines',
+                        mode=mode,
                         name=scheme,
                         legendgroup=scheme,
-                        line=dict(color=color_sequence[i]), 
+                        line=dict(color=color_sequence[i], dash=dash), 
                         ),
                 row=1, col=1)
             if plot_errorbar:
@@ -384,8 +410,13 @@ def plot_hashfunction(dumps, benchname, suitename, schemes_to_plot=None, plot_ev
             max_ = list(intras_max_scheme_vs_avg.values())
             min_ = list(intras_min_scheme_vs_avg.values())
 
-            if "bdi" in scheme: mode = "lines"
+            if "bdi" in scheme or "ideal" in scheme or "oracle" in scheme: mode = "lines"
             else: mode = "markers+lines"
+            
+            if "ideal" in scheme or "oracle" in scheme:
+                dash = "dash"
+            else:
+                dash = "solid"
 
             fig.add_trace(
                 go.Scatter(x=xaxis, y=avg_[i],
@@ -393,7 +424,7 @@ def plot_hashfunction(dumps, benchname, suitename, schemes_to_plot=None, plot_ev
                         name=scheme,
                         showlegend=False,
                         legendgroup=scheme,
-                        line=dict(color=color_sequence[i]), 
+                        line=dict(color=color_sequence[i], dash=dash), 
                         ),
                 row=1, col=2)
             
@@ -418,7 +449,40 @@ def plot_hashfunction(dumps, benchname, suitename, schemes_to_plot=None, plot_ev
             i += 1
     fig.update_yaxes(title="Intra comp. ratio", row=1, col=2, title_standoff = 0)
 
+    from calc_xor_cache_storage_breakdown import calc_map_table
+    
     if not plot_final:
+
+        size_in_kb = [[]]
+        assoc_arr = [1]
+        i=0
+        for assoc in assoc_arr:
+            size_in_kb_ = []
+            for hash_fingerprint_size_in_bits in xaxis:
+                # if hash_fingerprint_size_in_bits < 12: 
+                #     map_table_num_entries = pow(2, hash_fingerprint_size_in_bits)
+                # else:
+                #     map_table_num_entries = 4096
+                map_table_num_entries = pow(2, hash_fingerprint_size_in_bits)
+                
+                map_table_assoc = assoc
+                map_table_num_sets = map_table_num_entries / map_table_assoc
+
+                map_table_num_entries, map_table_entry_size_in_bits, map_table_storage_in_KiB = \
+                            calc_map_table(1024, hash_fingerprint_size_in_bits, map_table_num_sets, map_table_assoc)
+                size_in_kb_.append(map_table_storage_in_KiB)
+            size_in_kb.append(size_in_kb_)
+            fig.add_trace(
+                go.Scatter(x=xaxis, y=size_in_kb_,
+                        mode="markers+lines",
+                        name="size",
+                        showlegend=False,
+                        line=dict(color="black"), 
+                        ),
+                row=1, col=3)
+            i+=1
+        fig.update_yaxes(title="Map table size (KiB)", row=1, col=3, title_standoff = 0,type="log")
+
         i=0
         for i in range(len(ers_scheme_vs_avg.items())):
                 scheme = list(ers_scheme_vs_avg.keys())[i]
@@ -426,89 +490,21 @@ def plot_hashfunction(dumps, benchname, suitename, schemes_to_plot=None, plot_ev
                 max_ = list(ers_max_scheme_vs_avg.values())
                 min_ = list(ers_min_scheme_vs_avg.values())
 
-                fig.add_trace(
-                    go.Scatter(x=xaxis, y=avg_[i],
-                            mode='markers+lines',
-                            name=scheme,
-                            showlegend=False,
-                            legendgroup=scheme,
-                            line=dict(color=color_sequence[i]), 
-                            ),
-                    row=1, col=4)
-                
-                if plot_errorbar:
-                    fig.add_trace(
-                        go.Scatter(x=xaxis, y=max_[i],
-                                mode='lines',
-                                showlegend=False,
-                                legendgroup=scheme,
-                                line=dict(color=color_sequence[i], width=0), 
-                                ),
-                        row=1, col=4)
-                    fig.add_trace(
-                        go.Scatter(x=xaxis, y=min_[i],
-                                mode='lines',
-                                showlegend=False,
-                                fill='tonexty',
-                                legendgroup=scheme,
-                                line=dict(color=color_sequence[i], width=0), 
-                                ),
-                        row=1, col=4)
-                i += 1
-        fig.update_yaxes(title="entropy reduction", row=1, col=4, title_standoff = 0)
-    
-        i=0
-        for i in range(len(frs_scheme_vs_avg.items())):
-                scheme = list(frs_scheme_vs_avg.keys())[i]
-                avg_ = list(frs_scheme_vs_avg.values())
-                max_ = list(frs_max_scheme_vs_avg.values())
-                min_ = list(frs_min_scheme_vs_avg.values())
+                if "bdi" in scheme or "ideal" in scheme or "oracle" in scheme: mode = "lines"
+                else: mode = "markers+lines"
+            
+                if "ideal" in scheme or "oracle" in scheme:
+                    dash = "dash"
+                else:
+                    dash = "solid"
 
                 fig.add_trace(
                     go.Scatter(x=xaxis, y=avg_[i],
-                            mode='markers+lines',
+                            mode=mode,
                             name=scheme,
                             showlegend=False,
                             legendgroup=scheme,
-                            line=dict(color=color_sequence[i]), 
-                            ),
-                    row=1, col=3)
-                
-                if plot_errorbar:
-                    fig.add_trace(
-                        go.Scatter(x=xaxis, y=max_[i],
-                                mode='lines',
-                                showlegend=False,
-                                legendgroup=scheme,
-                                line=dict(color=color_sequence[i], width=0), 
-                                ),
-                        row=1, col=3)
-                    fig.add_trace(
-                        go.Scatter(x=xaxis, y=min_[i],
-                                mode='lines',
-                                showlegend=False,
-                                fill='tonexty',
-                                legendgroup=scheme,
-                                line=dict(color=color_sequence[i], width=0), 
-                                ),
-                        row=1, col=3)
-                i += 1
-        fig.update_yaxes(title="false positive rate", row=1, col=3, title_standoff = 0)
-
-        i=0
-        for i in range(len(hammings_scheme_vs_avg.items())):
-                scheme = list(hammings_scheme_vs_avg.keys())[i]
-                avg_ = list(hammings_scheme_vs_avg.values())
-                max_ = list(hammings_max_scheme_vs_avg.values())
-                min_ = list(hammings_min_scheme_vs_avg.values())
-
-                fig.add_trace(
-                    go.Scatter(x=xaxis, y=avg_[i],
-                            mode='markers+lines',
-                            name=scheme,
-                            showlegend=False,
-                            legendgroup=scheme,
-                            line=dict(color=color_sequence[i]), 
+                            line=dict(color=color_sequence[i], dash=dash), 
                             ),
                     row=1, col=5)
                 
@@ -531,7 +527,99 @@ def plot_hashfunction(dumps, benchname, suitename, schemes_to_plot=None, plot_ev
                                 ),
                         row=1, col=5)
                 i += 1
-        fig.update_yaxes(title="hamming distance", row=1, col=5, title_standoff = 0)
+        fig.update_yaxes(title="entropy reduction", row=1, col=5, title_standoff = 0)
+    
+        i=0
+        for i in range(len(frs_scheme_vs_avg.items())):
+                scheme = list(frs_scheme_vs_avg.keys())[i]
+                avg_ = list(frs_scheme_vs_avg.values())
+                max_ = list(frs_max_scheme_vs_avg.values())
+                min_ = list(frs_min_scheme_vs_avg.values())
+
+                if "bdi" in scheme or "ideal" in scheme or "oracle" in scheme: mode = "lines"
+                else: mode = "markers+lines"
+            
+                if "ideal" in scheme or "oracle" in scheme:
+                    dash = "dash"
+                else:
+                    dash = "solid"
+
+                fig.add_trace(
+                    go.Scatter(x=xaxis, y=avg_[i],
+                            mode=mode,
+                            name=scheme,
+                            showlegend=False,
+                            legendgroup=scheme,
+                            line=dict(color=color_sequence[i], dash=dash), 
+                            ),
+                    row=1, col=4)
+                
+                if plot_errorbar:
+                    fig.add_trace(
+                        go.Scatter(x=xaxis, y=max_[i],
+                                mode='lines',
+                                showlegend=False,
+                                legendgroup=scheme,
+                                line=dict(color=color_sequence[i], width=0), 
+                                ),
+                        row=1, col=4)
+                    fig.add_trace(
+                        go.Scatter(x=xaxis, y=min_[i],
+                                mode='lines',
+                                showlegend=False,
+                                fill='tonexty',
+                                legendgroup=scheme,
+                                line=dict(color=color_sequence[i], width=0), 
+                                ),
+                        row=1, col=4)
+                i += 1
+        fig.update_yaxes(title="false positive rate", row=1, col=4, title_standoff = 0)
+
+        i=0
+        for i in range(len(hammings_scheme_vs_avg.items())):
+                scheme = list(hammings_scheme_vs_avg.keys())[i]
+                avg_ = list(hammings_scheme_vs_avg.values())
+                max_ = list(hammings_max_scheme_vs_avg.values())
+                min_ = list(hammings_min_scheme_vs_avg.values())
+
+                if "bdi" in scheme or "ideal" in scheme or "oracle" in scheme: mode = "lines"
+                else: mode = "markers+lines"
+            
+                if "ideal" in scheme or "oracle" in scheme:
+                    dash = "dash"
+                else:
+                    dash = "solid"
+
+                fig.add_trace(
+                    go.Scatter(x=xaxis, y=avg_[i],
+                            mode=mode,
+                            name=scheme,
+                            showlegend=False,
+                            legendgroup=scheme,
+                            line=dict(color=color_sequence[i], dash=dash), 
+                            ),
+                    row=1, col=6)
+                
+                if plot_errorbar:
+                    fig.add_trace(
+                        go.Scatter(x=xaxis, y=max_[i],
+                                mode='lines',
+                                showlegend=False,
+                                legendgroup=scheme,
+                                line=dict(color=color_sequence[i], width=0), 
+                                ),
+                        row=1, col=6)
+                    fig.add_trace(
+                        go.Scatter(x=xaxis, y=min_[i],
+                                mode='lines',
+                                showlegend=False,
+                                fill='tonexty',
+                                legendgroup=scheme,
+                                line=dict(color=color_sequence[i], width=0), 
+                                ),
+                        row=1, col=6)
+                i += 1
+        fig.update_yaxes(title="hamming distance", row=1, col=6, title_standoff = 0)
 
 
     dpi = 300
@@ -541,13 +629,20 @@ def plot_hashfunction(dumps, benchname, suitename, schemes_to_plot=None, plot_ev
                  ticklen=0,  # adjust length of the tick = distance from axis
                  )
     # make the legend horizontal at the bottom
+    if plot_final: ew = 200
+    else: ew=None
     fig.update_layout(
         legend=dict(
+        entrywidth=ew,
+        # entrywidthmode='fraction',
         orientation="h",
         yanchor="bottom",
         y=-0.4,
         xanchor="right",
-        x=1
+        x=1,
+        font=dict(
+            size=22,
+        )
     ))
 
     if plot_final: width = w
@@ -560,7 +655,7 @@ def plot_hashfunction(dumps, benchname, suitename, schemes_to_plot=None, plot_ev
         paper_bgcolor='rgba(0,0,0,0)',
         title=None,
         xaxis_title=None,
-        margin=dict(l=5, r=5, t=5, b=5),
+        margin=dict(l=2, r=2, t=2, b=2),
         font=dict(
             family="ubuntu",
             size=22,
@@ -622,7 +717,9 @@ def plot_profiling(dumps, benchname, suitename, stats_to_plot=None):
     dpi = 300
     w=3.3115
     h=1.3
-    fig = sp.make_subplots(rows=1, cols=len(stats_to_plot), 
+    fig = sp.make_subplots(rows=1, 
+                            # cols=len(stats_to_plot),
+                            cols= 1, 
                         #    subplot_titles=("Compression Ratio", "Entropy Reduction", "False Positive Rate"),
                            shared_yaxes=False,
                            horizontal_spacing=0.15,
@@ -647,14 +744,15 @@ def plot_profiling(dumps, benchname, suitename, stats_to_plot=None):
                 go.Scatter(x=list(range(len(data))),
                         y=data,
                         mode='markers+lines',
-                        # name=stat,
+                        name=stat,
                         # legendgroup=num,
-                        line=dict(color=color_sequence[0]), 
-                        showlegend=False,
+                        line=dict(color=color_sequence[num]), 
+                        # showlegend=False,
                         ),
 
-                row=1, col=num)
-        fig.update_yaxes(title=stat, row=1, col=num)
+                # row=1, col=num)
+                row=1, col=1)
+        # fig.update_yaxes(title=stat, row=1, col=num)
 
         if "entropy byte position" in stat:
             # plot word boundary as vertical lines
@@ -769,6 +867,120 @@ def plot_profiling(dumps, benchname, suitename, stats_to_plot=None):
                 bargroupgap=0.0,
             )
             fig_cs.write_image(f"img/{suitename}/profiling-{stat_to_name[stat]}-{benchname}-word-byte-entropy-heatmap-cs.pdf")
+        elif "hamming byte position" in stat:
+            # plot word boundary as vertical lines
+            for i in range(0, 64, 8):
+                fig.add_shape(
+                    # Line Vertical
+                    dict(
+                        type="line",
+                        x0=i,
+                        y0=0,
+                        x1=i,
+                        y1=255,
+                        line=dict(
+                            color="Black",
+                            width=1,
+                            dash="dot",
+                        )
+                    ),
+                    # row=1, col=num
+                    row=1, col=1
+                )
+        
+            # reshape data into 8x8 matrix
+            data = np.array(data).reshape(8, 8)
+            # take mean of each column
+            data = np.mean(data, axis=0)
+            # reverse the order of the data
+            data = data[::-1]
+            fig_new = go.Figure()
+            # plot a vector heatmap with min=0 and max=8
+            # annotate the heatmap with the data
+            fig_new.add_trace(
+                go.Heatmap(
+                    z=[data],
+                    text=[[7,6,5,4,3,2,1,0]],
+                    texttemplate="%{text}",
+                    textfont={"size":20},
+                    colorscale='RdBu_r',
+                    zmin=0,
+                    zmax=255,
+                    showscale=False,
+                    x0=0,
+                    dx=1,
+                    y0=0,
+                    dy=1,
+                    hoverinfo='z',
+                )
+            )
+            # hide y-axis
+            fig_new.update_yaxes(visible=False)
+            # hide x-axis
+            fig_new.update_xaxes(visible=False)
+            
+            fig_new.update_layout(
+                template="plotly_white",
+                width=0.5*w*dpi,
+                height=0.15*h*dpi,
+                paper_bgcolor='rgba(0,0,0,0)',
+                title=None,
+                xaxis_title=None,
+                margin=dict(l=5, r=5, t=5, b=5),
+                font=dict(
+                    family="ubuntu",
+                    size=22,
+                ),
+                bargap=0.10,
+                bargroupgap=0.0,
+            )
+            fig_new.write_image(f"img/{suitename}/profiling-{stat_to_name[stat]}-{benchname}-word-byte-hamming-heatmap.pdf")
+
+            fig_cs = go.Figure()
+            # plot a vector heatmap with min=0 and max=8
+            # annotate the heatmap with the data
+            fig_cs.add_trace(
+                go.Heatmap(
+                    z=[np.linspace(0, 255, 80)],
+                    # text=[[7,6,5,4,3,2,1,0]],
+                    # texttemplate="%{text}",
+                    # textfont={"size":20},
+                    colorscale='RdBu_r',
+                    zmin=0,
+                    zmax=255,
+                    showscale=False,
+                    x0=0,
+                    dx=1,
+                    y0=0,
+                    dy=1,
+                    hoverinfo='z',
+                )
+            )
+            # hide y-axis
+            fig_cs.update_yaxes(visible=False)
+            # show x-axis with sparse ticks
+            fig_cs.update_xaxes(
+                tickvals=[0, 39, 79],
+                ticktext=["0", "127", "255"],
+                ticklen=0,
+            )
+            
+            fig_cs.update_layout(
+                template="plotly_white",
+                width=0.5*w*dpi,
+                height=0.15*h*dpi,
+                paper_bgcolor='rgba(0,0,0,0)',
+                title=None,
+                xaxis_title=None,
+                margin=dict(l=5, r=5, t=5, b=20),
+                font=dict(
+                    family="ubuntu",
+                    size=16,
+                ),
+                bargap=0.10,
+                bargroupgap=0.0,
+            )
+            fig_cs.write_image(f"img/{suitename}/profiling-{stat_to_name[stat]}-{benchname}-word-byte-hamming-heatmap-cs.pdf")
         
         num += 1
     
@@ -859,7 +1071,7 @@ if __name__ == "__main__":
             plot_profiling(dumps, benchname, suitename,
                            stats_to_plot=[
                             #    "entropy byte position",
-                               "entropy byte position<br>after oracle",
+                            #    "entropy byte position<br>after oracle",
                             #    "entropy byte position<br>after xor rand bank",
                             #    "entropy byte position<br>after xor bytemap",
                             #    "entropy byte position<br>after xor bytemap only xored",
@@ -876,19 +1088,23 @@ if __name__ == "__main__":
                             #    "histogram word pattern averagebytemsb 4",
                             #    "histogram word pattern averagebytemsb 3",
                             #    "histogram word pattern averagebytemsb 2",
+
+                               "hamming byte position<br>after oracle",
+                               "hamming byte position<br>after xor bytemap",
                            ])
         elif plot == "hash":
             plot_hashfunction(dumps, benchname, suitename, 
                     schemes_to_plot=[
+                        "oracle", #oracle
                         # "bpc",
                         "bdi",
                         # "BDI",
                         # "bdi-immo",
                         # "thesaurus-flat",
-                        "thesaurus",
+                        "XORCache(LSH-RP)",
                         # "shuffle-xorfold",
                         # "bit-sampling-flat",
-                        "bit-sampling",
+                        "XORCache(LSH-BS)",
                         # "masked-bit-sampling_8_32",
                         # "masked-bit-sampling_4_16",
                         # "masked-bit-sampling_8_16",
@@ -907,20 +1123,21 @@ if __name__ == "__main__":
                         # "lowentropy_8_16(BCD)",
                         # "lowentropy_8_16(BCD)-immo",
                         # "EPC word labeling-flat",
-                        "EPC word labeling",
+                        # "EPC word labeling",
                         # "strong word labeling",
                         # "hycomp word labeling-flat",
-                        "hycomp word labeling",
+                        # "hycomp word labeling",
                         # "semantic word labeling",
                         # "density word labeling",
                         # "density word labeling bpc",
                         # "average byte msb(4) word labeling",
                         # "average byte msb(3) word labeling",
                         # "average byte msb(2) word labeling",
-                        # "bytemap-shuffle-xorfold-flat", 
-                        "bytemap-shuffle-xorfold", 
+                        # "byte labeling-flat", 
+                        "XORCache(BL)", 
                         # "sparsebytemap(8,6)-shuffle-xorfold-flat",
-                        "sparsebytemap(8,6)-shuffle-xorfold",
+                        "XORCache(SBL)",
                         ],
                     plot_final=args.plot_final,
+                    plot_errorbar=False,
                     )

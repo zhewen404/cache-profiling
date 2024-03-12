@@ -98,6 +98,26 @@ RandBankXORCache::get_per_byte_entropy_only_thoses_xored() const
     return entropies;
 }
 
+vector<double> * 
+RandBankXORCache::get_per_byte_hamming() const
+{
+    vector<double> * hamming = new vector<double>();
+    double hamming_byte = 0;
+    for (int b=0; b < m_line_size; b++) { // for every byte
+        unordered_map<u_int8_t, int> byte_count;
+        for (unsigned i=0; i < m_lines.size(); i++) {
+            for (unsigned j=0; j < m_lines[i].size(); j++) { // for every line
+                u_int8_t byte = m_lines[i][j]->m_segs[b];
+                hamming_byte += byte;
+            }
+        }
+        if (hamming_byte == 0) hamming_byte = 0;
+        else hamming_byte /= m_lines.size();
+        hamming->push_back(hamming_byte);
+    }
+    return hamming;
+}
+
 void 
 RandBankXORCache::print() const
 {
@@ -271,6 +291,24 @@ HashXORCache::get_per_byte_entropy_only_thoses_xored() const
     return entropies;
 }
 
+vector<double> * 
+HashXORCache::get_per_byte_hamming() const
+{
+    vector<double> * hamming = new vector<double>();
+    double hamming_byte = 0;
+    for (int b=0; b < m_line_size; b++) { // for every byte
+        unordered_map<u_int8_t, int> byte_count;
+        for (unsigned i=0; i < m_lines.size(); i++) {
+            u_int8_t byte = m_lines[i]->m_segs[b];
+            hamming_byte += byte;
+        }
+        if (hamming_byte == 0) hamming_byte = 0;
+        else hamming_byte /= m_lines.size();
+        hamming->push_back(hamming_byte);
+    }
+    return hamming;
+}
+
 void 
 HashXORCache::print() const
 {
@@ -372,6 +410,25 @@ HashDeltaCache::get_per_byte_entropy() const
     }
     return entropies;
 }
+
+vector<double> * 
+HashDeltaCache::get_per_byte_hamming() const
+{
+    vector<double> * hamming = new vector<double>();
+    double hamming_byte = 0;
+    for (int b=0; b < m_line_size; b++) { // for every byte
+        unordered_map<u_int8_t, int> byte_count;
+        for (unsigned i=0; i < m_lines.size(); i++) {
+            u_int8_t byte = m_lines[i]->m_segs[b];
+            hamming_byte += byte;
+        }
+        if (hamming_byte == 0) hamming_byte = 0;
+        else hamming_byte /= m_lines.size();
+        hamming->push_back(hamming_byte);
+    }
+    return hamming;
+}
+
 
 void 
 HashDeltaCache::print() const
@@ -493,6 +550,24 @@ IdealBankXORCache::get_per_byte_entropy_only_thoses_xored() const
         entropies->push_back(entropy);
     }
     return entropies;
+}
+
+vector<double> * 
+IdealBankXORCache::get_per_byte_hamming() const
+{
+    vector<double> * hamming = new vector<double>();
+    double hamming_byte = 0;
+    for (int b=0; b < m_line_size; b++) { // for every byte
+        unordered_map<u_int8_t, int> byte_count;
+        for (unsigned i=0; i < m_lines.size(); i++) {
+            u_int8_t byte = m_lines[i]->m_segs[b];
+            hamming_byte += byte;
+        }
+        if (hamming_byte == 0) hamming_byte = 0;
+        else hamming_byte /= m_lines.size();
+        hamming->push_back(hamming_byte);
+    }
+    return hamming;
 }
 
 void 

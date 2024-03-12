@@ -554,6 +554,85 @@ void profiling_histogram_word_pattern_averagebytemsb_16(int num_banks, int KB_pe
 }
 
 
+void profiling_hamming_byte_position_afterxor12_bytemap(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &entropies, unsigned seed)
+{
+    int line_size = 64;
+    int assoc = 16;
+    int shift_bank = 0;
+    int shift_set = 0;
+    int fp_size_in_bits = 12;
+    u_int64_t num_clusters = (u_int64_t)pow((u_int64_t)2,(u_int64_t)fp_size_in_bits);
+
+    vector<string> filenames_data;
+    vector<string> filenames_addr;
+    fill_string_arrays_data_addr(filenames_data, filenames_addr, dir, num_banks);
+
+    ClusteredCache * cache;
+
+    vector<HashFunction *> hash_functions;
+    ByteMapHash * bm = new ByteMapHash();
+    hash_functions.push_back(bm);
+    FullBitShuffleHash * fbs = new FullBitShuffleHash(seed);
+    hash_functions.push_back(fbs);
+    XORFoldingHash * x = new XORFoldingHash(fp_size_in_bits);
+    hash_functions.push_back(x);
+
+
+
+    cache = new ClusteredCache(
+        num_banks, KB_per_bank, assoc, line_size, 
+        shift_bank, shift_set, 
+        num_clusters, hash_functions,2);
+
+    cache->populate_lines(filenames_data, filenames_addr);
+
+    HashXORCache * hxorCache;
+    hxorCache = new HashXORCache(*cache);
+
+    vector<double> * ham_vec;
+    if (only_those_xored) {
+        assert(false);
+    } else {
+        ham_vec = hxorCache->get_per_byte_hamming();
+    }
+    for (unsigned i = 0; i < ham_vec->size(); i++){
+        entropies.push_back((*ham_vec)[i]);
+    }
+
+    delete ham_vec;
+    delete hxorCache;
+    delete cache;
+}
+
+void profiling_hamming_byte_position_oracle(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &entropies, unsigned seed)
+{
+    (void)only_those_xored;
+    (void) seed;
+    int line_size = 64;
+    int assoc = 16;
+    int shift_bank = 0;
+    int shift_set = 0;
+
+    vector<string> filenames_data;
+    vector<string> filenames_addr;
+    fill_string_arrays_data_addr(filenames_data, filenames_addr, dir, num_banks);
+
+    Cache * cache;
+    cache = new Cache(num_banks, KB_per_bank, assoc, line_size, shift_bank, shift_set);
+    cache->populate_lines(filenames_data, filenames_addr);
+    
+    IdealBankXORCache * xorIdealBankCache;
+    xorIdealBankCache = new IdealBankXORCache(*cache, new BDICompressor());
+
+    vector<double> * ham_vec;
+    ham_vec = xorIdealBankCache->get_per_byte_hamming();
+    for (unsigned i = 0; i < ham_vec->size(); i++){
+        entropies.push_back((*ham_vec)[i]);
+    }
+    delete ham_vec;
+    delete xorIdealBankCache;
+    delete cache;
+}
 
 void profiling_x(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &results, unsigned seed,
     void(*profiling_function)(int, int, string, bool, vector <double> &, unsigned int))

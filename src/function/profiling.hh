@@ -23,6 +23,9 @@ void profiling_histogram_word_pattern_averagebytemsb_32(int num_banks, int KB_pe
 void profiling_histogram_word_pattern_averagebytemsb_24(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &histogram, unsigned seed);
 void profiling_histogram_word_pattern_averagebytemsb_16(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &histogram, unsigned seed);
 
+void profiling_hamming_byte_position_afterxor12_bytemap(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &entropies, unsigned seed);
+void profiling_hamming_byte_position_oracle(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &entropies, unsigned seed);
+
 template <class Treg, typename Tpat>
 class WordPatternCacheProfiler
 {

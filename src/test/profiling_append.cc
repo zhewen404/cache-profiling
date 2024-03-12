@@ -6,19 +6,20 @@
 #include "function/profiling.hh"
 
 int main(int argc, char *argv[]){
-    if (argc < 2){
-        printf("Usage: %s <dir>\n", argv[0]);
+    if (argc < 3){
+        printf("Usage: %s <dir> <scheme>\n", argv[0]);
         return 1;
     }
     string dir = argv[1];
+    string name = argv[2];
     
     int num_banks = 4;
     int KB_per_bank = 256;
-    if (argc >= 3) {
-        num_banks = atoi(argv[2]);
-    }
     if (argc >= 4) {
-        KB_per_bank = atoi(argv[3]);
+        num_banks = atoi(argv[3]);
+    }
+    if (argc >= 5) {
+        KB_per_bank = atoi(argv[4]);
     }
 
 
@@ -29,12 +30,22 @@ int main(int argc, char *argv[]){
         name_extra = "-onlyxored";
     }
 
-
-    string name = "entropy_byte_position_oracle";
+    void(*profiling_function)(int, int, string, bool, vector <double> &, unsigned);
+    if (name == "entropy_byte_position_oracle") {
+        profiling_function = &profiling_entropy_byte_position_oracle;
+    } else if (name == "entropy_byte_position_afterxor12_bytemap") {
+        profiling_function = &profiling_entropy_byte_position_afterxor12_bytemap;
+    } else if (name == "hamming_byte_position_oracle") {
+        profiling_function = &profiling_hamming_byte_position_oracle;
+    } else if (name == "hamming_byte_position_afterxor12_bytemap") {
+        profiling_function = &profiling_hamming_byte_position_afterxor12_bytemap;
+    } else {
+        assert(false);
+    }
 
     vector<double> results;
     unsigned seed = 12345;
-    profiling_x(num_banks, KB_per_bank, dir, only_those_xored, results, seed, &profiling_entropy_byte_position_oracle);
+    profiling_x(num_banks, KB_per_bank, dir, only_those_xored, results, seed, profiling_function);
 
     
 

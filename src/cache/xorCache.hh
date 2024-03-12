@@ -80,6 +80,7 @@ class RandBankXORCache : public BaseCache
     double get_compression_ratio() const;
     vector<double> * get_per_byte_entropy() const;
     vector<double> * get_per_byte_entropy_only_thoses_xored() const;
+    vector<double> * get_per_byte_hamming() const;
 
 
     void print() const;
@@ -402,6 +403,7 @@ class HashXORCache : public BaseCache
     double get_false_positive_rate() const;
     vector<double> * get_per_byte_entropy() const;
     vector<double> * get_per_byte_entropy_only_thoses_xored() const;
+    vector<double> * get_per_byte_hamming() const;
 
     void print() const;
 
@@ -484,6 +486,7 @@ class HashDeltaCache : public BaseCache
     double get_compression_ratio() const;
     double get_false_positive_rate() const;
     vector<double> * get_per_byte_entropy() const;
+    vector<double> * get_per_byte_hamming() const;
 
     void print() const;
 
@@ -579,6 +582,7 @@ class IdealBankXORCache : public BaseCache
     double get_compression_ratio() const;
     vector<double> * get_per_byte_entropy() const;
     vector<double> * get_per_byte_entropy_only_thoses_xored() const;
+    vector<double> * get_per_byte_hamming() const;
 
 
     void print() const;
