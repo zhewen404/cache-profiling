@@ -32,6 +32,29 @@
 //     printf("ideal bank bit entropy: %f\n", entropy);
 //     // xorIdealBankCache->print();
 
+//     for (unsigned i = 0; i < xorIdealBankCache->m_lines.size(); i++) {
+//         XORedLine* xored_line = xorIdealBankCache->m_lines[i];
+//         if (xored_line->m_line_ptrs.size() == 2) {
+//             vector<u_int8_t> arr0 = xored_line->m_line_ptrs[0]->get_byte_arrary();
+//             vector<u_int8_t> arr1 = xored_line->m_line_ptrs[1]->get_byte_arrary();
+//             if (arr0 == arr1) {
+//                 printf("%d: exactly identical line pair\n", i);
+//             } else {
+//                 printf("%d: \nA: [ ", i);
+//                 for (unsigned j = 0; j < arr0.size(); j++) {
+//                     printf("%03d ", arr0[j]);
+//                 }
+//                 printf("], \nB: [ ");
+//                 for (unsigned j = 0; j < arr1.size(); j++) {
+//                     printf("%03d ", arr1[j]);
+//                 }
+//                 printf("]\n");
+//             }
+//             arr0.clear();
+//             arr1.clear();
+//         }
+//     }
+
 //     BDICompressedXORCache * xorCompressedCache;
 //     xorCompressedCache = new BDICompressedXORCache(*xorIdealBankCache, true, false);
 //     double inter = xorCompressedCache->get_inter_compression_ratio();

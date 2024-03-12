@@ -7,6 +7,7 @@
 using namespace std;
 
 void profiling_entropy_byte_position(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &entropies, unsigned seed);
+void profiling_entropy_byte_position_oracle(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &entropies, unsigned seed);
 void profiling_entropy_byte_position_afterxor_randbank(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &entropies, unsigned seed);
 void profiling_entropy_byte_position_afterxor12_bytemap(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &entropies, unsigned seed);
 void profiling_entropy_byte_position_afterxor12_sparseshuffledbytemap_4_3(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &entropies, unsigned seed);
@@ -150,6 +151,6 @@ class AverageByteMSBWordPatternCacheProfiler : public WordPatternCacheProfiler<A
 };
 
 void profiling_x(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &results, unsigned seed, 
-    void(*profiling_function)(int, int, string, bool, vector <double> &, double));
+    void(*profiling_function)(int, int, string, bool, vector <double> &, unsigned));
 
 #endif

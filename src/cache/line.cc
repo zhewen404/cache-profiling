@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <cstring>
 #include <algorithm>
+using namespace std;
 
 void 
 Line::print() const
@@ -24,4 +25,14 @@ Line::copyData(u_int8_t * data)
     // m_segs = (u_int8_t *) malloc(m_size * sizeof(u_int8_t));
     memcpy(m_segs, data, m_size);
     m_alloc = true;
+}
+
+vector<u_int8_t>
+Line::get_byte_arrary() const
+{
+    vector<u_int8_t> byte_array;
+    for (int i = 0; i < m_size; i++) {
+        byte_array.push_back(m_segs[i]);
+    }
+    return byte_array;
 }

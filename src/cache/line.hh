@@ -1,6 +1,7 @@
 #ifndef CACHE_LINE_HH
 #define CACHE_LINE_HH
 #include "common/type/type.hh" //include type.hh
+#include <vector>
 using namespace std;
 
 class Line
@@ -32,6 +33,8 @@ class Line
         void print() const;
 
         void copyData(u_int8_t * data);
+
+        vector<u_int8_t> get_byte_arrary() const;
 
         int m_size; // in byte
         int m_set;

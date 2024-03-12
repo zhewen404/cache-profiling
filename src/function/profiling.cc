@@ -27,6 +27,35 @@ void profiling_entropy_byte_position(int num_banks, int KB_per_bank, string dir,
     delete ent_vec;
     delete cache;
 }
+void profiling_entropy_byte_position_oracle(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &entropies, unsigned seed)
+{
+    (void)only_those_xored;
+    (void) seed;
+    int line_size = 64;
+    int assoc = 16;
+    int shift_bank = 0;
+    int shift_set = 0;
+
+    vector<string> filenames_data;
+    vector<string> filenames_addr;
+    fill_string_arrays_data_addr(filenames_data, filenames_addr, dir, num_banks);
+
+    Cache * cache;
+    cache = new Cache(num_banks, KB_per_bank, assoc, line_size, shift_bank, shift_set);
+    cache->populate_lines(filenames_data, filenames_addr);
+    
+    IdealBankXORCache * xorIdealBankCache;
+    xorIdealBankCache = new IdealBankXORCache(*cache, new BDICompressor());
+
+    vector<double> * ent_vec;
+    ent_vec = xorIdealBankCache->get_per_byte_entropy();
+    for (unsigned i = 0; i < ent_vec->size(); i++){
+        entropies.push_back((*ent_vec)[i]);
+    }
+    delete ent_vec;
+    delete xorIdealBankCache;
+    delete cache;
+}
 
 void profiling_entropy_byte_position_afterxor12_bytemap(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &entropies, unsigned seed)
 {
@@ -527,7 +556,7 @@ void profiling_histogram_word_pattern_averagebytemsb_16(int num_banks, int KB_pe
 
 
 void profiling_x(int num_banks, int KB_per_bank, string dir, bool only_those_xored, vector <double> &results, unsigned seed,
-    void(*profiling_function)(int, int, string, bool, vector <double> &, unsigned))
+    void(*profiling_function)(int, int, string, bool, vector <double> &, unsigned int))
 {
     profiling_function(num_banks, KB_per_bank, dir, only_those_xored, results, seed);
 }

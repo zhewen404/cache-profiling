@@ -96,6 +96,7 @@ scheme_to_name = {
 
 stat_to_name = {
     "entropy byte position": "entropy_byte_position",
+    "entropy byte position<br>after oracle": "entropy_byte_position_oracle",
     "entropy byte position<br>after xor rand bank": "entropy_byte_position_afterxor_randbank",
     "entropy byte position<br>after xor bytemap": "entropy_byte_position_afterxor12_bytemap",
     "entropy byte position<br>after xor bytemap only xored": "entropy_byte_position_afterxor12_bytemap-onlyxored",

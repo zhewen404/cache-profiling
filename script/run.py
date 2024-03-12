@@ -859,6 +859,7 @@ if __name__ == "__main__":
             plot_profiling(dumps, benchname, suitename,
                            stats_to_plot=[
                             #    "entropy byte position",
+                               "entropy byte position<br>after oracle",
                             #    "entropy byte position<br>after xor rand bank",
                             #    "entropy byte position<br>after xor bytemap",
                             #    "entropy byte position<br>after xor bytemap only xored",
@@ -867,14 +868,14 @@ if __name__ == "__main__":
                             #    "entropy byte position<br>after xor thesaurus",
                             #    "entropy byte position<br>after xor lowentropy_8_16(BCD)",
                             #    "entropy byte position<br>after xor lowentropy_8_16(BCD) only xored",
-                               "histogram word pattern epc",
+                            #    "histogram word pattern epc",
                             #    "histogram word pattern strong",
-                               "histogram word pattern hycomp",
+                            #    "histogram word pattern hycomp",
                             #    "histogram word pattern semantic",
-                               "histogram word pattern density",
-                               "histogram word pattern averagebytemsb 4",
-                               "histogram word pattern averagebytemsb 3",
-                               "histogram word pattern averagebytemsb 2",
+                            #    "histogram word pattern density",
+                            #    "histogram word pattern averagebytemsb 4",
+                            #    "histogram word pattern averagebytemsb 3",
+                            #    "histogram word pattern averagebytemsb 2",
                            ])
         elif plot == "hash":
             plot_hashfunction(dumps, benchname, suitename, 
