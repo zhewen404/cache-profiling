@@ -20,7 +20,8 @@ def parse_parsec_snapshots(benchname="*"):
 
 def parse_spec_snapshots(benchname="*"):
     home = os.path.expanduser('~')
-    dump_dir = f"{home}/Dropbox/result/snapshots/m5out_fs_spec2017_cachedump/dump/core4_proc4_{benchname}_seed100"
+    # dump_dir = f"{home}/Dropbox/result/snapshots/m5out_fs_spec2017_cachedump/dump/core4_proc4_{benchname}_seed100"
+    dump_dir = f"{home}/Dropbox/result/snapshots_new/m5out_fs_spec2017_cachedump/dump/core4_proc4_{benchname}_seed100"
     dumps = sorted(glob(dump_dir + "/[0-9]*/"))
     # print(dumps)
     num_dump = len(dumps)
@@ -29,7 +30,8 @@ def parse_spec_snapshots(benchname="*"):
 
 def parse_perfect_snapshots(benchname="*"):
     home = os.path.expanduser('~')
-    dump_dir = f"{home}/Dropbox/result/snapshots/m5out_fs_perfect/dump/ser/"
+    # dump_dir = f"{home}/Dropbox/result/snapshots/m5out_fs_perfect/dump/ser/"
+    dump_dir = f"{home}/Dropbox/result/snapshots_new/m5out_fs_perfect/dump/omp/"
     dumps = sorted(glob(dump_dir + "/" + benchname + "/[0-9]*/"))
     # print(dumps)
     num_dump = len(dumps)
@@ -983,11 +985,11 @@ def plot_profiling(dumps, benchname, suitename, stats_to_plot=None):
             fig_cs.write_image(f"img/{suitename}/profiling-{stat_to_name[stat]}-{benchname}-word-byte-hamming-heatmap-cs.pdf")
         elif "heatcube" in  stat:
             import matplotlib.pyplot as plt
-            print(data)
-            print(len(data))
+            # print(data)
+            # print(len(data))
             data = data[0:9*9*9]
             # covert data to log scale
-            data = [x+0.000001 if x == 0 else x for x in data ]
+            data = [x+0.000000000001 if x == 0 else x for x in data ]
             data = [np.log(x) for x in data]
 
             data = np.array(data).reshape(9, 9, 9)
@@ -997,10 +999,23 @@ def plot_profiling(dumps, benchname, suitename, stats_to_plot=None):
 
             fig_plt = plt.figure()
             ax = fig_plt.add_subplot(111, projection='3d')
+
+            ax.set_xlabel('x')
+            ax.set_ylabel('y')
+            ax.set_zlabel('z')
+
             scatter = ax.scatter(X, Y, Z, c=values, cmap='Reds')
             fig_plt.colorbar(scatter, ax=ax)
 
-            # plt.show()
+            xx, yy = np.meshgrid(range(9), range(9))
+            # zz is max of xx and yy
+            zz_max = np.maximum(xx, yy)
+            zz_min = np.minimum(xx, yy)
+            # plot the plane
+            ax.plot_surface(xx, yy, zz_max, alpha=0.5, color="blue")
+            ax.plot_surface(xx, yy, zz_min, alpha=0.5, color="green")
+
+            plt.show()
             plt.savefig(f"img/{suitename}/profiling-{stat_to_name[stat]}-{benchname}-heatcube.pdf")
         num += 1
     
@@ -1070,9 +1085,13 @@ if __name__ == "__main__":
         kb_per_bank = 64
     elif suitename == "spec":
         dumps = parse_spec_snapshots(benchname)
+        num_banks = 4
+        kb_per_bank = 64
     elif suitename == "perfect":
         dumps = parse_perfect_snapshots(benchname)
-        num_banks = 1
+        # num_banks = 1
+        num_banks = 4
+        kb_per_bank = 64
     elif suitename == "allsuite":
         dumps = parse_parsec_snapshots("*") + parse_spec_snapshots("*") + parse_perfect_snapshots("*")
     else:
@@ -1162,7 +1181,7 @@ if __name__ == "__main__":
                         
                         # "bdi line labeling",
                         # "bdi-immo line labeling",
-                        "bpc line labeling",
+                        # "bpc line labeling",
                         ],
                     plot_final=args.plot_final,
                     plot_errorbar=False,

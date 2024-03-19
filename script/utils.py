@@ -56,7 +56,8 @@ scheme_to_color = {
 }
 
 scheme_to_name = {
-    "oracle": "idealbank_bdi",
+    "oracle": "idealbank",
+    # "oracle": "idealbank_bdi",
 
     "bpc": "vanila_bpc",
     "bdi": "vanila_bdi",
