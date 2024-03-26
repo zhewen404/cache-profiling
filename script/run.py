@@ -11,7 +11,8 @@ from utils import *
 
 def parse_parsec_snapshots(benchname="*"):
     home = os.path.expanduser('~')
-    dump_dir = f"{home}/Dropbox/result/snapshots/m5out_fs_ruby_parsec_cachedump/anonymous_latency/version0/dump_64kB/c16/simlarge/"
+    # dump_dir = f"{home}/Dropbox/result/snapshots/m5out_fs_ruby_parsec_cachedump/anonymous_latency/version0/dump_64kB/c16/simlarge/"
+    dump_dir = f"{home}/Dropbox/result/snapshots_new/m5out_fs_ruby_parsec_cachedump/anonymous_latency/version0/dump_64kB/c4/simlarge/"
     dumps = sorted(glob(dump_dir + "/" + benchname + "/[0-9]*/"))
     # print(dumps)
     num_dump = len(dumps)
@@ -1081,7 +1082,7 @@ if __name__ == "__main__":
     kb_per_bank = None
     if suitename == "parsec":
         dumps = parse_parsec_snapshots(benchname)
-        num_banks = 16
+        num_banks = 4
         kb_per_bank = 64
     elif suitename == "spec":
         dumps = parse_spec_snapshots(benchname)
@@ -1109,7 +1110,7 @@ if __name__ == "__main__":
         if plot == "profiling":
             plot_profiling(dumps, benchname, suitename,
                            stats_to_plot=[
-                            #    "entropy byte position",
+                               "entropy byte position",
                             #    "entropy byte position<br>after oracle",
                             #    "entropy byte position<br>after xor rand bank",
                             #    "entropy byte position<br>after xor bytemap",
@@ -1131,7 +1132,7 @@ if __name__ == "__main__":
                             #    "hamming byte position<br>after oracle",
                             #    "hamming byte position<br>after xor bytemap",
 
-                               "heatcube size change<br>after oracle",
+                            #    "heatcube size change<br>after oracle",
                            ])
         elif plot == "hash":
             plot_hashfunction(dumps, benchname, suitename, 

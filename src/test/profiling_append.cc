@@ -35,6 +35,8 @@
 //         profiling_function = &profiling_entropy_byte_position_oracle;
 //     } else if (name == "entropy_byte_position_afterxor12_bytemap") {
 //         profiling_function = &profiling_entropy_byte_position_afterxor12_bytemap;
+//     } else if (name == "entropy_byte_position") {
+//         profiling_function = &profiling_entropy_byte_position;
 //     } else if (name == "hamming_byte_position_oracle") {
 //         profiling_function = &profiling_hamming_byte_position_oracle;
 //     } else if (name == "hamming_byte_position_afterxor12_bytemap") {

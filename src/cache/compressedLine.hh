@@ -196,7 +196,7 @@ class BDILine : public BaseCompressedLine
             vector<bool> is_immediate, 
             int8_t * base, 
             int8_t * d_i) : 
-            BaseCompressedLine(line, base_size + delta_size * (line->m_size / base_size))
+            BaseCompressedLine(line, base_size + (delta_size+1) * (line->m_size / base_size))
         {
             m_type = BDI; // constructor with bdi complete
 
