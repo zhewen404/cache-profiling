@@ -341,8 +341,8 @@ def plot_hashfunction(dumps, benchname, suitename, schemes_to_plot=None, plot_ev
     import plotly.io as pio
     pio.kaleido.scope.mathjax = None
 
-    if plot_final: col_ct = 2
-    else: col_ct = 6
+    if plot_final: col_ct = 3
+    else: col_ct = 7
     
     if plot_final: spacing = 0.1
     else: spacing = 0.06
@@ -454,6 +454,37 @@ def plot_hashfunction(dumps, benchname, suitename, schemes_to_plot=None, plot_ev
 
     from calc_xor_cache_storage_breakdown import calc_map_table
     
+    i=0
+    for i in range(len(intras_scheme_vs_avg.items())):
+        scheme = list(intras_scheme_vs_avg.keys())[i]
+        avg_intra = list(intras_scheme_vs_avg.values())
+        avg_inter = list(crs_scheme_vs_avg.values())
+        avg_ = []
+        for ii in range(len(avg_intra)):
+            avg_.append([])
+            for jj in range(len(avg_intra[ii])):
+                avg_[ii].append(avg_intra[ii][jj] * avg_inter[ii][jj])
+
+        if "bdi" in scheme or "ideal" in scheme or "oracle" in scheme: mode = "lines"
+        else: mode = "markers+lines"
+        
+        if "ideal" in scheme or "oracle" in scheme:
+            dash = "dash"
+        else:
+            dash = "solid"
+
+        fig.add_trace(
+            go.Scatter(x=xaxis, y=avg_[i],
+                    mode=mode,
+                    name=scheme,
+                    showlegend=False,
+                    legendgroup=scheme,
+                    line=dict(color=color_sequence[i], dash=dash), 
+                    ),
+            row=1, col=3)
+        i += 1
+    fig.update_yaxes(title="Total comp. ratio", row=1, col=3, title_standoff = 0)
+    
     if not plot_final:
 
         size_in_kb = [[]]
@@ -482,9 +513,9 @@ def plot_hashfunction(dumps, benchname, suitename, schemes_to_plot=None, plot_ev
                         showlegend=False,
                         line=dict(color="black"), 
                         ),
-                row=1, col=3)
+                row=1, col=7)
             i+=1
-        fig.update_yaxes(title="Map table size (KiB)", row=1, col=3, title_standoff = 0,type="log")
+        fig.update_yaxes(title="Map table size (KiB)", row=1, col=7, title_standoff = 0,type="log")
 
         i=0
         for i in range(len(ers_scheme_vs_avg.items())):
@@ -624,6 +655,7 @@ def plot_hashfunction(dumps, benchname, suitename, schemes_to_plot=None, plot_ev
                 i += 1
         fig.update_yaxes(title="hamming distance", row=1, col=6, title_standoff = 0)
 
+        
 
     dpi = 300
     w=3.3115
