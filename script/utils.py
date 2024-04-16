@@ -1,9 +1,13 @@
 import plotly.express as px
 scheme_to_color = {
+    "randSet": px.colors.qualitative.Vivid[4],
+    "randBank": px.colors.qualitative.Vivid[4],
+    "idealBank": px.colors.qualitative.Vivid[4],
     "oracle": px.colors.qualitative.Vivid[4],
 
     "bpc": px.colors.qualitative.Vivid[9],
-    "bdi": px.colors.qualitative.Vivid[9],
+    "bdi": px.colors.qualitative.Pastel[4],
+    # "bdi": px.colors.qualitative.Vivid[9],
     "BDI": px.colors.qualitative.Vivid[9],
     "bdi-immo": px.colors.qualitative.Vivid[9],
 
@@ -56,6 +60,9 @@ scheme_to_color = {
 }
 
 scheme_to_name = {
+    "randSet": "randset",
+    "randBank": "randbank",
+    "idealBank": "idealbank",
     "oracle": "idealbank",
     # "oracle": "idealbank_bdi",
 
@@ -205,3 +212,69 @@ class ProfileStatMaps:
         self.stat_arr = {}
         for key in self.stat_to_name:
             self.stat_arr[key] = []
+
+import yaml, os, sys
+from collections import OrderedDict
+from yamlordereddictloader import SafeDumper as safe_dumper_ordered
+from yamlordereddictloader import SafeLoader as safe_loader_ordered
+class bcolors:
+    PURPLE = "\033[95m"
+    OKBLUE = "\033[94m"
+    OKCYAN = "\033[96m"
+    OKGREEN = "\033[92m"
+    YELLOW = "\033[93m"
+    RED = "\033[91m"
+    ENDC = "\033[0m"
+    BOLD = "\033[1m"
+    UNDERLINE = "\033[4m"
+    SKY = "\033[36m"
+    REVERSE = "\u001b[7m"
+    ENDREVERSE = "\u001b[0m"
+    THUMB = "\U0001f44d"
+    yellow = "#FFCA68"
+    orange = "#FFA668"
+    green = "#71DBBA"
+    # gray = "#B8B8B8"
+    gray = "#9E9E9E"
+    blue = "#6D9CF5"
+    red = "#FD661F"
+    brown = "#9E7446"
+    cactus = "#9CC424"
+def create_folder(directory):
+    """
+    Checks the existence of a directory, if does not exist, create a new one
+    :param directory: path to directory under concern
+    :return: None
+    """
+    try:
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+    except OSError:
+        print(
+            bcolors.FAIL
+            + "ERROR: Creating directory: "
+            + directory
+            + bcolors.ENDC
+        )
+        sys.exit()
+
+def yaml_load(file):
+    return yaml.load(open(file), Loader=safe_loader_ordered)
+
+
+def yaml_overwrite(file, content):
+    """
+    if file exists at filepath, overwite the file, if not, create a new file
+    :param filepath: string that specifies the destination file path
+    :param content: yaml string that needs to be written to the destination file
+    :return: None
+    """
+    if os.path.exists(file):
+        os.remove(file)
+    create_folder(os.path.dirname(file))
+    out_file = open(file, "a")
+    out_file.write(
+        yaml.dump(
+            content, default_flow_style=False, Dumper=safe_dumper_ordered
+        )
+    )

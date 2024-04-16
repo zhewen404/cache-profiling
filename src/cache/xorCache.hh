@@ -74,10 +74,12 @@ class RandBankXORCache : public BaseCache
     }
 
     double get_bit_entropy() const;
+    double get_hamming_distance() const; // for only those xored
 
     int get_compressed_size() const;
     int get_uncompressed_size() const;
     double get_compression_ratio() const;
+    double get_false_positive_rate() const;
     vector<double> * get_per_byte_entropy() const;
     vector<double> * get_per_byte_entropy_only_thoses_xored() const;
     vector<double> * get_per_byte_hamming() const;
@@ -158,11 +160,13 @@ class RandSetXORCache : public BaseCache
     }
 
     double get_bit_entropy() const;
+    double get_hamming_distance() const; // for only those xored
 
 
     int get_compressed_size() const;
     int get_uncompressed_size() const;
     double get_compression_ratio() const;
+    double get_false_positive_rate() const;
 
     void print() const;
 

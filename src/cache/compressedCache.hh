@@ -172,6 +172,38 @@ class BaseCompressedXORCache : public BaseCache
             m_intra_lines.push_back(compressedLine);
         }
     }
+    BaseCompressedXORCache(const RandBankXORCache& xorcache, Tcompressor* compressor) : 
+        BaseCache(xorcache.m_num_banks, xorcache.m_size_per_bank_KB, xorcache.m_assoc, xorcache.m_line_size, 
+            xorcache.m_shift_bank, xorcache.m_shift_set),
+        m_intraCompressor(compressor),
+        m_uncompressed_size(xorcache.get_uncompressed_size()),
+        m_xor_compress_size(xorcache.get_compressed_size())
+    {
+        for (int i = 0; i < xorcache.m_num_banks; i++) {
+            vector<XORedLine*> lines = xorcache.m_lines[i];
+            for (XORedLine* line : lines) {
+            // Apply your compression algorithm here and create a CompressedLine object
+                Tline* compressedLine = m_intraCompressor->compress_a_line(line);
+                m_intra_lines.push_back(compressedLine);
+            }
+        }
+    }
+    BaseCompressedXORCache(const RandSetXORCache& xorcache, Tcompressor* compressor) : 
+        BaseCache(xorcache.m_num_banks, xorcache.m_size_per_bank_KB, xorcache.m_assoc, xorcache.m_line_size, 
+            xorcache.m_shift_bank, xorcache.m_shift_set),
+        m_intraCompressor(compressor),
+        m_uncompressed_size(xorcache.get_uncompressed_size()),
+        m_xor_compress_size(xorcache.get_compressed_size())
+    {
+        for (unsigned i = 0; i < xorcache.m_lines.size(); i++) {
+            vector<XORedLine*> lines = xorcache.m_lines[i];
+            for (XORedLine* line : lines) {
+                // Apply your compression algorithm here and create a CompressedLine object
+                Tline* compressedLine = m_intraCompressor->compress_a_line(line);
+                m_intra_lines.push_back(compressedLine);
+            }
+        }
+    }
 
     ~BaseCompressedXORCache()
     {
@@ -207,6 +239,17 @@ class BDICompressedXORCache : public BaseCompressedXORCache<BDICompressor, BDILi
     {
     }
     BDICompressedXORCache(const IdealBankXORCache& xorcache, bool use_little_e, bool allow_immo) 
+        : BaseCompressedXORCache<BDICompressor, BDILine>(xorcache, new BDICompressor(use_little_e, allow_immo)), 
+            m_use_little_endian(use_little_e), m_allow_immo(allow_immo)
+    {
+    }
+
+    BDICompressedXORCache(const RandBankXORCache& xorcache, bool use_little_e, bool allow_immo) 
+        : BaseCompressedXORCache<BDICompressor, BDILine>(xorcache, new BDICompressor(use_little_e, allow_immo)), 
+            m_use_little_endian(use_little_e), m_allow_immo(allow_immo)
+    {
+    }
+    BDICompressedXORCache(const RandSetXORCache& xorcache, bool use_little_e, bool allow_immo) 
         : BaseCompressedXORCache<BDICompressor, BDILine>(xorcache, new BDICompressor(use_little_e, allow_immo)), 
             m_use_little_endian(use_little_e), m_allow_immo(allow_immo)
     {

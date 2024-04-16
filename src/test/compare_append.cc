@@ -7,6 +7,7 @@
 #include "function/clustercache.hh"
 #include "function/vanila.hh"
 #include "function/ideal.hh"
+#include "function/rand.hh"
 
 int main(int argc, char *argv[]){
     if (argc < 3){
@@ -77,6 +78,32 @@ int main(int argc, char *argv[]){
         } else {
             ideal_x(num_banks, KB_per_bank, dir, crs6, ers6, frs6, intras6, hammings6, fbs, use_xorcache, use_little_e, allow_immo, 
                 &create_ideal_bank_bdi);
+        }
+    }
+    else if (name.find("randbank") != string::npos) {
+        if (name.find("bpc") != string::npos) {
+            printf("rand bank bpc not implemented yet\n");
+            assert(false);
+        } else {
+            rand_x(defined_seeds, num_banks, KB_per_bank, dir, 
+                crs6, ers6, frs6, intras6, hammings6, 
+                crs6_max, ers6_max, frs6_max, intras6_max, hammings6_max, 
+                crs6_min, ers6_min, frs6_min, intras6_min, hammings6_min, 
+                fbs, use_xorcache, use_little_e, allow_immo, 
+                &create_rand_bank_bdi);
+        }
+    }
+    else if (name.find("randset") != string::npos) {
+        if (name.find("bpc") != string::npos) {
+            printf("rand set bpc not implemented yet\n");
+            assert(false);
+        } else {
+            rand_x(defined_seeds, num_banks, KB_per_bank, dir, 
+                crs6, ers6, frs6, intras6, hammings6, 
+                crs6_max, ers6_max, frs6_max, intras6_max, hammings6_max, 
+                crs6_min, ers6_min, frs6_min, intras6_min, hammings6_min, 
+                fbs, use_xorcache, use_little_e, allow_immo, 
+                &create_rand_set_bdi);
         }
     }
     else {

@@ -1088,7 +1088,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='run and plot script')
     parser.add_argument('--suitename', 
                         help='suitename',
-                        choices=["parsec", "spec", "perfect", "allsuite"])
+                        choices=["parsec", "spec", "perfect", "allsuite", "pp"])
     parser.add_argument('--launch', 
                         help='launch the simulations for scheme',
                         default=None)
@@ -1125,6 +1125,8 @@ if __name__ == "__main__":
         # num_banks = 1
         num_banks = 4
         kb_per_bank = 64
+    elif suitename == "pp":
+        dumps = parse_parsec_snapshots("*") + parse_perfect_snapshots("*")
     elif suitename == "allsuite":
         dumps = parse_parsec_snapshots("*") + parse_spec_snapshots("*") + parse_perfect_snapshots("*")
     else:

@@ -1,0 +1,39 @@
+1:
+  name: blackscholes
+  short: bl
+2:
+  name: bodytrack
+  short: bo
+3:
+  name: canneal
+  short: ca
+4:
+  name: dedup
+  short: de
+5:
+  name: facesim
+  short: fa
+6:
+  name: ferret
+  short: fe
+7:
+  name: fluidanimate
+  short: fl
+8:
+  name: freqmine
+  short: fr
+9:
+  name: raytrace
+  short: ra
+10:
+  name: streamcluster
+  short: st
+11:
+  name: swaptions
+  short: sw
+12:
+  name: vips
+  short: vi
+13:
+  name: x264
+  short: x264

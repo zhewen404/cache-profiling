@@ -23,6 +23,22 @@ RandBankXORCache::get_bit_entropy() const
     return entropy;
 }
 
+double
+RandBankXORCache::get_hamming_distance() const
+{
+    vector<int> hamming_distance;
+
+    for (int i = 0; i < m_num_banks; i++) {
+        for (unsigned j = 0; j < m_lines[i].size(); j++) {
+            if (m_lines[i][j]->m_line_cluster_size == 1) continue;
+            unsigned num1 = countSetBits(m_lines[i][j]->m_segs, m_lines[i][j]->m_size);
+            hamming_distance.push_back((int)num1);
+        }
+    }
+    double mean = calculateMean(hamming_distance);
+    return mean;
+}
+
 int 
 RandBankXORCache::get_compressed_size() const
 {
@@ -43,6 +59,12 @@ double
 RandBankXORCache::get_compression_ratio() const
 {
     return (double)get_uncompressed_size() / (double)get_compressed_size();
+}
+
+double
+RandBankXORCache::get_false_positive_rate() const
+{
+    return (double) 0;
 }
 
 vector<double> * 
@@ -151,6 +173,22 @@ RandSetXORCache::get_bit_entropy() const
     return entropy;
 }
 
+double
+RandSetXORCache::get_hamming_distance() const
+{
+    vector<int> hamming_distance;
+
+    for (int i = 0; i < m_num_sets; i++) {
+        for (unsigned j = 0; j < m_lines[i].size(); j++) {
+            if (m_lines[i][j]->m_line_cluster_size == 1) continue;
+            unsigned num1 = countSetBits(m_lines[i][j]->m_segs, m_lines[i][j]->m_size);
+            hamming_distance.push_back((int)num1);
+        }
+    }
+    double mean = calculateMean(hamming_distance);
+    return mean;
+}
+
 int 
 RandSetXORCache::get_compressed_size() const
 {
@@ -171,6 +209,12 @@ double
 RandSetXORCache::get_compression_ratio() const
 {
     return (double)get_uncompressed_size() / (double)get_compressed_size();
+}
+
+double
+RandSetXORCache::get_false_positive_rate() const
+{
+    return (double) 0;
 }
 
 void 

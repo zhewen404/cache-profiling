@@ -1,0 +1,81 @@
+1:
+  name: 2d_convolution
+  short: 2dcv
+  category: pa1
+2:
+  name: dwt53
+  short: dwt
+  category: pa1
+3:
+  name: histogram_equalization
+  short: hist
+  category: pa1
+4:
+  name: debayer
+  short: dbyr
+  category: wami
+5:
+  name: lucas-kanade
+  short: lk
+  category: wami
+6:
+  name: change-detection
+  short: cd
+  category: wami
+# 7:
+#   name: blackscholes
+#   short: blkscholes
+#   category: parsec
+# 8:
+#   name: canneal
+#   short: canneal
+#   category: parsec
+# 9:
+#   name: raytrace
+#   short: raytrace
+#   category: parsec
+# # 10:
+#   name: c4_proc4_run1_seed100
+#   short: spec
+#   category: spec
+# 11:
+#   name: c4_proc4_run2_seed100
+#   short: spec
+#   category: spec
+# 12:
+#   name: c4_proc4_run3_seed100
+#   short: spec
+#   category: spec
+# 13:
+#   name: c4_proc4_run4_seed100
+#   short: spec
+#   category: spec
+# 14:
+#   name: c4_proc4_run5_seed100
+#   short: spec
+#   category: spec
+# 15:
+#   name: c4_proc4_run6_seed100
+#   short: spec
+#   category: spec
+# 16:
+#   name: c4_proc4_run7_seed100
+#   short: spec
+#   category: spec
+# 17:
+#   name: c4_proc4_run8_seed100
+#   short: spec
+#   category: spec
+# 18:
+#   name: c4_proc4_run9_seed100
+#   short: spec
+#   category: spec
+# 19:
+#   name: c4_proc4_run10_seed100
+#   short: spec
+#   category: spec
+# 20:
+#   name: c4_proc4_run11_seed100
+#   short: spec
+#   category: spec
+
