@@ -2,7 +2,7 @@
 #include "common/bit/bitvec.hh"
 #include <assert.h> 
 #include <inttypes.h>
-
+////// BaseIntraCompressor //////
 template <typename T> bool
 BaseIntraCompressor<T>::is_line_compressible_zero(Line* line) const
 {
@@ -28,6 +28,7 @@ BaseIntraCompressor<T>::is_line_compressible_repeatByte(Line* line) const
     return true;
 }
 
+//////////// BPC ////////////
 BPCLine * 
 BitPlaneCompressor::compress_a_line(Line* line)
 {
@@ -59,6 +60,7 @@ BitPlaneCompressor::get_max_rank() const
 }
 
 
+//////////// BDI ////////////
 BDILine * 
 BDICompressor::compress_a_line(Line* line)
 {
@@ -389,3 +391,4 @@ BDICompressor::get_max_rank() const
     }
     return 9; //0-8
 }
+

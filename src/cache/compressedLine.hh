@@ -357,6 +357,131 @@ class BDILine : public BaseCompressedLine
         }
 };
 
+class ThesaurusLine : public BaseCompressedLine
+{
+    public:
+        bool m_zeroline;
+        bool m_uncompressed;
+        bool m_base_only;
+        bool m_zero_plus_diff;
+        vector<int> m_byte_diff_map;
+        vector<u_int8_t> m_diff_bytes;
+        int m_num_diff_bytes;
+        Line* m_centroid_ptr;
+        ThesaurusLine(Line* line,
+            Line* centroid_nonzero,
+            bool is_zeroline, bool is_zerocentroid) : 
+            BaseCompressedLine(line, -1)
+        {
+            if (is_zeroline) {
+                m_zeroline = true;
+                m_zero_plus_diff = false;
+                m_uncompressed = false;
+                m_num_diff_bytes = -1;
+                m_base_only = false;
+                m_centroid_ptr = NULL;
+                m_compressed_size = 0;
+                return;
+            }
+            m_zeroline = false; // has its own constructor
+            int true_size = -1; // update m_compressed_size at the end!
+            if (is_zerocentroid) {
+                m_base_only = false;
+                m_num_diff_bytes = 0;
+                for (int i=0; i < line->m_size; i++) {
+                    if (line->m_segs[i] != 0) {
+                        m_byte_diff_map.push_back(1);
+                        m_diff_bytes.push_back(line->m_segs[i]);
+                        m_num_diff_bytes++;
+                    } else {
+                        m_byte_diff_map.push_back(0);
+                    }
+                }
+                assert(m_num_diff_bytes > 0);
+                true_size = m_num_diff_bytes + int(line->m_size / 8);
+                if (true_size >= line->m_size) {
+                    true_size = line->m_size;
+                    m_uncompressed = true;
+                    m_centroid_ptr = NULL;
+                    m_zero_plus_diff = false;
+                } else {
+                    m_uncompressed = false;
+                    m_centroid_ptr = centroid_nonzero;
+                    m_zero_plus_diff = true;
+                }
+            } else {
+                m_zero_plus_diff = false;
+                m_num_diff_bytes = 0;
+                for (int i=0; i < line->m_size; i++) {
+                    if (line->m_segs[i] != centroid_nonzero->m_segs[i]) {
+                        m_byte_diff_map.push_back(1);
+                        m_diff_bytes.push_back(line->m_segs[i]);
+                        m_num_diff_bytes++;
+                    } else {
+                        m_byte_diff_map.push_back(0);
+                    }
+                }
+                if (m_num_diff_bytes == 0) {
+                    m_base_only = true;
+                    true_size = 0;
+                    m_uncompressed = false;
+                    m_centroid_ptr = centroid_nonzero;
+                    m_byte_diff_map.clear();
+                    m_diff_bytes.clear();
+                } else {
+                    m_base_only = false;
+                    true_size = m_num_diff_bytes + int(line->m_size / 8);
+                    if (true_size >= line->m_size) {
+                        true_size = line->m_size;
+                        m_uncompressed = true;
+                        m_centroid_ptr = NULL;
+                    } else {
+                        m_uncompressed = false;
+                        m_centroid_ptr = centroid_nonzero;
+                    }
+                }
+
+            }
+            
+            m_compressed_size = true_size;
+        }
+        
+        ThesaurusLine(Line* zeroline) : 
+            BaseCompressedLine(zeroline, 0)
+        {
+            m_centroid_ptr = NULL;
+            m_zero_plus_diff = false;
+            m_zeroline = true;
+            m_uncompressed = false;
+            m_num_diff_bytes = -1;
+            m_base_only = false;
+        }
+
+        ~ThesaurusLine()
+        {
+            m_byte_diff_map.clear();
+            m_diff_bytes.clear();
+        }
+
+        void print()
+        {
+            printf("[ Thesaurus compressed line: zero: %d, baseonly: %d, 0+diff: %d, compressed: %d, addr: %16lx, physical size: %d, set: %d, bank: %d\n", 
+                m_zeroline, m_base_only, m_zero_plus_diff,m_uncompressed, m_addr, get_compressed_size(), m_set, m_bank);
+            printf(", num diff bytes: %d, diff byte map: ( ", m_num_diff_bytes);
+            for (unsigned i = 0; i < m_byte_diff_map.size(); i++) {
+                printf("%d ", m_byte_diff_map[i]);
+            }
+            printf(")\n");
+
+            if (m_centroid_ptr != NULL) {
+                printf(", centroid line addr: %16lx", m_centroid_ptr->m_addr);
+            }
+
+            printf(" ]\n");
+
+        }
+};
+
 
 
 #endif // CACHE_COMPRESSEDLINE_HH

@@ -19,7 +19,7 @@ class Line
             }
         };
 
-        // Line(const Line &cp);
+
 
         ~Line()
         {

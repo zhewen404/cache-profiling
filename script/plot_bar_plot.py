@@ -148,7 +148,8 @@ def format_fig(fig, onlygeomean, fignum):
     dpi = 300
     w=3.3115
     if onlygeomean: w = w/2
-    if fignum == 2: w = w*2
+    else: w = w*2
+    # if fignum == 2: w = w*2
     h=1.3
     fig.update_yaxes(ticks="outside",
                  ticklen=0,  # adjust length of the tick = distance from axis
@@ -236,7 +237,7 @@ if __name__ == "__main__":
     parser.add_argument('--fig',
                         help='set name',
                         type = int,
-                        choices=[2, 4, 12],
+                        choices=[2, 4, 5, 12],
                         default=2)
     parser.add_argument('--onlygeomean',
                         help='plot only the geomean',
@@ -330,6 +331,18 @@ if __name__ == "__main__":
             "BDI (no XOR)",
             # "randSet",
             "XORCache+BDI randBank",
+            "XORCache+BDI idealSet-0",
+            "XORCache+BDI idealSet-1",
+            "XORCache+BDI idealSet-2",
+            "XORCache+BDI idealSet-3",
+            "XORCache+BDI idealSet-4",
+            "XORCache+BDI idealBank", #oracle
+        ]
+    elif args.fig == 5: 
+        schemes_to_plot=[
+            # "BDI (no XOR)",
+            # "randSet",
+            # "XORCache+BDI randBank",
             "XORCache+BDI idealSet-0",
             "XORCache+BDI idealSet-1",
             "XORCache+BDI idealSet-2",
