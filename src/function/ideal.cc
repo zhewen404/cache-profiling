@@ -3,7 +3,8 @@
 #include "cache/compressedCache.hh"
 #include "common/file/file_read.hh"
 
-void create_ideal_bank_bdi(int num_banks, int KB_per_bank, string dir, 
+void create_ideal_bank_bdi_shift(int shift_bank, int shift_set, 
+    int num_banks, int KB_per_bank, string dir, 
     double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, double &hamming,
     bool use_little_endian, bool allow_immo)
 {
@@ -11,8 +12,8 @@ void create_ideal_bank_bdi(int num_banks, int KB_per_bank, string dir,
 
     int line_size = 64;
     int assoc = 16;
-    int shift_bank = 0;
-    int shift_set = 0;
+    // int shift_bank = 0;
+    // int shift_set = 0;
     // int fp_size_in_bits = 32;
 
     vector<string> filenames_data;
@@ -49,7 +50,8 @@ void create_ideal_bank_bdi(int num_banks, int KB_per_bank, string dir,
 }
 
 
-void create_ideal_set_bdi(int num_banks, int KB_per_bank, string dir, 
+void create_ideal_set_bdi_shift(int shift_bank, int shift_set, 
+    int num_banks, int KB_per_bank, string dir, 
     double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, double &hamming,
     bool use_little_endian, bool allow_immo)
 {
@@ -57,8 +59,8 @@ void create_ideal_set_bdi(int num_banks, int KB_per_bank, string dir,
 
     int line_size = 64;
     int assoc = 16;
-    int shift_bank = 0;
-    int shift_set = 0;
+    // int shift_bank = 0;
+    // int shift_set = 0;
     // int fp_size_in_bits = 32;
 
     vector<string> filenames_data;
@@ -96,10 +98,11 @@ void create_ideal_set_bdi(int num_banks, int KB_per_bank, string dir,
 
 
 // for vanila intra compressed cache
-void ideal_x(int num_banks, int KB_per_bank, string dir, 
+void ideal_x(int shift_bank, int shift_set, 
+    int num_banks, int KB_per_bank, string dir, 
     vector <double> &crs, vector <double> &ers, vector <double> &frs, vector <double> &intras, vector <double> &hammings, 
     vector<double> fbs, bool use_xorcache, bool use_little_e, bool allow_immo,
-    void (*create_ideal_x)(int, int, string, double &, double &, double &, double &, double &, bool, bool))
+    void (*create_ideal_x)(int, int, int, int, string, double &, double &, double &, double &, double &, bool, bool))
 {
     (void) fbs;
     (void) use_xorcache;
@@ -108,7 +111,7 @@ void ideal_x(int num_banks, int KB_per_bank, string dir,
     double intra;
     double hamming;
 
-    create_ideal_x(num_banks, KB_per_bank, dir, cr, entropy_reduction, fr, intra, hamming, use_little_e, allow_immo);
+    create_ideal_x(shift_bank, shift_set, num_banks, KB_per_bank, dir, cr, entropy_reduction, fr, intra, hamming, use_little_e, allow_immo);
     crs.push_back(cr);
     ers.push_back(entropy_reduction);
     frs.push_back(fr);

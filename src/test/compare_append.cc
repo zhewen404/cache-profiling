@@ -76,8 +76,19 @@ int main(int argc, char *argv[]){
             printf("ideal bank bpc not implemented yet\n");
             assert(false);
         } else {
-            ideal_x(num_banks, KB_per_bank, dir, crs6, ers6, frs6, intras6, hammings6, fbs, use_xorcache, use_little_e, allow_immo, 
-                &create_ideal_bank_bdi);
+            int shift_bank = 0;
+            int shift_set = 0;
+            if (name.find("shift1") != string::npos) {
+                shift_bank = 1;
+            } else if (name.find("shift2") != string::npos) {
+                shift_bank = 2;
+            } else if (name.find("shift3") != string::npos) {
+                shift_bank = 3;
+            } else if (name.find("shift4") != string::npos) {
+                shift_bank = 4;
+            } 
+            ideal_x(shift_bank, shift_set, num_banks, KB_per_bank, dir, crs6, ers6, frs6, intras6, hammings6, fbs, use_xorcache, use_little_e, allow_immo, 
+                &create_ideal_bank_bdi_shift);
         }
     }
     else if (name.find("idealset") != string::npos) {
@@ -85,8 +96,23 @@ int main(int argc, char *argv[]){
             printf("ideal set bpc not implemented yet\n");
             assert(false);
         } else {
-            ideal_x(num_banks, KB_per_bank, dir, crs6, ers6, frs6, intras6, hammings6, fbs, use_xorcache, use_little_e, allow_immo, 
-                &create_ideal_set_bdi);
+            int shift_bank = 0;
+            int shift_set = 0;
+            if (name.find("shift1") != string::npos) {
+                shift_bank = 1;
+                shift_set = 1;
+            } else if (name.find("shift2") != string::npos) {
+                shift_bank = 2;
+                shift_set = 2;
+            } else if (name.find("shift3") != string::npos) {
+                shift_bank = 3;
+                shift_set = 3;
+            } else if (name.find("shift4") != string::npos) {
+                shift_bank = 4;
+                shift_set = 4;
+            } 
+            ideal_x(shift_bank, shift_set, num_banks, KB_per_bank, dir, crs6, ers6, frs6, intras6, hammings6, fbs, use_xorcache, use_little_e, allow_immo, 
+                &create_ideal_set_bdi_shift);
         }
     }
     else if (name.find("randbank") != string::npos) {

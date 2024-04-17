@@ -132,12 +132,16 @@ def get_geomean_cr(dumps, vertical_slice_index, scheme, hashSchemeMaps):
     product_arr = [a*b for a,b in zip(res_arr[0], res_arr[1])]
     res_arr.append(product_arr)
 
+    inter_ideal = 1 if scheme=="BDI (no XOR)" else 2
+    productIdeal_arr = [inter_ideal*b for b in res_arr[1]]
+    res_arr.append(productIdeal_arr)
+
     ret_arr = []
     for arr in res_arr:
         geomean = float(gmean(arr))
         ret_arr.append(geomean)
     
-    return ret_arr, ["inter", "intra", "total"]
+    return ret_arr, ["inter", "intra", "total", "totalIdeal"]
 
 
 def format_fig(fig, onlygeomean, fignum):
@@ -152,19 +156,35 @@ def format_fig(fig, onlygeomean, fignum):
     # make the legend horizontal at the bottom
     # if plot_final: ew = 200
     # else: ew=None
-    fig.update_layout(
-        legend=dict(
-        # entrywidth=ew,
-        # entrywidthmode='fraction',
-        orientation="h",
-        yanchor="bottom",
-        y=1.02,
-        xanchor="left",
-        x=0.05,
-        font=dict(
-            size=22,
-        )
-    ))
+    if fignum == 4:
+            h=1.1
+            fig.update_layout(
+            legend=dict(
+            # entrywidth=ew,
+            # entrywidthmode='fraction',
+            orientation="h",
+            yanchor="middle",
+            y=0.5,
+            xanchor="left",
+            x=1,
+            font=dict(
+                size=20,
+            )
+        ))
+    else:
+        fig.update_layout(
+            legend=dict(
+            # entrywidth=ew,
+            # entrywidthmode='fraction',
+            orientation="h",
+            yanchor="bottom",
+            y=1.02,
+            xanchor="left",
+            x=0.05,
+            font=dict(
+                size=22,
+            )
+        ))
 
     # if plot_final: width = w
     # else: width = 2*w
@@ -297,7 +317,7 @@ if __name__ == "__main__":
             "XORCache(SBL)",
             "idealBank", #oracle
         ]
-    elif args.fig == 2 or args.fig == 4: 
+    elif args.fig == 2: 
         schemes_to_plot=[
             "BDI (no XOR)",
             # "randSet",
@@ -305,14 +325,26 @@ if __name__ == "__main__":
             "XORCache+BDI idealSet",
             "XORCache+BDI idealBank", #oracle
         ]
+    elif args.fig == 4: 
+        schemes_to_plot=[
+            "BDI (no XOR)",
+            # "randSet",
+            "XORCache+BDI randBank",
+            "XORCache+BDI idealSet-0",
+            "XORCache+BDI idealSet-1",
+            "XORCache+BDI idealSet-2",
+            "XORCache+BDI idealSet-3",
+            "XORCache+BDI idealSet-4",
+            "XORCache+BDI idealBank", #oracle
+        ]
     hashSchemeMaps = HashSchemeMaps(schemes_to_plot)
     
-    result_dicts = [{}, {}, {}]
+    result_dicts = [{}, {}, {}, {}]
 
     for scheme_to_plot in schemes_to_plot:
         inter_geomean_arr = []
         intra_geomean_arr = []
-        results_geomean_arrs = [[],[],[]]
+        results_geomean_arrs = [[],[],[], []]
         for bench, suitename_ in zip(bm, suite):
             
             vertical_slice_index = args.bit-1
@@ -342,7 +374,8 @@ if __name__ == "__main__":
     # print(result_dicts)
     short += ["gm"]
 
-    result_norm_dicts = [{}, {}, {}]
+
+    result_norm_dicts = [{}, {}, {}, {}]
     for i in range(len(result_dicts)):
         res_dict = result_dicts[i]
         key_norm = list(res_dict.keys())[0]
@@ -359,7 +392,10 @@ if __name__ == "__main__":
     i=0
     ymax = 0
     ymin = 1
-    ylim = 4.09
+    if args.fig == 2:
+        ylim = 4.09
+    else:
+        ylim = None
     for res_dict in final_res_dicts:
         fig = sp.make_subplots(rows=1, cols=1, 
                 shared_yaxes=False,
@@ -371,10 +407,10 @@ if __name__ == "__main__":
                 # short = short[-2:-1]
                 # value = value[-2:-1]
                 short = [""]
-                value = [value[len(short)-1]]
+                value = [value[-1]]
             print(key, value)
             fig.add_trace(
-                go.Bar(x=[suite_full+[""], [ str(i) for i in short]], 
+                go.Bar(x=[suite_full+[""], [ str(i) for i in short]] if not args.onlygeomean else [[""], [""]], 
                        y=value,
                         name=key,
                         showlegend=True,
@@ -383,19 +419,20 @@ if __name__ == "__main__":
                 row=1, col=1)
             ymin = min(ymin, min(value))
             ymax = max(ymax, max(value))
-            for x,y in zip(short, value):
-                if y > ylim:
-                    fig.add_annotation(
-                        x=value.index(y), 
-                        y=ylim,
-                        text=round(y,1),
-                        showarrow=False,
-                        textangle=-10,
-                        xshift=45,
-                        # xshift=(i-2)*14,
-                        yshift=-10,
-                        font=dict(size=22)
-                    )
+            if ylim is not None:
+                for x,y in zip(short, value):
+                    if y > ylim:
+                        fig.add_annotation(
+                            x=value.index(y), 
+                            y=ylim,
+                            text=round(y,1),
+                            showarrow=False,
+                            textangle=-10,
+                            xshift=45,
+                            # xshift=(i-2)*14,
+                            yshift=-10,
+                            font=dict(size=22)
+                        )
         if args.fig == 2:
             fig.add_annotation(
                 x=29.3,
@@ -428,8 +465,8 @@ if __name__ == "__main__":
                 yshift=0,
                 font=dict(size=24)
             )
-        fig.update_yaxes(range=[0.95*ymin, 1.05*ymax], row=1, col=1)
-        fig.update_yaxes(range=[0, ylim], row=1, col=1)
+        fig.update_yaxes(range=[1, 1.05*ymax], row=1, col=1)
+        if ylim is not None: fig.update_yaxes(range=[0, ylim], row=1, col=1)
 
         fig = format_fig(fig, args.onlygeomean, args.fig)
         #create dir

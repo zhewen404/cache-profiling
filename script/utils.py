@@ -1,13 +1,20 @@
 import plotly.express as px
 scheme_to_color = {
     "XORCache+BDI randSet": px.colors.qualitative.Vivid[4],
-    "XORCache+BDI randBank": px.colors.sequential.Teal[2],
-    "XORCache+BDI idealSet": px.colors.sequential.Teal[3],
+    "XORCache+BDI randBank": px.colors.sequential.Teal[1],
+
+    "XORCache+BDI idealSet": px.colors.sequential.Teal[2],
+    "XORCache+BDI idealSet-0": px.colors.sequential.Teal[2],
+    "XORCache+BDI idealSet-1": px.colors.sequential.Teal[3],
+    "XORCache+BDI idealSet-2": "#5C9EAF",
+    "XORCache+BDI idealSet-3": px.colors.sequential.Teal[4],
+    "XORCache+BDI idealSet-4": px.colors.sequential.Teal[5],
+
     "XORCache+BDI idealBank": px.colors.sequential.Teal[6],
     "oracle": px.colors.qualitative.Vivid[4],
 
     "bpc": px.colors.qualitative.Vivid[9],
-    "BDI (no XOR)": px.colors.sequential.Teal[1],
+    "BDI (no XOR)": px.colors.sequential.Teal[0],
     # "bdi": px.colors.qualitative.Pastel[4],
     "bdi": px.colors.qualitative.Vivid[9],
     "BDI": px.colors.qualitative.Vivid[9],
@@ -65,6 +72,11 @@ scheme_to_name = {
     "XORCache+BDI randSet": "randset",
     "XORCache+BDI randBank": "randbank",
     "XORCache+BDI idealSet": "idealset",
+    "XORCache+BDI idealSet-0": "idealset",
+    "XORCache+BDI idealSet-1": "idealset_shift1",
+    "XORCache+BDI idealSet-2": "idealset_shift2",
+    "XORCache+BDI idealSet-3": "idealset_shift3",
+    "XORCache+BDI idealSet-4": "idealset_shift4",
     "XORCache+BDI idealBank": "idealbank",
     "oracle": "idealbank",
     # "oracle": "idealbank_bdi",
