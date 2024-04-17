@@ -80,6 +80,15 @@ int main(int argc, char *argv[]){
                 &create_ideal_bank_bdi);
         }
     }
+    else if (name.find("idealset") != string::npos) {
+        if (name.find("bpc") != string::npos) {
+            printf("ideal set bpc not implemented yet\n");
+            assert(false);
+        } else {
+            ideal_x(num_banks, KB_per_bank, dir, crs6, ers6, frs6, intras6, hammings6, fbs, use_xorcache, use_little_e, allow_immo, 
+                &create_ideal_set_bdi);
+        }
+    }
     else if (name.find("randbank") != string::npos) {
         if (name.find("bpc") != string::npos) {
             printf("rand bank bpc not implemented yet\n");

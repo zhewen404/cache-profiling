@@ -593,4 +593,105 @@ class IdealBankXORCache : public BaseCache
 
 };
 
+
+class IdealSetXORCache : public BaseCache
+{
+    public:
+    vector<XORedLine*> m_lines; // one d vector
+    int m_uncompressed_size;
+    BDICompressor * m_intra_compressor;
+    int m_num_xored_lines;
+
+
+    IdealSetXORCache(const Cache& cache, BDICompressor * compressor) : 
+    BaseCache(cache.m_num_banks, cache.m_size_per_bank_KB, cache.m_assoc, cache.m_line_size, cache.m_shift_bank, cache.m_shift_set),
+    m_intra_compressor(compressor)
+    {
+        m_uncompressed_size = cache.get_size();
+        int max_rank = m_intra_compressor->get_max_rank();
+        for (int i = 0; i < m_num_banks; i++) {
+            // printf("bank %d\n", i);
+            for (int j = 0; j < m_num_sets; j++) {
+                // add all line, iterate through all lines in this set
+                vector<Line*> uncompressed_lines_in_this_set;
+                for (Line* line : cache.m_lines[i][j]) {
+                    uncompressed_lines_in_this_set.push_back(line);
+                }
+
+
+                // iterate through all uncompressed lines in this bank
+                while (uncompressed_lines_in_this_set.size() > 1) {
+                    if (uncompressed_lines_in_this_set.size() % 100 == 0) {
+                        // printf("    remaining size = %ld\n", uncompressed_lines_in_this_set.size());
+                    }
+                    Line* line1 = uncompressed_lines_in_this_set[0];
+                    Line* line2;
+
+                    bool found_min_rank_pair = false;
+                    for (int k = 0; k < max_rank; k++) {
+                        // printf("        checking rank %d\n", k);
+                        if (found_min_rank_pair) {
+                            break;
+                        }
+                        for (unsigned j = 1; j < uncompressed_lines_in_this_set.size(); j++) {
+                            line2 = uncompressed_lines_in_this_set[j];
+                            vector<Line*> line_pair;
+                            line_pair.push_back(line1);
+                            line_pair.push_back(line2);
+                            XORedLine* xor_line = new XORedLine(line_pair);
+                            int rank = m_intra_compressor->get_rank(xor_line);
+
+                            // find a line pair with minimum rank
+                            if (rank == k) {
+                                m_lines.push_back(xor_line);
+                                m_num_xored_lines += 1;
+                                // remove line1 and line2 from uncompressed_lines_in_this_bank
+                                uncompressed_lines_in_this_set.erase(uncompressed_lines_in_this_set.begin() + j);
+                                uncompressed_lines_in_this_set.erase(uncompressed_lines_in_this_set.begin());
+                                found_min_rank_pair = true;
+                                break;
+
+                            } else {
+                                delete xor_line;
+                            }
+                        }
+                    }
+                }
+
+                if (uncompressed_lines_in_this_set.size() == 1) {
+                    // add the last line to m_lines
+                    vector<Line*> line_pair;
+                    line_pair.push_back(uncompressed_lines_in_this_set[0]);
+                    m_lines.push_back(new XORedLine(line_pair));
+                }
+            }
+        }
+    }
+
+
+    ~IdealSetXORCache()
+    {
+        delete m_intra_compressor;
+        for (XORedLine* line : m_lines) {
+            delete line;
+        }
+    }
+
+    double get_bit_entropy() const;
+
+    double get_hamming_distance() const;
+    int get_compressed_size() const;
+    int get_uncompressed_size() const;
+    double get_compression_ratio() const;
+    vector<double> * get_per_byte_entropy() const;
+    vector<double> * get_per_byte_entropy_only_thoses_xored() const;
+    vector<double> * get_per_byte_hamming() const;
+
+
+    void print() const;
+
+};
+
+
+
 #endif // CACHE_XORCACHE_HH

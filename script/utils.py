@@ -1,13 +1,15 @@
 import plotly.express as px
 scheme_to_color = {
-    "randSet": px.colors.qualitative.Vivid[4],
-    "randBank": px.colors.qualitative.Vivid[4],
-    "idealBank": px.colors.qualitative.Vivid[4],
+    "XORCache+BDI randSet": px.colors.qualitative.Vivid[4],
+    "XORCache+BDI randBank": px.colors.sequential.Teal[2],
+    "XORCache+BDI idealSet": px.colors.sequential.Teal[3],
+    "XORCache+BDI idealBank": px.colors.sequential.Teal[6],
     "oracle": px.colors.qualitative.Vivid[4],
 
     "bpc": px.colors.qualitative.Vivid[9],
-    "bdi": px.colors.qualitative.Pastel[4],
-    # "bdi": px.colors.qualitative.Vivid[9],
+    "BDI (no XOR)": px.colors.sequential.Teal[1],
+    # "bdi": px.colors.qualitative.Pastel[4],
+    "bdi": px.colors.qualitative.Vivid[9],
     "BDI": px.colors.qualitative.Vivid[9],
     "bdi-immo": px.colors.qualitative.Vivid[9],
 
@@ -60,14 +62,16 @@ scheme_to_color = {
 }
 
 scheme_to_name = {
-    "randSet": "randset",
-    "randBank": "randbank",
-    "idealBank": "idealbank",
+    "XORCache+BDI randSet": "randset",
+    "XORCache+BDI randBank": "randbank",
+    "XORCache+BDI idealSet": "idealset",
+    "XORCache+BDI idealBank": "idealbank",
     "oracle": "idealbank",
     # "oracle": "idealbank_bdi",
 
     "bpc": "vanila_bpc",
     "bdi": "vanila_bdi",
+    "BDI (no XOR)": "vanila_bdi",
     "BDI": "vanila_bdi_big_end",
     "bdi-immo": "vanila_bdi_allowimmo",
     "thesaurus-flat": "thesaurus",

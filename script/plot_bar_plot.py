@@ -145,7 +145,7 @@ def format_fig(fig, onlygeomean, fignum):
     w=3.3115
     if onlygeomean: w = w/2
     if fignum == 2: w = w*2
-    h=1
+    h=1.3
     fig.update_yaxes(ticks="outside",
                  ticklen=0,  # adjust length of the tick = distance from axis
                  )
@@ -158,9 +158,9 @@ def format_fig(fig, onlygeomean, fignum):
         # entrywidthmode='fraction',
         orientation="h",
         yanchor="bottom",
-        y=-0.3,
-        xanchor="right",
-        x=1,
+        y=1.02,
+        xanchor="left",
+        x=0.05,
         font=dict(
             size=22,
         )
@@ -176,6 +176,7 @@ def format_fig(fig, onlygeomean, fignum):
         paper_bgcolor='rgba(0,0,0,0)',
         title=None,
         xaxis_title=None,
+        yaxis_title="Compression Ratio",
         margin=dict(l=2, r=2, t=2, b=2),
         font=dict(
             family="ubuntu",
@@ -183,6 +184,25 @@ def format_fig(fig, onlygeomean, fignum):
         ),
         bargap=0.10,
         bargroupgap=0.0,
+    )
+    fig.update_traces(marker_line_width = 0,
+                  selector=dict(type="bar"),
+                  marker_pattern_shape=None,)
+    
+    fig.update_xaxes(
+        # tickangle=90,
+        type='multicategory',
+        # tickvals=np.arange(len(new)),
+        # ticktext=new,
+        tickson="boundaries",
+        ticklen=0,
+        linewidth=0,
+        tickfont=dict(size=21),
+        showdividers=False,
+        # dividerlength=1,
+    )
+    fig.update_yaxes(
+        gridwidth=0,
     )
 
     return fig
@@ -238,22 +258,32 @@ if __name__ == "__main__":
         bm = parsec_bm
         short = parsec_short
         suite = ["parsec"]*len(bm)
+        suite_full = ["PARSEC 3.0 (Multi-threaded)"]*len(bm)
+        # class_full = ["Multi-threaded"]*len(bm)
     elif suitename == "spec":
         bm = spec_bm
         short = spec_short
         suite = ["spec"]*len(bm)
+        suite_full = ["SPEC CPU 2017 (Multi-programmed)"]*len(bm)
+        # class_full = ["Multi-programmed"]*len(bm)
     elif suitename == "perfect":
         bm = perfect_bm
         short = perfect_short
         suite = ["perfect"]*len(bm)
+        suite_full = ["PERFECT (Multi-threaded)"]*len(bm)
+        # class_full = ["Multi-threaded"]*len(bm)
     elif suitename == "pp":
         bm = perfect_bm + parsec_bm
         short = perfect_short + parsec_short
         suite = ["perfect"]*len(perfect_bm) + ["parsec"]*len(parsec_bm)
+        suite_full = ["PERFECT (Multi-threaded)"]*len(perfect_bm) + ["PARSEC 3.0 (Multi-threaded)"]*len(parsec_bm)
+        # class_full = ["Multi-threaded"]*len(bm)
     elif suitename == "allsuite":
         bm = perfect_bm + parsec_bm + spec_bm
         short = perfect_short + parsec_short + spec_short
         suite = ["perfect"]*len(perfect_bm) + ["parsec"]*len(parsec_bm) + ["spec"]*len(spec_bm)
+        suite_full = ["PERFECT (Multi-threaded)"]*len(perfect_bm) + ["PARSEC 3.0 (Multi-threaded)"]*len(parsec_bm) + ["SPEC CPU 2017 (Multi-programmed)"]*len(spec_bm)
+        # class_full = ["Multi-threaded"]*len(perfect_bm) + ["Multi-threaded"]*len(parsec_bm) + ["Multi-programmed"]*len(spec_bm)
     else:
         print("Error: unknown suitename")
         sys.exit(1)
@@ -269,10 +299,11 @@ if __name__ == "__main__":
         ]
     elif args.fig == 2 or args.fig == 4: 
         schemes_to_plot=[
-            "bdi",
-            "randSet",
-            "randBank",
-            "idealBank", #oracle
+            "BDI (no XOR)",
+            # "randSet",
+            "XORCache+BDI randBank",
+            "XORCache+BDI idealSet",
+            "XORCache+BDI idealBank", #oracle
         ]
     hashSchemeMaps = HashSchemeMaps(schemes_to_plot)
     
@@ -305,11 +336,11 @@ if __name__ == "__main__":
             geomean = float(gmean(results_geomean_arrs[i]))
             arimean = float(sum(results_geomean_arrs[i])/len(results_geomean_arrs[i]))
             results_geomean_arrs[i].append(geomean)
-            results_geomean_arrs[i].append(arimean)
+            # results_geomean_arrs[i].append(arimean)
             
             result_dicts[i][scheme_to_plot] = results_geomean_arrs[i]
     # print(result_dicts)
-    short += ["gm", "am"]
+    short += ["gm"]
 
     result_norm_dicts = [{}, {}, {}]
     for i in range(len(result_dicts)):
@@ -328,6 +359,7 @@ if __name__ == "__main__":
     i=0
     ymax = 0
     ymin = 1
+    ylim = 4.09
     for res_dict in final_res_dicts:
         fig = sp.make_subplots(rows=1, cols=1, 
                 shared_yaxes=False,
@@ -339,10 +371,11 @@ if __name__ == "__main__":
                 # short = short[-2:-1]
                 # value = value[-2:-1]
                 short = [""]
-                value = [value[len(short)-2]]
+                value = [value[len(short)-1]]
             print(key, value)
             fig.add_trace(
-                go.Bar(x=short, y=value,
+                go.Bar(x=[suite_full+[""], [ str(i) for i in short]], 
+                       y=value,
                         name=key,
                         showlegend=True,
                         marker_color=scheme_to_color[key],
@@ -350,7 +383,54 @@ if __name__ == "__main__":
                 row=1, col=1)
             ymin = min(ymin, min(value))
             ymax = max(ymax, max(value))
+            for x,y in zip(short, value):
+                if y > ylim:
+                    fig.add_annotation(
+                        x=value.index(y), 
+                        y=ylim,
+                        text=round(y,1),
+                        showarrow=False,
+                        textangle=-10,
+                        xshift=45,
+                        # xshift=(i-2)*14,
+                        yshift=-10,
+                        font=dict(size=22)
+                    )
+        if args.fig == 2:
+            fig.add_annotation(
+                x=29.3,
+                y=3.1,
+                xref="x",
+                yref="y",
+                text="",
+                showarrow=True,
+                font=dict(
+                    family="Courier New, monospace",
+                    # size=16,
+                    # color="#ffffff"
+                    ),
+                align="center",
+                arrowhead=2,
+                arrowsize=1,
+                arrowwidth=3,
+                # arrowcolor="#636363",
+                ax=-42,
+                ay=120,
+            )
+
+            fig.add_annotation(
+                x=29.1,
+                y=3.4,
+                text="2.08x",
+                showarrow=False,
+                textangle=0,
+                xshift=0,
+                yshift=0,
+                font=dict(size=24)
+            )
         fig.update_yaxes(range=[0.95*ymin, 1.05*ymax], row=1, col=1)
+        fig.update_yaxes(range=[0, ylim], row=1, col=1)
+
         fig = format_fig(fig, args.onlygeomean, args.fig)
         #create dir
         os.makedirs(f'img_bar/fig{args.fig}/{suitename}', exist_ok=True)
