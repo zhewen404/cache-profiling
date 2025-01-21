@@ -412,4 +412,390 @@ class BPCCompressedXORCache : public BaseCompressedXORCache<BitPlaneCompressor, 
     void print() const;
 };
 
+class ThesaurusCompressedXORCache : public BaseCache
+{
+    public:
+    vector<vector<vector<ThesaurusLine*>>> m_banked_intra_lines;
+    vector<vector<XORedLine*>> m_banked_centroids; // bank, bin
+    vector<vector<int>> m_banked_cntrs;
+    ThesaurusCompressor* m_interCompressor;
+    ThesaurusLSHash * m_lsh;
+    int m_uncompressed_size;
+    int m_xor_compress_size;
+    int m_all_compressed_size;
+    int m_num_intra_compressed_lines;
+    ThesaurusCompressedXORCache(const HashXORCache& xorcache, unsigned seed)  : 
+        BaseCache(xorcache.m_num_banks, xorcache.m_size_per_bank_KB, xorcache.m_assoc, xorcache.m_line_size, 
+            xorcache.m_shift_bank, xorcache.m_shift_set),
+        m_uncompressed_size(xorcache.get_uncompressed_size()),
+        m_xor_compress_size(xorcache.get_compressed_size())
+    {
+        m_interCompressor = new ThesaurusCompressor();
+        m_lsh = new ThesaurusLSHash(12, xorcache.m_line_size, seed);
+        vector<vector<XORedLine*>> xored_lines_banked;
+        for (int i = 0; i < xorcache.m_num_banks; i++) {
+            vector<XORedLine*> lines_in_this_bank;
+            for (Line* line : xorcache.m_lines) {
+                if (line->m_bank == i) {
+                    lines_in_this_bank.push_back((XORedLine*)line);
+                }
+            }
+            xored_lines_banked.push_back(lines_in_this_bank);
+        }
+
+        for (int i = 0; i < xorcache.m_num_banks; i++) {
+            // printf("bank %d\n", i);
+            // add a vector of size 2^12
+            vector<vector<ThesaurusLine*>> lines_this_bank(4096,vector<ThesaurusLine*>(0));
+            vector<XORedLine*> centroids_this_bank(4096);
+            vector<int> cntrs_this_bank(4096);
+
+            // iterate through all the lines in this bank
+            for (XORedLine* line : xored_lines_banked[i]) {
+                // m_uncompressed_size += line->m_size;
+                // m_num_lines++;
+                // apply thesaurus lsh on the line
+                int fingerprint_size_in_bit;
+                u_int8_t * lshfp = m_lsh->hash(line->m_segs, (line->m_size)*8, fingerprint_size_in_bit);
+                int fingerprint_size_in_byte = (fingerprint_size_in_bit + 7) / 8;
+                assert (fingerprint_size_in_byte <= 2);
+                unsigned fingerprint = 0;
+                memcpy(&fingerprint, lshfp, ceil(fingerprint_size_in_bit/8.0)); 
+
+                assert(fingerprint < 4096);
+                // printf("    fingerprint %u, ", fingerprint);
+                
+                // check if centroid exists
+                if (centroids_this_bank[fingerprint] == NULL) {
+                    // printf("new centroid added\n");
+                    // create a new centroid
+                    centroids_this_bank[fingerprint] = new XORedLine(line->m_line_ptrs);
+                    cntrs_this_bank[fingerprint] = 1;
+                    m_all_compressed_size += line->m_size;
+                } else {
+                    // printf("found existing centroid\n");
+                    // update the centroid
+                    cntrs_this_bank[fingerprint]++;
+                    ThesaurusLine * tLine = m_interCompressor->compress_a_line(line, centroids_this_bank[fingerprint]);
+                    m_all_compressed_size += tLine->m_compressed_size;
+                    if (tLine->m_compressed_size < line->m_size) {
+                        m_num_intra_compressed_lines++;
+                    }
+                    lines_this_bank[fingerprint].push_back(tLine);
+                }
+
+            }
+            // printf("bank %d done\n", i);
+            m_banked_intra_lines.push_back(lines_this_bank);
+            m_banked_centroids.push_back(centroids_this_bank);
+            m_banked_cntrs.push_back(cntrs_this_bank);
+        }
+        // printf("done with thesaurus constructor\n");
+        
+    }
+    ThesaurusCompressedXORCache(const IdealBankXORCacheThesaurus& xorcache, unsigned seed)   : 
+        BaseCache(xorcache.m_num_banks, xorcache.m_size_per_bank_KB, xorcache.m_assoc, xorcache.m_line_size, 
+            xorcache.m_shift_bank, xorcache.m_shift_set),
+        m_uncompressed_size(xorcache.get_uncompressed_size()),
+        m_xor_compress_size(xorcache.get_compressed_size())
+    {
+        m_interCompressor = new ThesaurusCompressor();
+        m_lsh = new ThesaurusLSHash(12, xorcache.m_line_size, seed);
+        vector<vector<XORedLine*>> xored_lines_banked;
+        for (int i = 0; i < xorcache.m_num_banks; i++) {
+            vector<XORedLine*> lines_in_this_bank;
+            for (Line* line : xorcache.m_lines) {
+                if (line->m_bank == i) {
+                    lines_in_this_bank.push_back((XORedLine*)line);
+                }
+            }
+            xored_lines_banked.push_back(lines_in_this_bank);
+        }
+
+        for (int i = 0; i < xorcache.m_num_banks; i++) {
+            printf("bank %d\n", i);
+            // add a vector of size 2^12
+            vector<vector<ThesaurusLine*>> lines_this_bank(4096,vector<ThesaurusLine*>(0));
+            vector<XORedLine*> centroids_this_bank(4096);
+            vector<int> cntrs_this_bank(4096);
+
+            // iterate through all the lines in this bank
+            for (XORedLine* line : xored_lines_banked[i]) {
+                // m_uncompressed_size += line->m_size;
+                // m_num_lines++;
+                // apply thesaurus lsh on the line
+                int fingerprint_size_in_bit;
+                u_int8_t * lshfp = m_lsh->hash(line->m_segs, (line->m_size)*8, fingerprint_size_in_bit);
+                int fingerprint_size_in_byte = (fingerprint_size_in_bit + 7) / 8;
+                assert (fingerprint_size_in_byte <= 2);
+                unsigned fingerprint = 0;
+                memcpy(&fingerprint, lshfp, ceil(fingerprint_size_in_bit/8.0)); 
+
+                assert(fingerprint < 4096);
+                printf("    fingerprint %u, ", fingerprint);
+                
+                // check if centroid exists
+                if (centroids_this_bank[fingerprint] == NULL) {
+                    printf("new centroid added\n");
+                    // create a new centroid
+                    centroids_this_bank[fingerprint] = new XORedLine(line->m_line_ptrs);
+                    cntrs_this_bank[fingerprint] = 1;
+                    m_all_compressed_size += line->m_size;
+                } else {
+                    printf("found existing centroid\n");
+                    // update the centroid
+                    cntrs_this_bank[fingerprint]++;
+                    ThesaurusLine * tLine = m_interCompressor->compress_a_line(line, centroids_this_bank[fingerprint]);
+                    m_all_compressed_size += tLine->m_compressed_size;
+                    if (tLine->m_compressed_size < line->m_size) {
+                        m_num_intra_compressed_lines++;
+                    }
+                    lines_this_bank[fingerprint].push_back(tLine);
+                }
+
+            }
+            printf("bank %d done\n", i);
+            m_banked_intra_lines.push_back(lines_this_bank);
+            m_banked_centroids.push_back(centroids_this_bank);
+            m_banked_cntrs.push_back(cntrs_this_bank);
+        }
+        // printf("done with thesaurus constructor\n");
+        
+    }
+    ThesaurusCompressedXORCache(const IdealSetXORCache& xorcache, unsigned seed)   : 
+        BaseCache(xorcache.m_num_banks, xorcache.m_size_per_bank_KB, xorcache.m_assoc, xorcache.m_line_size, 
+            xorcache.m_shift_bank, xorcache.m_shift_set),
+        m_uncompressed_size(xorcache.get_uncompressed_size()),
+        m_xor_compress_size(xorcache.get_compressed_size())
+    {
+        m_interCompressor = new ThesaurusCompressor();
+        m_lsh = new ThesaurusLSHash(12, xorcache.m_line_size, seed);
+        vector<vector<XORedLine*>> xored_lines_banked;
+        for (int i = 0; i < xorcache.m_num_banks; i++) {
+            vector<XORedLine*> lines_in_this_bank;
+            for (Line* line : xorcache.m_lines) {
+                if (line->m_bank == i) {
+                    lines_in_this_bank.push_back((XORedLine*)line);
+                }
+            }
+            xored_lines_banked.push_back(lines_in_this_bank);
+        }
+
+        for (int i = 0; i < xorcache.m_num_banks; i++) {
+            // printf("bank %d\n", i);
+            // add a vector of size 2^12
+            vector<vector<ThesaurusLine*>> lines_this_bank(4096,vector<ThesaurusLine*>(0));
+            vector<XORedLine*> centroids_this_bank(4096);
+            vector<int> cntrs_this_bank(4096);
+
+            // iterate through all the lines in this bank
+            for (XORedLine* line : xored_lines_banked[i]) {
+                // m_uncompressed_size += line->m_size;
+                // m_num_lines++;
+                // apply thesaurus lsh on the line
+                int fingerprint_size_in_bit;
+                u_int8_t * lshfp = m_lsh->hash(line->m_segs, (line->m_size)*8, fingerprint_size_in_bit);
+                int fingerprint_size_in_byte = (fingerprint_size_in_bit + 7) / 8;
+                assert (fingerprint_size_in_byte <= 2);
+                unsigned fingerprint = 0;
+                memcpy(&fingerprint, lshfp, ceil(fingerprint_size_in_bit/8.0)); 
+
+                assert(fingerprint < 4096);
+                // printf("    fingerprint %u, ", fingerprint);
+                
+                // check if centroid exists
+                if (centroids_this_bank[fingerprint] == NULL) {
+                    // printf("new centroid added\n");
+                    // create a new centroid
+                    centroids_this_bank[fingerprint] = new XORedLine(line->m_line_ptrs);
+                    cntrs_this_bank[fingerprint] = 1;
+                    m_all_compressed_size += line->m_size;
+                } else {
+                    // printf("found existing centroid\n");
+                    // update the centroid
+                    cntrs_this_bank[fingerprint]++;
+                    ThesaurusLine * tLine = m_interCompressor->compress_a_line(line, centroids_this_bank[fingerprint]);
+                    m_all_compressed_size += tLine->m_compressed_size;
+                    if (tLine->m_compressed_size < line->m_size) {
+                        m_num_intra_compressed_lines++;
+                    }
+                    lines_this_bank[fingerprint].push_back(tLine);
+                }
+
+            }
+            // printf("bank %d done\n", i);
+            m_banked_intra_lines.push_back(lines_this_bank);
+            m_banked_centroids.push_back(centroids_this_bank);
+            m_banked_cntrs.push_back(cntrs_this_bank);
+        }
+        // printf("done with thesaurus constructor\n");
+        
+    }
+
+    ThesaurusCompressedXORCache(const RandBankXORCache& xorcache, unsigned seed)   : 
+        BaseCache(xorcache.m_num_banks, xorcache.m_size_per_bank_KB, xorcache.m_assoc, xorcache.m_line_size, 
+            xorcache.m_shift_bank, xorcache.m_shift_set),
+        m_uncompressed_size(xorcache.get_uncompressed_size()),
+        m_xor_compress_size(xorcache.get_compressed_size())
+    {
+        m_interCompressor = new ThesaurusCompressor();
+        m_lsh = new ThesaurusLSHash(12, xorcache.m_line_size, seed);
+        for (int i = 0; i < xorcache.m_num_banks; i++) {
+            // printf("bank %d\n", i);
+            // add a vector of size 2^12
+            vector<vector<ThesaurusLine*>> lines_this_bank(4096,vector<ThesaurusLine*>(0));
+            vector<XORedLine*> centroids_this_bank(4096);
+            vector<int> cntrs_this_bank(4096);
+
+            // iterate through all the lines in this bank
+            for (XORedLine* line : xorcache.m_lines[i]) {
+                // m_uncompressed_size += line->m_size;
+                // m_num_lines++;
+                // apply thesaurus lsh on the line
+                int fingerprint_size_in_bit;
+                u_int8_t * lshfp = m_lsh->hash(line->m_segs, (line->m_size)*8, fingerprint_size_in_bit);
+                int fingerprint_size_in_byte = (fingerprint_size_in_bit + 7) / 8;
+                assert (fingerprint_size_in_byte <= 2);
+                unsigned fingerprint = 0;
+                memcpy(&fingerprint, lshfp, ceil(fingerprint_size_in_bit/8.0)); 
+
+                assert(fingerprint < 4096);
+                // printf("    fingerprint %u, ", fingerprint);
+                
+                // check if centroid exists
+                if (centroids_this_bank[fingerprint] == NULL) {
+                    // printf("new centroid added\n");
+                    // create a new centroid
+                    centroids_this_bank[fingerprint] = new XORedLine(line->m_line_ptrs);
+                    cntrs_this_bank[fingerprint] = 1;
+                    m_all_compressed_size += line->m_size;
+                } else {
+                    // printf("found existing centroid\n");
+                    // update the centroid
+                    cntrs_this_bank[fingerprint]++;
+                    ThesaurusLine * tLine = m_interCompressor->compress_a_line(line, centroids_this_bank[fingerprint]);
+                    m_all_compressed_size += tLine->m_compressed_size;
+                    if (tLine->m_compressed_size < line->m_size) {
+                        m_num_intra_compressed_lines++;
+                    }
+                    lines_this_bank[fingerprint].push_back(tLine);
+                }
+
+            }
+            // printf("bank %d done\n", i);
+            m_banked_intra_lines.push_back(lines_this_bank);
+            m_banked_centroids.push_back(centroids_this_bank);
+            m_banked_cntrs.push_back(cntrs_this_bank);
+        }
+    }
+    ThesaurusCompressedXORCache(const RandSetXORCache& xorcache, unsigned seed)   : 
+        BaseCache(xorcache.m_num_banks, xorcache.m_size_per_bank_KB, xorcache.m_assoc, xorcache.m_line_size, 
+            xorcache.m_shift_bank, xorcache.m_shift_set),
+        m_uncompressed_size(xorcache.get_uncompressed_size()),
+        m_xor_compress_size(xorcache.get_compressed_size())
+    {
+        m_interCompressor = new ThesaurusCompressor();
+        m_lsh = new ThesaurusLSHash(12, xorcache.m_line_size, seed);
+        for (int i = 0; i < xorcache.m_num_banks; i++) {
+            // printf("bank %d\n", i);
+            // add a vector of size 2^12
+            vector<vector<ThesaurusLine*>> lines_this_bank(4096,vector<ThesaurusLine*>(0));
+            vector<XORedLine*> centroids_this_bank(4096);
+            vector<int> cntrs_this_bank(4096);
+
+            // iterate through all the lines in this bank
+            for (XORedLine* line : xorcache.m_lines[i]) {
+                // m_uncompressed_size += line->m_size;
+                // m_num_lines++;
+                // apply thesaurus lsh on the line
+                int fingerprint_size_in_bit;
+                u_int8_t * lshfp = m_lsh->hash(line->m_segs, (line->m_size)*8, fingerprint_size_in_bit);
+                int fingerprint_size_in_byte = (fingerprint_size_in_bit + 7) / 8;
+                assert (fingerprint_size_in_byte <= 2);
+                unsigned fingerprint = 0;
+                memcpy(&fingerprint, lshfp, ceil(fingerprint_size_in_bit/8.0)); 
+
+                assert(fingerprint < 4096);
+                // printf("    fingerprint %u, ", fingerprint);
+                
+                // check if centroid exists
+                if (centroids_this_bank[fingerprint] == NULL) {
+                    // printf("new centroid added\n");
+                    // create a new centroid
+                    centroids_this_bank[fingerprint] = new XORedLine(line->m_line_ptrs);
+                    cntrs_this_bank[fingerprint] = 1;
+                    m_all_compressed_size += line->m_size;
+                } else {
+                    // printf("found existing centroid\n");
+                    // update the centroid
+                    cntrs_this_bank[fingerprint]++;
+                    ThesaurusLine * tLine = m_interCompressor->compress_a_line(line, centroids_this_bank[fingerprint]);
+                    m_all_compressed_size += tLine->m_compressed_size;
+                    if (tLine->m_compressed_size < line->m_size) {
+                        m_num_intra_compressed_lines++;
+                    }
+                    lines_this_bank[fingerprint].push_back(tLine);
+                }
+
+            }
+            // printf("bank %d done\n", i);
+            m_banked_intra_lines.push_back(lines_this_bank);
+            m_banked_centroids.push_back(centroids_this_bank);
+            m_banked_cntrs.push_back(cntrs_this_bank);
+        }
+    }
+    ~ThesaurusCompressedXORCache()
+    {
+        // printf("deleting thesaurus compressed cache\n");
+        for (unsigned i=0; i < m_banked_intra_lines.size(); i++) { //bank
+            for (unsigned j=0; j < m_banked_intra_lines[i].size(); j++) { //bin
+                for (unsigned k=0; k < m_banked_intra_lines[i][j].size(); k++) { // lines in this bin
+                    delete m_banked_intra_lines[i][j][k];
+                }
+                m_banked_intra_lines[i][j].clear();
+            }
+            m_banked_intra_lines[i].clear();
+        }
+        m_banked_intra_lines.clear();
+        // printf("done deleting banked centroids\n");
+
+
+        for (unsigned i=0; i < m_banked_centroids.size(); i++) {
+            for (unsigned j=0; j < m_banked_centroids[i].size(); j++) {
+                // delete lines in each set
+                if (m_banked_centroids[i][j] != NULL) {
+                    delete m_banked_centroids[i][j];
+                }
+            }
+            m_banked_centroids[i].clear();
+        }
+        m_banked_centroids.clear();
+        // printf("done deleting banked centroids\n");
+
+
+        for (unsigned i=0; i < m_banked_cntrs.size(); i++) {
+            m_banked_cntrs[i].clear();
+        }
+        m_banked_cntrs.clear();
+
+        // printf("done deleting thesaurus compressed cache\n");
+
+        delete m_interCompressor;
+        delete m_lsh;
+    }
+    void print() const;
+
+    int get_all_compressed_size() const;
+    int get_xor_compressed_size() const;
+    int get_uncompressed_size() const;
+    double get_total_compression_ratio() const;
+    double get_inter_compression_ratio() const;
+    double get_intra_compression_ratio() const;
+
+    int get_num_lines() const;
+    int get_num_compressed_lines() const;
+    double get_coverage_rate() const;
+};
+
+
 #endif // CACHE_COMPRESSEDCACHE_HH

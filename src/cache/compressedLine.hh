@@ -482,6 +482,34 @@ class ThesaurusLine : public BaseCompressedLine
         }
 };
 
-
+class SparseByteLine : public BaseCompressedLine
+{
+    public:
+    SparseByteLine(Line* line): BaseCompressedLine(line, -1)
+    {
+        int true_size = -1;
+        int num_diff_bytes = 0;
+        for (int i = 0; i < line->m_size; i++) {
+            if (line->m_segs[i] != 0) {
+                num_diff_bytes++;
+            }
+        }
+        true_size = num_diff_bytes + int(line->m_size / 8);
+        if (true_size >= line->m_size) {
+            true_size = line->m_size;
+        }
+        m_compressed_size = true_size;
+    }
+    ~SparseByteLine()
+    {
+    }
+    void print()
+    {
+        printf("[ SparseByte compressed line addr: %16lx, physical size: %d, set: %d, bank: %d", 
+            m_addr, m_compressed_size, m_set, m_bank);
+        // do not print the data for now
+        printf(" ]\n");
+    }
+};
 
 #endif // CACHE_COMPRESSEDLINE_HH

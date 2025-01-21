@@ -606,7 +606,9 @@ void create_hashfunctions_bpc_line_labeling_8(vector<HashFunction *>& hash_funct
 }
 ////////////////////////////////////////////////////////////////
 // for hash functions
-void map_all(bool banked, vector<unsigned> defined_seeds, int num_banks, int KB_per_bank, string dir, 
+void map_all(bool banked, vector<unsigned> defined_seeds, 
+    int shift_bank, int shift_set, 
+    int num_banks, int KB_per_bank, string dir, 
     vector <double> &crs, vector <double> &ers, vector <double> &frs, vector <double> &intras, vector <double> &hammings, 
     vector <double> &crs_max, vector <double> &ers_max, vector <double> &frs_max, vector <double> &intras_max, vector <double> &hammings_max, 
     vector <double> &crs_min, vector <double> &ers_min, vector <double> &frs_min, vector <double> &intras_min, vector <double> &hammings_min, 
@@ -623,9 +625,9 @@ void map_all(bool banked, vector<unsigned> defined_seeds, int num_banks, int KB_
         for (unsigned j = 0; j < defined_seeds.size(); j++) {
             unsigned defined_seed = defined_seeds[j];
             if (banked) {
-                map_x_banked(defined_seed, num_banks, KB_per_bank, dir, fbs[i], cr, entropy_reduction, fr, intra, hamming, use_xorcache, use_little_e, allow_immo, type, create_hash_functions_x);
+                map_x_banked(defined_seed, shift_bank, shift_set, num_banks, KB_per_bank, dir, fbs[i], cr, entropy_reduction, fr, intra, hamming, use_xorcache, use_little_e, allow_immo, type, create_hash_functions_x);
             } else {
-                map_x_flat(defined_seed, num_banks, KB_per_bank, dir, fbs[i], cr, entropy_reduction, fr, intra, hamming, use_xorcache, use_little_e, allow_immo, type, create_hash_functions_x);
+                map_x_flat(defined_seed, shift_bank, shift_set, num_banks, KB_per_bank, dir, fbs[i], cr, entropy_reduction, fr, intra, hamming, use_xorcache, use_little_e, allow_immo, type, create_hash_functions_x);
             }
             
             assert(cr > 0); // gmean
@@ -674,7 +676,9 @@ void map_all(bool banked, vector<unsigned> defined_seeds, int num_banks, int KB_
 }
 
 // for hash functions
-void map_x_flat(unsigned defined_seed, int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, 
+void map_x_flat(unsigned defined_seed, 
+    int shift_bank, int shift_set, 
+    int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, 
     double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, double &hamming, 
     bool use_xorcache, bool use_little_e, bool allow_immo, intracomp_t type,
     void (*create_hash_functions_x)(vector<HashFunction *> &, int &, bool &, int &, int, int, unsigned)
@@ -684,8 +688,8 @@ void map_x_flat(unsigned defined_seed, int num_banks, int KB_per_bank, string di
 
     int line_size = 64;
     int assoc = 16;
-    int shift_bank = 0;
-    int shift_set = 0;
+    // int shift_bank = 0;
+    // int shift_set = 0;
     
     int true_hash = 0;
     int funct_to_concact = 0;
@@ -723,7 +727,9 @@ void map_x_flat(unsigned defined_seed, int num_banks, int KB_per_bank, string di
     delete cache;
 }
 
-void map_x_banked(unsigned defined_seed, int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, 
+void map_x_banked(unsigned defined_seed, 
+    int shift_bank, int shift_set, 
+    int num_banks, int KB_per_bank, string dir, int fp_size_in_bits, 
     double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, double &hamming, 
     bool use_xorcache, bool use_little_e, bool allow_immo, intracomp_t type,
     void (*create_hash_functions_x)(vector<HashFunction *> &, int &, bool &, int &, int, int, unsigned)
@@ -733,8 +739,8 @@ void map_x_banked(unsigned defined_seed, int num_banks, int KB_per_bank, string 
 
     int line_size = 64;
     int assoc = 16;
-    int shift_bank = 0;
-    int shift_set = 0;
+    // int shift_bank = 0;
+    // int shift_set = 0;
     
     int true_hash = 0;
     int funct_to_concact = 0;

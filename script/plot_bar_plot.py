@@ -237,7 +237,7 @@ if __name__ == "__main__":
     parser.add_argument('--fig',
                         help='set name',
                         type = int,
-                        choices=[2, 4, 5, 12],
+                        choices=[2, 4, 5, 12, 14],
                         default=2)
     parser.add_argument('--onlygeomean',
                         help='plot only the geomean',
@@ -350,6 +350,16 @@ if __name__ == "__main__":
             "XORCache+BDI idealSet-4",
             "XORCache+BDI idealBank", #oracle
         ]
+    elif args.fig == 14: 
+        schemes_to_plot=[
+            "BDI (no XOR)",
+            "XORCache(SBL)",
+            "XORCache(SBL)-1",
+            "XORCache(SBL)-2",
+            "XORCache(SBL)-3",
+            "XORCache(SBL)-4",
+            "XORCache+BDI idealBank", #oracle
+        ]
     hashSchemeMaps = HashSchemeMaps(schemes_to_plot)
     
     result_dicts = [{}, {}, {}, {}]
@@ -385,7 +395,7 @@ if __name__ == "__main__":
             
             result_dicts[i][scheme_to_plot] = results_geomean_arrs[i]
     # print(result_dicts)
-    short += ["gm"]
+    short += ["gmean"]
 
 
     result_norm_dicts = [{}, {}, {}, {}]
@@ -407,6 +417,8 @@ if __name__ == "__main__":
     ymin = 1
     if args.fig == 2:
         ylim = 4.09
+    elif args.fig == 4:
+        ylim = 3.05
     else:
         ylim = None
     for res_dict in final_res_dicts:
@@ -448,8 +460,8 @@ if __name__ == "__main__":
                         )
         if args.fig == 2:
             fig.add_annotation(
-                x=29.3,
-                y=3.1,
+                x=5.2,
+                y=4.09,
                 xref="x",
                 yref="y",
                 text="",
@@ -463,23 +475,85 @@ if __name__ == "__main__":
                 arrowhead=2,
                 arrowsize=1,
                 arrowwidth=3,
-                # arrowcolor="#636363",
-                ax=-42,
-                ay=120,
+                arrowcolor="#3B738F",
+                ax=-37,
+                ay=190,
+            )
+            fig.add_annotation(
+                x=4.7,
+                y=3.2,
+                text="3.0x",
+                showarrow=False,
+                textangle=-80,
+                xshift=0,
+                yshift=0,
+                font=dict(size=24, color = "#4F90A6")
+            )
+            
+            fig.add_annotation(
+                x=6.2,
+                y=4.09,
+                xref="x",
+                yref="y",
+                text="",
+                showarrow=True,
+                font=dict(
+                    family="Courier New, monospace",
+                    # size=16,
+                    # color="#ffffff"
+                    ),
+                align="center",
+                arrowhead=2,
+                arrowsize=1,
+                arrowwidth=3,
+                arrowcolor="#3B738F",
+                ax=-37,
+                ay=190,
+            )
+            fig.add_annotation(
+                x=5.7,
+                y=3.2,
+                text="4.7x",
+                showarrow=False,
+                textangle=-80,
+                xshift=0,
+                yshift=0,
+                font=dict(size=24, color = "#4F90A6")
             )
 
             fig.add_annotation(
-                x=29.1,
-                y=3.4,
-                text="2.08x",
+                x=8.19,
+                y=3.87,
+                xref="x",
+                yref="y",
+                text="",
+                showarrow=True,
+                font=dict(
+                    family="Courier New, monospace",
+                    # size=16,
+                    # color="#ffffff"
+                    ),
+                align="center",
+                arrowhead=2,
+                arrowsize=1,
+                arrowwidth=3,
+                arrowcolor="#3B738F",
+                ax=-37,
+                ay=182,
+            )
+            fig.add_annotation(
+                x=7.7,
+                y=3.2,
+                text="3.0x",
                 showarrow=False,
-                textangle=0,
+                textangle=-80,
                 xshift=0,
                 yshift=0,
-                font=dict(size=24)
+                font=dict(size=24, color = "#4F90A6")
             )
         fig.update_yaxes(range=[1, 1.05*ymax], row=1, col=1)
         if ylim is not None: fig.update_yaxes(range=[0, ylim], row=1, col=1)
+        if args.fig == 4 and ylim is not None: fig.update_yaxes(range=[1, ylim], row=1, col=1)
 
         fig = format_fig(fig, args.onlygeomean, args.fig)
         #create dir

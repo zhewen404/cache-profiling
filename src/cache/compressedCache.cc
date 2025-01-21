@@ -470,3 +470,72 @@ BPCCompressedXORCache::print() const
     }
 }
 
+void 
+ThesaurusCompressedXORCache::print() const
+{
+    printf("ThesaurusCompressedXORCache\n");
+}
+
+int
+ThesaurusCompressedXORCache::get_all_compressed_size() const
+{
+    return m_all_compressed_size;
+}
+int
+ThesaurusCompressedXORCache::get_xor_compressed_size() const
+{
+    return m_xor_compress_size;
+}
+int
+ThesaurusCompressedXORCache::get_uncompressed_size() const
+{
+    return m_uncompressed_size;
+}
+double
+ThesaurusCompressedXORCache::get_total_compression_ratio() const
+{
+    int compressed_size = get_all_compressed_size();
+    int uncompressed_size = get_uncompressed_size();
+    double compression_ratio =  (double)uncompressed_size / (double)compressed_size;
+    return compression_ratio;
+}
+double
+ThesaurusCompressedXORCache::get_inter_compression_ratio() const
+{
+    int compressed_size = get_xor_compressed_size();
+    int uncompressed_size = get_uncompressed_size();
+    double compression_ratio =  (double)uncompressed_size / (double)compressed_size;
+    return compression_ratio;
+}
+double
+ThesaurusCompressedXORCache::get_intra_compression_ratio() const
+{
+    int compressed_size = get_all_compressed_size();
+    int uncompressed_size = get_xor_compressed_size();
+    double compression_ratio =  (double)uncompressed_size / (double)compressed_size;
+    return compression_ratio;
+}
+int
+ThesaurusCompressedXORCache::get_num_lines() const
+{
+    int num_lines = 0;
+    for (long unsigned int i = 0; i < m_banked_intra_lines.size(); i++) {
+        for (long unsigned int j = 0; j < m_banked_intra_lines[i].size(); j++) {
+            for (long unsigned int k = 0; k < m_banked_intra_lines[i][j].size(); k++) {
+                num_lines++;
+            }
+        }
+    }
+    return num_lines;
+}
+int
+ThesaurusCompressedXORCache::get_num_compressed_lines() const
+{
+    return m_num_intra_compressed_lines;
+}
+double
+ThesaurusCompressedXORCache::get_coverage_rate() const
+{
+    double rate = (double)get_num_compressed_lines() / (double)get_num_lines();
+    return rate;
+}

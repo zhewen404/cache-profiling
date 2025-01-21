@@ -392,3 +392,33 @@ BDICompressor::get_max_rank() const
     return 9; //0-8
 }
 
+//////////// SB ////////////
+SparseByteLine * 
+SparseByteCompressor::compress_a_line(Line* line)
+{
+    SparseByteLine * bpcLine = new SparseByteLine(line);
+    return bpcLine;
+}
+
+void
+SparseByteCompressor::print() const
+{
+    printf("[ SparseByteCompressor ]\n");
+}
+
+int
+SparseByteCompressor::get_rank(Line* line)
+{
+    SparseByteLine * bpcLine = compress_a_line(line);
+    int size = bpcLine->m_compressed_size;
+    int rank = size-1;
+    delete bpcLine;
+
+    return rank;
+}
+
+int 
+SparseByteCompressor::get_max_rank() const
+{
+    return 64; //0-63
+}

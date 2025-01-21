@@ -56,7 +56,8 @@ def launch(dir, launch_flag, num_banks=None, kb_per_bank=None):
     print(f"Launching {cmd}")
     os.system(cmd)
 
-def plot_hashfunction(dumps, benchname, suitename, schemes_to_plot=None, plot_even_only=False, plot_errorbar=True, plot_final=False):
+def plot_hashfunction(dumps, benchname, suitename, schemes_to_plot=None, 
+                      plot_even_only=False, plot_errorbar=True, plot_final=False, plot_num=0):
     hashSchemeMaps = HashSchemeMaps(schemes_to_plot)
 
     num_points = 0
@@ -341,7 +342,13 @@ def plot_hashfunction(dumps, benchname, suitename, schemes_to_plot=None, plot_ev
     import plotly.io as pio
     pio.kaleido.scope.mathjax = None
 
-    if plot_final: col_ct = 3
+    if plot_final: 
+        if plot_num == 0:
+            col_ct = 3
+        elif plot_num == 1:
+            col_ct = 2
+        elif plot_num == 2:
+            col_ct = 1
     else: col_ct = 7
     
     if plot_final: spacing = 0.1
@@ -360,60 +367,123 @@ def plot_hashfunction(dumps, benchname, suitename, schemes_to_plot=None, plot_ev
                         '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf',]
         color_sequence = [scheme_to_color[s] for s in schemes_to_plot]
 
-    i = 0
-    for i in range(len(crs_scheme_vs_avg.items())):
-            scheme = list(crs_scheme_vs_avg.keys())[i]
-            avg_ = list(crs_scheme_vs_avg.values())
-            max_ = list(crs_max_scheme_vs_avg.values())
-            min_ = list(crs_min_scheme_vs_avg.values())
+    from calc_xor_cache_storage_breakdown import calc_map_table
 
-            if "bdi" in scheme or "ideal" in scheme or "oracle" in scheme:
-                mode = "lines"
-            else: 
-                mode = "markers+lines"
-            
-            if "ideal" in scheme or "oracle" in scheme:
-                dash = "dash"
-            else:
-                dash = "solid"
+    if plot_num != 2:
+        i = 0
+        for i in range(len(crs_scheme_vs_avg.items())):
+                scheme = list(crs_scheme_vs_avg.keys())[i]
+                avg_ = list(crs_scheme_vs_avg.values())
+                max_ = list(crs_max_scheme_vs_avg.values())
+                min_ = list(crs_min_scheme_vs_avg.values())
 
-            fig.add_trace(
-                go.Scatter(x=xaxis, y=avg_[i],
-                        mode=mode,
-                        name=scheme,
-                        legendgroup=scheme,
-                        line=dict(color=color_sequence[i], dash=dash), 
-                        ),
-                row=1, col=1)
-            if plot_errorbar:
+                if "bdi" in scheme or "ideal" in scheme or "oracle" in scheme or "BDI (no XOR)" in scheme:
+                    mode = "lines"
+                else: 
+                    mode = "markers+lines"
+                
+                if "ideal" in scheme or "oracle" in scheme:
+                    dash = "dash"
+                else:
+                    dash = "solid"
+
                 fig.add_trace(
-                    go.Scatter(x=xaxis, y=max_[i],
-                            mode='lines',
-                            showlegend=False,
+                    go.Scatter(x=xaxis, y=avg_[i],
+                            mode=mode,
+                            name=scheme,
                             legendgroup=scheme,
-                            line=dict(color=color_sequence[i], width=0), 
+                            line=dict(color=color_sequence[i], dash=dash), 
                             ),
                     row=1, col=1)
+                if plot_errorbar:
+                    fig.add_trace(
+                        go.Scatter(x=xaxis, y=max_[i],
+                                mode='lines',
+                                showlegend=False,
+                                legendgroup=scheme,
+                                line=dict(color=color_sequence[i], width=0), 
+                                ),
+                        row=1, col=1)
+                    fig.add_trace(
+                        go.Scatter(x=xaxis, y=min_[i],
+                                mode='lines',
+                                showlegend=False,
+                                fill='tonexty',
+                                legendgroup=scheme,
+                                line=dict(color=color_sequence[i], width=0), 
+                                ),
+                        row=1, col=1)
+                i += 1
+        fig.update_xaxes(title="(a)", row=1, col=1)
+        fig.update_yaxes(title="Inter-line comp. ratio", row=1, col=1)
+
+        i=0
+        for i in range(len(intras_scheme_vs_avg.items())):
+                scheme = list(intras_scheme_vs_avg.keys())[i]
+                avg_ = list(intras_scheme_vs_avg.values())
+                max_ = list(intras_max_scheme_vs_avg.values())
+                min_ = list(intras_min_scheme_vs_avg.values())
+
+                if "bdi" in scheme or "ideal" in scheme or "oracle" in scheme or "BDI (no XOR)" in scheme: 
+                    mode = "lines"
+                else: mode = "markers+lines"
+                
+                if "ideal" in scheme or "oracle" in scheme:
+                    dash = "dash"
+                else:
+                    dash = "solid"
+
                 fig.add_trace(
-                    go.Scatter(x=xaxis, y=min_[i],
-                            mode='lines',
+                    go.Scatter(x=xaxis, y=avg_[i],
+                            mode=mode,
+                            name=scheme,
                             showlegend=False,
-                            fill='tonexty',
                             legendgroup=scheme,
-                            line=dict(color=color_sequence[i], width=0), 
+                            line=dict(color=color_sequence[i], dash=dash), 
                             ),
-                    row=1, col=1)
-            i += 1
-    fig.update_yaxes(title="Inter comp. ratio", row=1, col=1)
-    
-    i=0
-    for i in range(len(intras_scheme_vs_avg.items())):
+                    row=1, col=2)
+                
+                if plot_errorbar:
+                    fig.add_trace(
+                        go.Scatter(x=xaxis, y=max_[i],
+                                mode='lines',
+                                showlegend=False,
+                                legendgroup=scheme,
+                                line=dict(color=color_sequence[i], width=0), 
+                                ),
+                        row=1, col=2)
+                    fig.add_trace(
+                        go.Scatter(x=xaxis, y=min_[i],
+                                mode='lines',
+                                showlegend=False,
+                                fill='tonexty',
+                                legendgroup=scheme,
+                                line=dict(color=color_sequence[i], width=0), 
+                                ),
+                        row=1, col=2)
+                i += 1
+        fig.update_yaxes(title="Intra-line comp. ratio", row=1, col=2, title_standoff = 0)
+        fig.update_xaxes(title="(b)", row=1, col=2)
+
+    if plot_num == 1:
+        pass
+    else:
+        if plot_num == 2: 
+            colid = 1
+        else: colid = 3
+        i=0
+        for i in range(len(intras_scheme_vs_avg.items())):
             scheme = list(intras_scheme_vs_avg.keys())[i]
-            avg_ = list(intras_scheme_vs_avg.values())
-            max_ = list(intras_max_scheme_vs_avg.values())
-            min_ = list(intras_min_scheme_vs_avg.values())
+            avg_intra = list(intras_scheme_vs_avg.values())
+            avg_inter = list(crs_scheme_vs_avg.values())
+            avg_ = []
+            for ii in range(len(avg_intra)):
+                avg_.append([])
+                for jj in range(len(avg_intra[ii])):
+                    avg_[ii].append(avg_intra[ii][jj] * avg_inter[ii][jj])
 
-            if "bdi" in scheme or "ideal" in scheme or "oracle" in scheme: mode = "lines"
+            if "bdi" in scheme or "ideal" in scheme or "oracle" in scheme or "BDI (no XOR)" in scheme: 
+                mode = "lines"
             else: mode = "markers+lines"
             
             if "ideal" in scheme or "oracle" in scheme:
@@ -429,61 +499,14 @@ def plot_hashfunction(dumps, benchname, suitename, schemes_to_plot=None, plot_ev
                         legendgroup=scheme,
                         line=dict(color=color_sequence[i], dash=dash), 
                         ),
-                row=1, col=2)
-            
-            if plot_errorbar:
-                fig.add_trace(
-                    go.Scatter(x=xaxis, y=max_[i],
-                            mode='lines',
-                            showlegend=False,
-                            legendgroup=scheme,
-                            line=dict(color=color_sequence[i], width=0), 
-                            ),
-                    row=1, col=2)
-                fig.add_trace(
-                    go.Scatter(x=xaxis, y=min_[i],
-                            mode='lines',
-                            showlegend=False,
-                            fill='tonexty',
-                            legendgroup=scheme,
-                            line=dict(color=color_sequence[i], width=0), 
-                            ),
-                    row=1, col=2)
+                row=1, col=colid)
             i += 1
-    fig.update_yaxes(title="Intra comp. ratio", row=1, col=2, title_standoff = 0)
-
-    from calc_xor_cache_storage_breakdown import calc_map_table
-    
-    i=0
-    for i in range(len(intras_scheme_vs_avg.items())):
-        scheme = list(intras_scheme_vs_avg.keys())[i]
-        avg_intra = list(intras_scheme_vs_avg.values())
-        avg_inter = list(crs_scheme_vs_avg.values())
-        avg_ = []
-        for ii in range(len(avg_intra)):
-            avg_.append([])
-            for jj in range(len(avg_intra[ii])):
-                avg_[ii].append(avg_intra[ii][jj] * avg_inter[ii][jj])
-
-        if "bdi" in scheme or "ideal" in scheme or "oracle" in scheme: mode = "lines"
-        else: mode = "markers+lines"
-        
-        if "ideal" in scheme or "oracle" in scheme:
-            dash = "dash"
+        if plot_num == 2: 
+            fig.update_yaxes(title="Total comp. ratio", row=1, col=colid)
+            h = 1
         else:
-            dash = "solid"
-
-        fig.add_trace(
-            go.Scatter(x=xaxis, y=avg_[i],
-                    mode=mode,
-                    name=scheme,
-                    showlegend=False,
-                    legendgroup=scheme,
-                    line=dict(color=color_sequence[i], dash=dash), 
-                    ),
-            row=1, col=3)
-        i += 1
-    fig.update_yaxes(title="Total comp. ratio", row=1, col=3, title_standoff = 0)
+            fig.update_yaxes(title="Total comp. ratio", row=1, col=colid, title_standoff = 0)
+        fig.update_xaxes(title="(c)", row=1, col=colid)
     
     if not plot_final:
 
@@ -524,7 +547,8 @@ def plot_hashfunction(dumps, benchname, suitename, schemes_to_plot=None, plot_ev
                 max_ = list(ers_max_scheme_vs_avg.values())
                 min_ = list(ers_min_scheme_vs_avg.values())
 
-                if "bdi" in scheme or "ideal" in scheme or "oracle" in scheme: mode = "lines"
+                if "bdi" in scheme or "ideal" in scheme or "oracle" in scheme or "BDI (no XOR)" in scheme: 
+                    mode = "lines"
                 else: mode = "markers+lines"
             
                 if "ideal" in scheme or "oracle" in scheme:
@@ -570,7 +594,8 @@ def plot_hashfunction(dumps, benchname, suitename, schemes_to_plot=None, plot_ev
                 max_ = list(frs_max_scheme_vs_avg.values())
                 min_ = list(frs_min_scheme_vs_avg.values())
 
-                if "bdi" in scheme or "ideal" in scheme or "oracle" in scheme: mode = "lines"
+                if "bdi" in scheme or "ideal" in scheme or "oracle" in scheme or "BDI (no XOR)" in scheme: 
+                    mode = "lines"
                 else: mode = "markers+lines"
             
                 if "ideal" in scheme or "oracle" in scheme:
@@ -616,7 +641,8 @@ def plot_hashfunction(dumps, benchname, suitename, schemes_to_plot=None, plot_ev
                 max_ = list(hammings_max_scheme_vs_avg.values())
                 min_ = list(hammings_min_scheme_vs_avg.values())
 
-                if "bdi" in scheme or "ideal" in scheme or "oracle" in scheme: mode = "lines"
+                if "bdi" in scheme or "ideal" in scheme or "oracle" in scheme or "BDI (no XOR)" in scheme: 
+                    mode = "lines"
                 else: mode = "markers+lines"
             
                 if "ideal" in scheme or "oracle" in scheme:
@@ -659,12 +685,13 @@ def plot_hashfunction(dumps, benchname, suitename, schemes_to_plot=None, plot_ev
 
     dpi = 300
     w=3.3115
-    h=1.3
+    if plot_num !=2:h=1.4
+    else: h=1
     fig.update_yaxes(ticks="outside",
                  ticklen=0,  # adjust length of the tick = distance from axis
                  )
     # make the legend horizontal at the bottom
-    if plot_final: ew = 200
+    if plot_final: ew = 240
     else: ew=None
     fig.update_layout(
         legend=dict(
@@ -672,7 +699,7 @@ def plot_hashfunction(dumps, benchname, suitename, schemes_to_plot=None, plot_ev
         # entrywidthmode='fraction',
         orientation="h",
         yanchor="bottom",
-        y=-0.4,
+        y=-0.55,
         xanchor="right",
         x=1,
         font=dict(
@@ -689,7 +716,7 @@ def plot_hashfunction(dumps, benchname, suitename, schemes_to_plot=None, plot_ev
         height=h*dpi,
         paper_bgcolor='rgba(0,0,0,0)',
         title=None,
-        xaxis_title=None,
+        # xaxis_title=None,
         margin=dict(l=2, r=2, t=2, b=2),
         font=dict(
             family="ubuntu",
@@ -702,9 +729,14 @@ def plot_hashfunction(dumps, benchname, suitename, schemes_to_plot=None, plot_ev
     os.makedirs(f'img/{suitename}', exist_ok=True)
     if plot_even_only:
         fig.write_image(f"img/{suitename}/hash-{benchname}-even.pdf")
+        print(f"img/{suitename}/hash-{benchname}-even.pdf written")
     else:
-        if plot_final: fig.write_image(f"img/{suitename}/hash-{benchname}-final.pdf")
-        else: fig.write_image(f"img/{suitename}/hash-{benchname}.pdf")
+        if plot_final: 
+            fig.write_image(f"img/{suitename}/hash-{benchname}-final{plot_num}.pdf")
+            print(f"img/{suitename}/hash-{benchname}-final{plot_num}.pdf written")
+        else: 
+            fig.write_image(f"img/{suitename}/hash-{benchname}.pdf")
+            print(f"img/{suitename}/hash-{benchname}.pdf written")
 
 def plot_profiling(dumps, benchname, suitename, stats_to_plot=None):
     profileStatMaps = ProfileStatMaps(stats_to_plot)
@@ -1102,6 +1134,9 @@ if __name__ == "__main__":
     parser.add_argument('--plot_final',
                         help='plot the final results',
                         action='store_true')
+    parser.add_argument('--plot_num',
+                        type = int,
+                        default=0)
     args = parser.parse_args()
 
     benchname = args.benchname
@@ -1171,16 +1206,23 @@ if __name__ == "__main__":
         elif plot == "hash":
             plot_hashfunction(dumps, benchname, suitename, 
                     schemes_to_plot=[
-                        "oracle", #oracle
+                        "idealBank", #oracle
                         # "bpc",
-                        "bdi",
+                        # "bdi",
+                        "BDI (no XOR) ",
                         # "BDI",
                         # "bdi-immo",
                         # "thesaurus-flat",
-                        "XORCache(LSH-RP)",
+
+                        # "XORCache(LSH-RP)",
+                        "XORCache+BDI(LSH-RP)",
+
                         # "shuffle-xorfold",
                         # "bit-sampling-flat",
-                        "XORCache(LSH-BS)",
+
+                        # "XORCache(LSH-BS)",
+                        "XORCache+BDI(LSH-BS)",
+
                         # "masked-bit-sampling_8_32",
                         # "masked-bit-sampling_4_16",
                         # "masked-bit-sampling_8_16",
@@ -1210,14 +1252,26 @@ if __name__ == "__main__":
                         # "average byte msb(3) word labeling",
                         # "average byte msb(2) word labeling",
                         # "byte labeling-flat", 
-                        "XORCache(BL)", 
+
+                        # "XORCache(BL)", 
+                        "XORCache+BDI(BL)", 
+
                         # "sparsebytemap(8,6)-shuffle-xorfold-flat",
-                        "XORCache(SBL)",
+                        
+                        # "XORCache(SBL)",
+                        "XORCache+BDI(SBL)",
+
+                        # "XORCache(SBL)-1",
+                        # "XORCache(SBL)-2",
+                        # "XORCache(SBL)-3",
+                        # "XORCache(SBL)-4",
                         
                         # "bdi line labeling",
                         # "bdi-immo line labeling",
                         # "bpc line labeling",
+
                         ],
                     plot_final=args.plot_final,
                     plot_errorbar=False,
+                    plot_num=args.plot_num,
                     )

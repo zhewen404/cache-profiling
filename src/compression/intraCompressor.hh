@@ -76,5 +76,15 @@ public:
     bool m_allow_immo;
 };
 
-
+class SparseByteCompressor : public BaseIntraCompressor <SparseByteLine>
+{
+public:
+    SparseByteCompressor() {};
+    ~SparseByteCompressor() {};
+    SparseByteLine * compress_a_line(Line* line);
+    void print() const;
+    
+    int get_rank(Line* line);
+    int get_max_rank() const;
+};
 #endif

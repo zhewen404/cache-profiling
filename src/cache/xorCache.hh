@@ -593,6 +593,103 @@ class IdealBankXORCache : public BaseCache
 
 };
 
+class IdealBankXORCacheThesaurus : public BaseCache
+{
+    public:
+    vector<XORedLine*> m_lines; // one d vector
+    int m_uncompressed_size;
+    SparseByteCompressor * m_intra_compressor;
+    int m_num_xored_lines;
+
+
+    IdealBankXORCacheThesaurus(const Cache& cache, SparseByteCompressor * compressor) : 
+    BaseCache(cache.m_num_banks, cache.m_size_per_bank_KB, cache.m_assoc, cache.m_line_size, cache.m_shift_bank, cache.m_shift_set),
+    m_intra_compressor(compressor)
+    {
+        m_uncompressed_size = cache.get_size();
+        int max_rank = m_intra_compressor->get_max_rank();
+        for (int i = 0; i < m_num_banks; i++) {
+            // printf("bank %d\n", i);
+            // add all line, iterate through all lines in this bank
+            vector<Line*> uncompressed_lines_in_this_bank;
+            for (int j = 0; j < m_num_sets; j++) {
+                for (Line* line : cache.m_lines[i][j]) {
+                    uncompressed_lines_in_this_bank.push_back(line);
+                }
+            }
+
+            // iterate through all uncompressed lines in this bank
+            while (uncompressed_lines_in_this_bank.size() > 1) {
+                if (uncompressed_lines_in_this_bank.size() % 100 == 0) {
+                    // printf("    remaining size = %ld\n", uncompressed_lines_in_this_bank.size());
+                }
+                Line* line1 = uncompressed_lines_in_this_bank[0];
+                Line* line2;
+
+                bool found_min_rank_pair = false;
+                for (int k = 0; k < max_rank; k++) {
+                    // printf("        checking rank %d\n", k);
+                    if (found_min_rank_pair) {
+                        break;
+                    }
+                    for (unsigned j = 1; j < uncompressed_lines_in_this_bank.size(); j++) {
+                        line2 = uncompressed_lines_in_this_bank[j];
+                        vector<Line*> line_pair;
+                        line_pair.push_back(line1);
+                        line_pair.push_back(line2);
+                        XORedLine* xor_line = new XORedLine(line_pair);
+                        int rank = m_intra_compressor->get_rank(xor_line);
+
+                        // find a line pair with minimum rank
+                        if (rank == k) {
+                            m_lines.push_back(xor_line);
+                            m_num_xored_lines += 1;
+                            // remove line1 and line2 from uncompressed_lines_in_this_bank
+                            uncompressed_lines_in_this_bank.erase(uncompressed_lines_in_this_bank.begin() + j);
+                            uncompressed_lines_in_this_bank.erase(uncompressed_lines_in_this_bank.begin());
+                            found_min_rank_pair = true;
+                            break;
+
+                        } else {
+                            delete xor_line;
+                        }
+                    }
+                }
+            }
+
+            if (uncompressed_lines_in_this_bank.size() == 1) {
+                // add the last line to m_lines
+                vector<Line*> line_pair;
+                line_pair.push_back(uncompressed_lines_in_this_bank[0]);
+                m_lines.push_back(new XORedLine(line_pair));
+            }
+        }
+    }
+
+
+    ~IdealBankXORCacheThesaurus()
+    {
+        delete m_intra_compressor;
+        for (XORedLine* line : m_lines) {
+            delete line;
+        }
+    }
+
+    double get_bit_entropy() const;
+
+    double get_hamming_distance() const;
+    int get_compressed_size() const;
+    int get_uncompressed_size() const;
+    double get_compression_ratio() const;
+    vector<double> * get_per_byte_entropy() const;
+    vector<double> * get_per_byte_entropy_only_thoses_xored() const;
+    vector<double> * get_per_byte_hamming() const;
+
+
+    void print() const;
+
+};
+
 
 class IdealSetXORCache : public BaseCache
 {
