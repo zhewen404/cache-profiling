@@ -132,7 +132,7 @@ def get_geomean_cr(dumps, vertical_slice_index, scheme, hashSchemeMaps):
     product_arr = [a*b for a,b in zip(res_arr[0], res_arr[1])]
     res_arr.append(product_arr)
 
-    inter_ideal = 1 if scheme=="BDI (no XOR)" else 2
+    inter_ideal = 1 if scheme=="BDI (no XOR)" or scheme=="BPC (no XOR)" else 2
     productIdeal_arr = [inter_ideal*b for b in res_arr[1]]
     res_arr.append(productIdeal_arr)
 
@@ -157,7 +157,7 @@ def format_fig(fig, onlygeomean, fignum):
     # make the legend horizontal at the bottom
     # if plot_final: ew = 200
     # else: ew=None
-    if fignum == 4:
+    if fignum == 4 or fignum == 6:
             h=1.1
             fig.update_layout(
             legend=dict(
@@ -168,6 +168,23 @@ def format_fig(fig, onlygeomean, fignum):
             y=0.5,
             xanchor="left",
             x=1,
+            font=dict(
+                size=20,
+            )
+        ))
+    elif fignum == 7 or fignum == 8:
+            h=1.6
+            w = w*2/3 # one third col
+            # legend on top
+            fig.update_layout(
+            legend=dict(
+            # entrywidth=ew,
+            # entrywidthmode='fraction',
+            orientation="h",
+            yanchor="bottom",
+            y=1,
+            xanchor="left",
+            x=0,
             font=dict(
                 size=20,
             )
@@ -237,7 +254,11 @@ if __name__ == "__main__":
     parser.add_argument('--fig',
                         help='set name',
                         type = int,
-                        choices=[2, 4, 5, 12, 14],
+                        choices=[2, 3, 4, 5, 6, 12, 14, 7, 8],
+                        # 3 is for BPC in figure 2
+                        # 6 is for BPC in figure 4
+                        # 7 is for 1/3 ver of fig 2
+                        # 8 is for 1/3 ver of fig 6
                         default=2)
     parser.add_argument('--onlygeomean',
                         help='plot only the geomean',
@@ -322,33 +343,54 @@ if __name__ == "__main__":
         schemes_to_plot=[
             "BDI (no XOR)",
             # "randSet",
-            "XORCache+BDI randBank",
-            "XORCache+BDI idealSet",
-            "XORCache+BDI idealBank", #oracle
+            "XOR randBank+BDI",
+            "XOR idealSet+BDI",
+            "XOR idealBank+BDI", #oracle
         ]
-    elif args.fig == 4: 
+    elif args.fig == 3: 
+        schemes_to_plot=[
+            "BPC (no XOR)",
+            # "Bitplane (no XOR)",
+            # "randSet",
+            "XOR randBank+BPC",
+            "XOR idealSet+BPC",
+            "XOR idealBank+BPC", #oracle
+        ]
+    elif args.fig == 4 or args.fig == 7: 
         schemes_to_plot=[
             "BDI (no XOR)",
             # "randSet",
-            "XORCache+BDI randBank",
-            "XORCache+BDI idealSet-0",
-            "XORCache+BDI idealSet-1",
-            "XORCache+BDI idealSet-2",
-            "XORCache+BDI idealSet-3",
-            "XORCache+BDI idealSet-4",
-            "XORCache+BDI idealBank", #oracle
+            "XOR randBank+BDI",
+            "XOR idealSet-0+BDI",
+            "XOR idealSet-1+BDI",
+            "XOR idealSet-2+BDI",
+            "XOR idealSet-3+BDI",
+            "XOR idealSet-4+BDI",
+            "XOR idealBank+BDI", #oracle
+        ]
+    elif args.fig == 6 or args.fig == 8: 
+        schemes_to_plot=[
+            "BPC (no XOR)",
+            # "randSet",
+            "XOR randBank+BPC",
+            "XOR idealSet-0+BPC",
+            "XOR idealSet-1+BPC",
+            "XOR idealSet-2+BPC",
+            "XOR idealSet-3+BPC",
+            "XOR idealSet-4+BPC",
+            "XOR idealBank+BPC", #oracle
         ]
     elif args.fig == 5: 
         schemes_to_plot=[
             # "BDI (no XOR)",
             # "randSet",
-            # "XORCache+BDI randBank",
-            "XORCache+BDI idealSet-0",
-            "XORCache+BDI idealSet-1",
-            "XORCache+BDI idealSet-2",
-            "XORCache+BDI idealSet-3",
-            "XORCache+BDI idealSet-4",
-            "XORCache+BDI idealBank", #oracle
+            # "XOR randBank+BDI",
+            "XOR idealSet-0+BDI",
+            "XOR idealSet-1+BDI",
+            "XOR idealSet-2+BDI",
+            "XOR idealSet-3+BDI",
+            "XOR idealSet-4+BDI",
+            "XOR idealBank+BDI", #oracle
         ]
     elif args.fig == 14: 
         schemes_to_plot=[
@@ -358,7 +400,7 @@ if __name__ == "__main__":
             "XORCache(SBL)-2",
             "XORCache(SBL)-3",
             "XORCache(SBL)-4",
-            "XORCache+BDI idealBank", #oracle
+            "XOR idealBank+BDI", #oracle
         ]
     hashSchemeMaps = HashSchemeMaps(schemes_to_plot)
     
@@ -417,8 +459,10 @@ if __name__ == "__main__":
     ymin = 1
     if args.fig == 2:
         ylim = 4.09
-    elif args.fig == 4:
-        ylim = 3.05
+    elif args.fig == 3:
+        ylim = 6.2
+    elif args.fig == 4 or args.fig == 6 or args.fig == 8 or args.fig == 7:
+        ylim = 3.15
     else:
         ylim = None
     for res_dict in final_res_dicts:
@@ -551,9 +595,136 @@ if __name__ == "__main__":
                 yshift=0,
                 font=dict(size=24, color = "#4F90A6")
             )
+
+            fig.add_annotation(
+                x=29.2,
+                y=2.7,
+                xref="x",
+                yref="y",
+                text="",
+                showarrow=True,
+                font=dict(
+                    family="Courier New, monospace",
+                    # size=16,
+                    # color="#ffffff"
+                    ),
+                align="center",
+                arrowhead=2,
+                arrowsize=1,
+                arrowwidth=3,
+                arrowcolor="#3B738F",
+                ax=-39,
+                ay=96,
+            )
+            fig.add_annotation(
+                x=28.8,
+                y=2.7,
+                text="2.08x",
+                showarrow=False,
+                textangle=-55,
+                xshift=0,
+                yshift=0,
+                font=dict(size=24, color = "#4F90A6")
+            )
+        if args.fig == 3:
+            fig.add_annotation(
+                x=6.2,
+                y=6.2,
+                xref="x",
+                yref="y",
+                text="",
+                showarrow=True,
+                font=dict(
+                    family="Courier New, monospace",
+                    # size=16,
+                    # color="#ffffff"
+                    ),
+                align="center",
+                arrowhead=2,
+                arrowsize=1,
+                arrowwidth=3,
+                arrowcolor="#234F1E",
+                ax=-38,
+                ay=190,
+            )
+            fig.add_annotation(
+                x=5.8,
+                y=5.2,
+                text="3.0x",
+                showarrow=False,
+                textangle=-80,
+                xshift=0,
+                yshift=0,
+                font=dict(size=24, color = "#234F1E")
+            )
+
+            fig.add_annotation(
+                x=12.2,
+                y=3.4,
+                xref="x",
+                yref="y",
+                text="",
+                showarrow=True,
+                font=dict(
+                    family="Courier New, monospace",
+                    # size=16,
+                    # color="#ffffff"
+                    ),
+                align="center",
+                arrowhead=2,
+                arrowsize=1,
+                arrowwidth=3,
+                arrowcolor="#234F1E",
+                ax=-38,
+                ay=100,
+            )
+            fig.add_annotation(
+                x=11.7,
+                y=2.8,
+                text="2.7x",
+                showarrow=False,
+                textangle=-80,
+                xshift=0,
+                yshift=0,
+                font=dict(size=24, color = "#234F1E")
+            )
+            
+            fig.add_annotation(
+                x=29.2,
+                y=3.2,
+                xref="x",
+                yref="y",
+                text="",
+                showarrow=True,
+                font=dict(
+                    family="Courier New, monospace",
+                    # size=16,
+                    # color="#ffffff"
+                    ),
+                align="center",
+                arrowhead=2,
+                arrowsize=1,
+                arrowwidth=3,
+                arrowcolor="#234F1E",
+                ax=-39,
+                ay=78,
+            )
+            fig.add_annotation(
+                x=28.8,
+                y=3,
+                text="2.09x",
+                showarrow=False,
+                textangle=-55,
+                xshift=0,
+                yshift=0,
+                font=dict(size=24, color = "#234F1E")
+            )
         fig.update_yaxes(range=[1, 1.05*ymax], row=1, col=1)
         if ylim is not None: fig.update_yaxes(range=[0, ylim], row=1, col=1)
         if args.fig == 4 and ylim is not None: fig.update_yaxes(range=[1, ylim], row=1, col=1)
+        if args.fig == 6 and ylim is not None: fig.update_yaxes(range=[1, ylim], row=1, col=1)
+        if args.fig == 7 and ylim is not None: fig.update_yaxes(range=[1, ylim], row=1, col=1)
+        if args.fig == 8 and ylim is not None: fig.update_yaxes(range=[1, ylim], row=1, col=1)
 
         fig = format_fig(fig, args.onlygeomean, args.fig)
         #create dir

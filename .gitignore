@@ -6,3 +6,6 @@ bin/*
 img/*
 *.pdf
 *__pycache__/
+*.png
+*.gp
+*.py

@@ -266,8 +266,8 @@ class HashXORCache : public BaseCache
                     //     printf("\n\n\n");
                     // }
 
-                    delete line1_true_fingerprint;
-                    delete line2_true_fingerprint;
+                    delete[] line1_true_fingerprint;
+                    delete[] line2_true_fingerprint;
                 }
                 
                 XORedLine* xor_line = new XORedLine(line_pair);
@@ -368,8 +368,8 @@ class HashXORCache : public BaseCache
                         //     printf("\n\n\n");
                         // }
 
-                        delete line1_true_fingerprint;
-                        delete line2_true_fingerprint;
+                        delete[] line1_true_fingerprint;
+                        delete[] line2_true_fingerprint;
                     }
                     
                     XORedLine* xor_line = new XORedLine(line_pair);
@@ -496,16 +496,17 @@ class HashDeltaCache : public BaseCache
 
 };
 
+template <class T>
 class IdealBankXORCache : public BaseCache
 {
     public:
     vector<XORedLine*> m_lines; // one d vector
     int m_uncompressed_size;
-    BDICompressor * m_intra_compressor;
+    T * m_intra_compressor;
     int m_num_xored_lines;
 
 
-    IdealBankXORCache(const Cache& cache, BDICompressor * compressor) : 
+    IdealBankXORCache(const Cache& cache, T * compressor) : 
     BaseCache(cache.m_num_banks, cache.m_size_per_bank_KB, cache.m_assoc, cache.m_line_size, cache.m_shift_bank, cache.m_shift_set),
     m_intra_compressor(compressor)
     {
@@ -593,6 +594,9 @@ class IdealBankXORCache : public BaseCache
 
 };
 
+template class IdealBankXORCache<BDICompressor>;
+template class IdealBankXORCache<BitPlaneCompressor>;
+
 class IdealBankXORCacheThesaurus : public BaseCache
 {
     public:
@@ -601,7 +605,7 @@ class IdealBankXORCacheThesaurus : public BaseCache
     SparseByteCompressor * m_intra_compressor;
     int m_num_xored_lines;
 
-
+    // ideal xor+thesaurus: xor to maximaze the number of zero bytes
     IdealBankXORCacheThesaurus(const Cache& cache, SparseByteCompressor * compressor) : 
     BaseCache(cache.m_num_banks, cache.m_size_per_bank_KB, cache.m_assoc, cache.m_line_size, cache.m_shift_bank, cache.m_shift_set),
     m_intra_compressor(compressor)
@@ -620,18 +624,16 @@ class IdealBankXORCacheThesaurus : public BaseCache
 
             // iterate through all uncompressed lines in this bank
             while (uncompressed_lines_in_this_bank.size() > 1) {
-                if (uncompressed_lines_in_this_bank.size() % 100 == 0) {
-                    // printf("    remaining size = %ld\n", uncompressed_lines_in_this_bank.size());
-                }
+                // if (uncompressed_lines_in_this_bank.size() % 100 == 0) {
+                //     printf("    remaining size = %ld\n", uncompressed_lines_in_this_bank.size());
+                // }
                 Line* line1 = uncompressed_lines_in_this_bank[0];
                 Line* line2;
 
                 bool found_min_rank_pair = false;
+                int min_rank_pair_ct = 0;
                 for (int k = 0; k < max_rank; k++) {
                     // printf("        checking rank %d\n", k);
-                    if (found_min_rank_pair) {
-                        break;
-                    }
                     for (unsigned j = 1; j < uncompressed_lines_in_this_bank.size(); j++) {
                         line2 = uncompressed_lines_in_this_bank[j];
                         vector<Line*> line_pair;
@@ -640,7 +642,7 @@ class IdealBankXORCacheThesaurus : public BaseCache
                         XORedLine* xor_line = new XORedLine(line_pair);
                         int rank = m_intra_compressor->get_rank(xor_line);
 
-                        // find a line pair with minimum rank
+                        // find the first line pair with minimum rank
                         if (rank == k) {
                             m_lines.push_back(xor_line);
                             m_num_xored_lines += 1;
@@ -648,13 +650,18 @@ class IdealBankXORCacheThesaurus : public BaseCache
                             uncompressed_lines_in_this_bank.erase(uncompressed_lines_in_this_bank.begin() + j);
                             uncompressed_lines_in_this_bank.erase(uncompressed_lines_in_this_bank.begin());
                             found_min_rank_pair = true;
+                            min_rank_pair_ct++;
                             break;
-
                         } else {
                             delete xor_line;
                         }
                     }
+                    if (found_min_rank_pair) {
+                        // printf("remaining %ld, rank=%d, min_rank_pair_ct = %d\n", uncompressed_lines_in_this_bank.size(), k, min_rank_pair_ct);
+                        break;
+                    }
                 }
+
             }
 
             if (uncompressed_lines_in_this_bank.size() == 1) {
@@ -685,22 +692,21 @@ class IdealBankXORCacheThesaurus : public BaseCache
     vector<double> * get_per_byte_entropy_only_thoses_xored() const;
     vector<double> * get_per_byte_hamming() const;
 
-
     void print() const;
 
 };
 
-
+template <class T>
 class IdealSetXORCache : public BaseCache
 {
     public:
     vector<XORedLine*> m_lines; // one d vector
     int m_uncompressed_size;
-    BDICompressor * m_intra_compressor;
+    T * m_intra_compressor;
     int m_num_xored_lines;
 
 
-    IdealSetXORCache(const Cache& cache, BDICompressor * compressor) : 
+    IdealSetXORCache(const Cache& cache, T * compressor) : 
     BaseCache(cache.m_num_banks, cache.m_size_per_bank_KB, cache.m_assoc, cache.m_line_size, cache.m_shift_bank, cache.m_shift_set),
     m_intra_compressor(compressor)
     {
@@ -788,6 +794,9 @@ class IdealSetXORCache : public BaseCache
     void print() const;
 
 };
+
+template class IdealSetXORCache<BDICompressor>;
+template class IdealSetXORCache<BitPlaneCompressor>;
 
 
 

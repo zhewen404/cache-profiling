@@ -62,36 +62,39 @@ class BPCLine : public BaseCompressedLine
                 u_int64_t d = ((u_int64_t)segs[i] - (u_int64_t)base);
                 deltas[i] = (u_int64_t) d;
             }
-            delete segs;
+            delete [] segs;
 
             // transpose the segments to be 33 u_int16_t (15 bit) DBP planes
             int num_DBP = (line->m_size / 2)+1; // 33
             u_int16_t * DBP = new u_int16_t[num_DBP];
             memset(DBP, 0, num_DBP * sizeof(u_int16_t));
             // for plane i, take ith bit from all deltas
-            for (int i=0; i < num_DBP; i++) {
+            for (int i=0; i < num_DBP; i++) { //0...32
                 for (int j=0; j < num_deltas; j++) {
                     DBP[i] = DBP[i] | (((deltas[j] >> i) & 1) << j);
                 }
             }
-            delete deltas;
+            delete [] deltas;
 
-            int num_DBX = num_DBP - 1;
+            int num_DBX = num_DBP - 1; //32
             u_int16_t * DBX = new u_int16_t[num_DBX];
             // xor with neighboring DBP planes, the last plane is untouched
-            for (int i = 0; i < num_DBX; i++) {
+            for (int i = 0; i < num_DBX; i++) {// 0..31
                 DBX[i] = DBP[i] ^ DBP[i+1];
             }
+            // DBX 0..31, need to also consider DBP[32]
 
             int num_bits_base = base_orig_encoder(base);
             m_base_size_in_bit = num_bits_base;
-            int num_bits_planes = bp_encoder(DBX, DBP, num_DBP);
+            int num_bits_planes = bp_encoder(DBX, DBP, num_DBP);//33
             m_planes_size_in_bit = num_bits_planes;
 
             int total_bytes = int(ceil(((double)num_bits_base + (double)num_bits_planes) / 8.0));
+            // round up to a multiple of 8
+            total_bytes = (total_bytes + 7) & ~7;
 
-            delete DBP;
-            delete DBX;
+            delete [] DBP;
+            delete [] DBX;
 
             if (total_bytes > line->m_size) {
                 total_bytes = line->m_size;
@@ -103,58 +106,94 @@ class BPCLine : public BaseCompressedLine
         {
         }
 
-        // compress the 15 bit planes alltogether
+        // compress the 15 bit planes alltogether (original paper uses 31-bit planes)
         int bp_encoder(u_int16_t * DBX, u_int16_t * DBP, int num_DBP) {
             int num_bits = 0;
             int length_single_zero_plane = 3;
             int length_single_multiple_plane = 7;
+            // printf("num_DBP: %d\n", num_DBP);
 
             // first pass, compress all the zero planes
-            int num_consecutive_zeros = 0;
-            for (int i = 0; i < num_DBP; i++) {
+            vector<int> idx_zero_planes = {};
+            for (int i = 0; i < num_DBP; i++) { //0..32
                 u_int16_t plane_under_test;
-                if (i == num_DBP - 1) {
+                if (i == num_DBP-1) { // the last one is the DBP[32]
                     plane_under_test = DBP[i];
                 } else {
                     plane_under_test = DBX[i];
                 }
 
                 if (plane_under_test == 0) {
-                    num_consecutive_zeros += 1;
-                } else {
-                    num_consecutive_zeros = 0;
+                    // add this index
+                    idx_zero_planes.push_back(i);
                 }
-
-                if (num_consecutive_zeros == 1) {
+            }
+            // printf("idx_zero_planes: ");
+            // for (unsigned i = 0; i < idx_zero_planes.size(); i++) {
+            //     printf("%d ", idx_zero_planes[i]);
+            // }
+            // printf("\n");
+            // figure out how many runs (consecutive index) are there
+            int prev_idx = -1;
+            vector<int> length_of_runs = {};
+            int cur_run_idx = -1;
+            for (unsigned i = 0; i < idx_zero_planes.size(); i++) {
+                int cur_idx = idx_zero_planes[i];
+                if (prev_idx == -1) {
+                    // this is the first zero
+                    cur_run_idx = 0; // first run
+                    prev_idx = cur_idx;
+                    length_of_runs.push_back(1);
+                } else if (prev_idx + 1 == cur_idx) {
+                    // this is a consecutive zero
+                    length_of_runs[cur_run_idx] += 1;
+                    prev_idx = cur_idx;
+                } else {
+                    // this is a new run
+                    cur_run_idx += 1;
+                    prev_idx = cur_idx;
+                    length_of_runs.push_back(1);
+                }
+            }
+            // printf("length of runs: ");
+            // for (unsigned i = 0; i < length_of_runs.size(); i++) {
+            //     printf("%d ", length_of_runs[i]);
+            // }
+            // printf("\n");
+            int total_ct_zero = 0;
+            for (unsigned i = 0; i < length_of_runs.size(); i++) {
+                total_ct_zero += length_of_runs[i];
+                if (length_of_runs[i] == 1) {
                     num_bits += length_single_zero_plane;
-                } else if (num_consecutive_zeros == 2) {
-                    num_bits -= length_single_zero_plane;
+                } else {
+                    assert (length_of_runs[i] <= num_DBP);
                     num_bits += length_single_multiple_plane;
                 }
             }
+            assert(total_ct_zero == (int)idx_zero_planes.size());
+
             // second path, compress the non-zero planes
             for (int i = 0; i < num_DBP; i++) {
                 u_int16_t plane_under_test;
-                if (i == num_DBP - 1) {
+                if (i == num_DBP-1) { // the last one is the DBP[32]
                     plane_under_test = DBP[i];
                 } else {
                     plane_under_test = DBX[i];
                 }
 
                 u_int8_t * plane_bytes = reinterpret_cast<u_int8_t*>(&plane_under_test);
-                int data_size = 2;
+                int data_size = 2; // 2byte
 
 
-                if (plane_under_test == 0) continue;
-                else if (plane_under_test == 0x7f) num_bits+=5;
+                if (plane_under_test == 0) continue; // already counted
+                else if (plane_under_test == 0x7f) num_bits+=5; // all 1
                 else if (DBP[i] == 0) num_bits+=5;
                 else if (plane_under_test == 0x3 || plane_under_test == 0x6 || plane_under_test == 0xc || plane_under_test == 0x18 || 
                     plane_under_test == 0x30 || plane_under_test == 0x60 || plane_under_test == 0xc0 || plane_under_test == 0x180 || 
                     plane_under_test == 0x300 || plane_under_test == 0x600 || plane_under_test == 0xc00 || plane_under_test == 0x1800 || 
-                    plane_under_test == 0x3000 || plane_under_test == 0x6000) num_bits+=9;
-                else if (countSetBits(plane_bytes, data_size) == 1) num_bits += 9;
+                    plane_under_test == 0x3000 || plane_under_test == 0x6000) num_bits+=10;
+                else if (countSetBits(plane_bytes, data_size) == 1) num_bits += 10;
                 else num_bits += 16;
-                
             }
             return num_bits;
         }
@@ -163,9 +202,9 @@ class BPCLine : public BaseCompressedLine
         int base_orig_encoder(u_int32_t base) {
             int32_t base_signed = (int32_t) base;
             if (base == 0) return 3;
-            if (base_signed < 7 || base_signed > -8) return 7;
-            if (base_signed < 127 || base_signed > -128) return 11;
-            if (base_signed < 32767 || base_signed > -32768) return 19;
+            if (base_signed <= 7 && base_signed >= -8) return 7;
+            if (base_signed <= 127 && base_signed >= -128) return 11;
+            if (base_signed <= 32767 && base_signed >= -32768) return 19;
             return 33;
         }
 

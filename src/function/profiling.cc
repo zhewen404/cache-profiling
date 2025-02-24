@@ -49,8 +49,8 @@ void profiling_entropy_byte_position_oracle(int num_banks, int KB_per_bank, stri
     cache = new Cache(num_banks, KB_per_bank, assoc, line_size, shift_bank, shift_set);
     cache->populate_lines(filenames_data, filenames_addr);
     
-    IdealBankXORCache * xorIdealBankCache;
-    xorIdealBankCache = new IdealBankXORCache(*cache, new BDICompressor());
+    IdealBankXORCache<BDICompressor> * xorIdealBankCache;
+    xorIdealBankCache = new IdealBankXORCache<BDICompressor>(*cache, new BDICompressor());
 
     vector<double> * ent_vec;
     ent_vec = xorIdealBankCache->get_per_byte_entropy();
@@ -626,8 +626,8 @@ void profiling_hamming_byte_position_oracle(int num_banks, int KB_per_bank, stri
     cache = new Cache(num_banks, KB_per_bank, assoc, line_size, shift_bank, shift_set);
     cache->populate_lines(filenames_data, filenames_addr);
     
-    IdealBankXORCache * xorIdealBankCache;
-    xorIdealBankCache = new IdealBankXORCache(*cache, new BDICompressor());
+    IdealBankXORCache<BDICompressor> * xorIdealBankCache;
+    xorIdealBankCache = new IdealBankXORCache<BDICompressor>(*cache, new BDICompressor());
 
     vector<double> * ham_vec;
     ham_vec = xorIdealBankCache->get_per_byte_hamming();
@@ -656,8 +656,8 @@ void profiling_heatcube_bdi_sizechange_oracle(int num_banks, int KB_per_bank, st
     cache = new Cache(num_banks, KB_per_bank, assoc, line_size, shift_bank, shift_set);
     cache->populate_lines(filenames_data, filenames_addr);
     
-    IdealBankXORCache * xorIdealBankCache;
-    xorIdealBankCache = new IdealBankXORCache(*cache, new BDICompressor());
+    IdealBankXORCache<BDICompressor> * xorIdealBankCache;
+    xorIdealBankCache = new IdealBankXORCache<BDICompressor>(*cache, new BDICompressor());
 
     BDICompressor * bdicomp = new BDICompressor(true, false);
     int max_rank = bdicomp->get_max_rank();

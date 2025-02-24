@@ -264,11 +264,20 @@ ThesaurusCompressedCache::print() const
 {
     printf("ThesaurusCompressedCache ");
     
-    int compressed_size = get_compressed_size();
-    int uncompressed_size = get_uncompressed_size();
+    int compressed_size = get_after_compression_size();
+    int uncompressed_size = get_before_compression_size();
     double compression_ratio =  (double)uncompressed_size / (double)compressed_size;
     printf("coverage: %.2f, compression_ratio: %f (%d/%d)\n", 
         get_coverage_rate(),compression_ratio, uncompressed_size, compressed_size);
+
+    printf("compressed size(%d) = centroid(%d) + successful_noncentroid(%d) + failed_noncentroid(%d)\n", 
+        compressed_size, m_size_of_centroid_lines, m_size_of_successful_noncentroid_lines, m_size_of_failed_noncentroid_lines);
+
+    printf("num_lines(%d) = centroid(%d) + successful_noncentroid(%d) + failed_noncentroid(%d)\n",
+        m_num_lines, m_num_centroid_lines, m_num_successful_noncentroid_lines, m_num_failed_noncentroid_lines);
+    
+    printf("avg size (B) of successful noncentroid lines: %.2f\n", m_avg_size_of_successful_noncentroid_lines);
+    printf("avg size (B) of noncentroid lines: %.2f\n", m_avg_size_of_noncentroid_lines);
 
     printf("[ num_banks: %d, KB_per_bank: %d, assoc: %d, numset: %d, line_size: %d, shift_bank: %d, shift_set: %d, bank bits: [%d,%d], set bits: [%d,%d] ]\n", 
         m_num_banks, m_size_per_bank_KB, m_assoc, m_num_sets, m_line_size, m_shift_bank, m_shift_set, m_bank_start, m_bank_end, m_set_start, m_set_end);
@@ -276,26 +285,10 @@ ThesaurusCompressedCache::print() const
     
     m_interCompressor->print();
 
-    printf("compressed bank lines: \n");
-    for (unsigned i = 0; i < m_lines.size(); i++) {
-        for (unsigned j = 0; j < m_lines[i].size(); j++) {
-            for (unsigned k = 0; k < m_lines[i][j].size(); k++) {
-                m_lines[i][j][k]->print();
-            }
-        }
-    }
-    printf("bank centroids: \n");
-    for (unsigned i = 0; i < m_banked_centroids.size(); i++) {
-        for (unsigned j = 0; j < m_banked_centroids[i].size(); j++) {
-            if (m_banked_centroids[i][j] == nullptr) continue;
-            m_banked_centroids[i][j]->print();
-            printf("cntr=%d\n", m_banked_cntrs[i][j]);
-        }
-    }
 }
 
 int 
-ThesaurusCompressedCache::get_compressed_size() const
+ThesaurusCompressedCache::get_after_compression_size() const
 {
     int size = 0;
     for (unsigned i = 0; i < m_lines.size(); i++) {
@@ -305,27 +298,27 @@ ThesaurusCompressedCache::get_compressed_size() const
             }
         }
     }
-    for (unsigned i = 0; i < m_banked_centroids.size(); i++) {
-        for (unsigned j = 0; j < m_banked_centroids[i].size(); j++) {
-            if (m_banked_centroids[i][j] == nullptr) continue;
-            size += m_banked_centroids[i][j]->m_size;
-            size += 2;// for counter
+    for (unsigned i = 0; i < m_cluster_centroid.size(); i++) {
+        for (unsigned j = 0; j < m_cluster_centroid[i].size(); j++) {
+            if (m_cluster_centroid[i][j] == nullptr) continue;
+            size += m_cluster_centroid[i][j]->m_size;
+            // size += 2;// for counter
         }
     }
     return size;
 }
 
 int
-ThesaurusCompressedCache::get_uncompressed_size() const
+ThesaurusCompressedCache::get_before_compression_size() const
 {
-    return m_uncompressed_size;
+    return m_before_compression_size;
 }
 
 double 
 ThesaurusCompressedCache::get_compression_ratio() const
 {
-    int compressed_size = get_compressed_size();
-    int uncompressed_size = get_uncompressed_size();
+    int compressed_size = get_after_compression_size();
+    int uncompressed_size = get_before_compression_size();
     double compression_ratio =  (double)uncompressed_size / (double)compressed_size;
     return compression_ratio;
 }
@@ -339,13 +332,13 @@ ThesaurusCompressedCache::get_num_lines() const
 int 
 ThesaurusCompressedCache::get_num_compressed_lines() const
 {
-    return m_num_compressed_lines;
+    return m_num_successful_noncentroid_lines;
 }
 
 double 
 ThesaurusCompressedCache::get_coverage_rate() const
 {
-    double rate = (double)get_num_compressed_lines() / (double)get_num_lines();
+    double rate = (double)m_num_successful_noncentroid_lines / (double)m_num_noncentroid_lines;
     return rate;
 }
 
@@ -474,12 +467,56 @@ void
 ThesaurusCompressedXORCache::print() const
 {
     printf("ThesaurusCompressedXORCache\n");
+    // int inter_compressed_size = get_xor_compressed_size();
+    int all_compressed_size = get_all_compressed_size();
+    int uncompressed_size = get_uncompressed_size();
+    double compression_ratio =  (double)uncompressed_size / (double)all_compressed_size;
+    printf("coverage: %.2f, compression_ratio(xor+the): %f (%d/%d)\n", 
+        get_coverage_rate(),compression_ratio, uncompressed_size, all_compressed_size);
+
+    printf("compressed size(%d) = centroid(%d) + successful_noncentroid(%d) + failed_noncentroid(%d)\n", 
+        all_compressed_size, m_size_of_centroid_lines, m_size_of_successful_noncentroid_lines, m_size_of_failed_noncentroid_lines);
+
+    printf("num_lines(%d) = centroid(%d) + successful_noncentroid(%d) + failed_noncentroid(%d)\n",
+        m_num_lines, m_num_centroid_lines, m_num_successful_noncentroid_lines, m_num_failed_noncentroid_lines);
+
+    printf("avg size (B) of successful noncentroid lines: %.2f\n", m_avg_size_of_successful_noncentroid_lines);
+    printf("avg size (B) of noncentroid lines: %.2f\n", m_avg_size_of_noncentroid_lines);
+
+    printf("[ num_banks: %d, KB_per_bank: %d, assoc: %d, numset: %d, line_size: %d, shift_bank: %d, shift_set: %d, bank bits: [%d,%d], set bits: [%d,%d] ]\n", 
+        m_num_banks, m_size_per_bank_KB, m_assoc, m_num_sets, m_line_size, m_shift_bank, m_shift_set, m_bank_start, m_bank_end, m_set_start, m_set_end);
+    
+    
+    m_interCompressor->print();
+    // printf("printing all bank centroids: \n");
+    // for (unsigned i = 0; i < m_cluster_centroid.size(); i++) {
+    //     printf("bank %d\n", i);
+    //     for (unsigned j = 0; j < m_cluster_centroid[i].size(); j++) {
+    //         if (m_cluster_centroid[i][j] == nullptr) continue;
+    //         m_cluster_centroid[i][j]->print();
+    //         printf("cntr=%d\n\n", m_cluster_size[i][j]);
+    //     }
+    // }
+
+    // printf("printing cluster distributions: \n");
+    // for (unsigned i = 0; i < m_cluster_centroid.size(); i++) {
+    //     printf("bank %d cluter counters\n", i);
+    //     for (unsigned j = 0; j < m_cluster_centroid[i].size(); j++) {
+    //         if (m_cluster_centroid[i][j] == nullptr) {
+    //             printf("0 ");
+    //         } else {
+    //             printf("%d ", m_cluster_size[i][j]);
+    //         }
+    //     }
+    //     printf("\n");
+    // }
+
 }
 
 int
 ThesaurusCompressedXORCache::get_all_compressed_size() const
 {
-    return m_all_compressed_size;
+    return m_after_compression_size;
 }
 int
 ThesaurusCompressedXORCache::get_xor_compressed_size() const
@@ -531,11 +568,11 @@ ThesaurusCompressedXORCache::get_num_lines() const
 int
 ThesaurusCompressedXORCache::get_num_compressed_lines() const
 {
-    return m_num_intra_compressed_lines;
+    return m_num_successful_noncentroid_lines;
 }
 double
 ThesaurusCompressedXORCache::get_coverage_rate() const
 {
-    double rate = (double)get_num_compressed_lines() / (double)get_num_lines();
+    double rate = (double)m_num_successful_noncentroid_lines / (double)m_num_noncentroid_lines;
     return rate;
 }

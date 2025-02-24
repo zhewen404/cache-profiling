@@ -1,3 +1,4 @@
+// this is now deprecated, see compare_append_thesaurus.cc
 #include "cache/cache.hh"
 #include "cache/xorCache.hh"
 #include "common/plot/plot.hh"
@@ -57,24 +58,39 @@ int main(int argc, char *argv[]){
     bool allow_immo = false;
 
 
-    vector<double> crs6, ers6, frs6, intras6, hammings6;
-    vector<double> crs6_max, ers6_max, frs6_max, intras6_max, hammings6_max;
-    vector<double> crs6_min, ers6_min, frs6_min, intras6_min, hammings6_min;
+    vector<double> crs6, ers6, frs6, intras6, hammings6, centroid6, noncentroid_success6, noncentroid_fail6;
+    vector<double> crs6_max, ers6_max, frs6_max, intras6_max, hammings6_max, centroid6_max, noncentroid_success6_max, noncentroid_fail6_max;
+    vector<double> crs6_min, ers6_min, frs6_min, intras6_min, hammings6_min, centroid6_min, noncentroid_success6_min, noncentroid_fail6_min;
 
     // print crss to file dir/crss.txt
     if (name.find("vanila") != string::npos) {
         if (name.find("bpc") != string::npos) {
-            vanila_x(num_banks, KB_per_bank, dir, crs6, ers6, frs6, intras6, hammings6, fbs, use_xorcache, use_little_e, allow_immo, 
+            vanila_x(num_banks, KB_per_bank, dir, crs6, ers6, frs6, intras6, hammings6, 
+                centroid6, noncentroid_success6, noncentroid_fail6,
+                fbs, use_xorcache, use_little_e, allow_immo, 
                 &create_vanila_bpc);
         } else {
-            vanila_x(num_banks, KB_per_bank, dir, crs6, ers6, frs6, intras6, hammings6, fbs, use_xorcache, use_little_e, allow_immo, 
+            vanila_x(num_banks, KB_per_bank, dir, crs6, ers6, frs6, intras6, hammings6, 
+                centroid6, noncentroid_success6, noncentroid_fail6,
+                fbs, use_xorcache, use_little_e, allow_immo, 
                 &create_vanila_bdi);
         }
     }
     else if (name.find("idealbank") != string::npos) {
         if (name.find("bpc") != string::npos) {
-            printf("ideal bank bpc not implemented yet\n");
-            assert(false);
+            int shift_bank = 0;
+            int shift_set = 0;
+            if (name.find("shift1") != string::npos) {
+                shift_bank = 1;
+            } else if (name.find("shift2") != string::npos) {
+                shift_bank = 2;
+            } else if (name.find("shift3") != string::npos) {
+                shift_bank = 3;
+            } else if (name.find("shift4") != string::npos) {
+                shift_bank = 4;
+            } 
+            ideal_x(shift_bank, shift_set, num_banks, KB_per_bank, dir, crs6, ers6, frs6, intras6, hammings6, fbs, use_xorcache, use_little_e, allow_immo, 
+                &create_ideal_bank_bpc_shift);
         } else {
             int shift_bank = 0;
             int shift_set = 0;
@@ -93,8 +109,23 @@ int main(int argc, char *argv[]){
     }
     else if (name.find("idealset") != string::npos) {
         if (name.find("bpc") != string::npos) {
-            printf("ideal set bpc not implemented yet\n");
-            assert(false);
+            int shift_bank = 0;
+            int shift_set = 0;
+            if (name.find("shift1") != string::npos) {
+                shift_bank = 1;
+                shift_set = 1;
+            } else if (name.find("shift2") != string::npos) {
+                shift_bank = 2;
+                shift_set = 2;
+            } else if (name.find("shift3") != string::npos) {
+                shift_bank = 3;
+                shift_set = 3;
+            } else if (name.find("shift4") != string::npos) {
+                shift_bank = 4;
+                shift_set = 4;
+            } 
+            ideal_x(shift_bank, shift_set, num_banks, KB_per_bank, dir, crs6, ers6, frs6, intras6, hammings6, fbs, use_xorcache, use_little_e, allow_immo, 
+                &create_ideal_set_bpc_shift);
         } else {
             int shift_bank = 0;
             int shift_set = 0;
@@ -117,26 +148,58 @@ int main(int argc, char *argv[]){
     }
     else if (name.find("randbank") != string::npos) {
         if (name.find("bpc") != string::npos) {
-            printf("rand bank bpc not implemented yet\n");
-            assert(false);
+            rand_x(defined_seeds, num_banks, KB_per_bank, dir, 
+                crs6, ers6, frs6, intras6, hammings6, 
+                centroid6, noncentroid_success6, noncentroid_fail6,
+
+                crs6_max, ers6_max, frs6_max, intras6_max, hammings6_max, 
+                centroid6_max, noncentroid_success6_max, noncentroid_fail6_max,
+
+                crs6_min, ers6_min, frs6_min, intras6_min, hammings6_min, 
+                centroid6_min, noncentroid_success6_min, noncentroid_fail6_min,
+
+                fbs, use_xorcache, use_little_e, allow_immo, 
+                &create_rand_bank_bpc);
         } else {
             rand_x(defined_seeds, num_banks, KB_per_bank, dir, 
                 crs6, ers6, frs6, intras6, hammings6, 
+                centroid6, noncentroid_success6, noncentroid_fail6,
+
                 crs6_max, ers6_max, frs6_max, intras6_max, hammings6_max, 
+                centroid6_max, noncentroid_success6_max, noncentroid_fail6_max,
+
                 crs6_min, ers6_min, frs6_min, intras6_min, hammings6_min, 
+                centroid6_min, noncentroid_success6_min, noncentroid_fail6_min,
+
                 fbs, use_xorcache, use_little_e, allow_immo, 
                 &create_rand_bank_bdi);
         }
     }
     else if (name.find("randset") != string::npos) {
         if (name.find("bpc") != string::npos) {
-            printf("rand set bpc not implemented yet\n");
-            assert(false);
+            rand_x(defined_seeds, num_banks, KB_per_bank, dir, 
+                crs6, ers6, frs6, intras6, hammings6, 
+                centroid6, noncentroid_success6, noncentroid_fail6,
+
+                crs6_max, ers6_max, frs6_max, intras6_max, hammings6_max, 
+                centroid6_max, noncentroid_success6_max, noncentroid_fail6_max,
+
+                crs6_min, ers6_min, frs6_min, intras6_min, hammings6_min, 
+                centroid6_min, noncentroid_success6_min, noncentroid_fail6_min,
+
+                fbs, use_xorcache, use_little_e, allow_immo, 
+                &create_rand_set_bpc);
         } else {
             rand_x(defined_seeds, num_banks, KB_per_bank, dir, 
                 crs6, ers6, frs6, intras6, hammings6, 
+                centroid6, noncentroid_success6, noncentroid_fail6,
+
                 crs6_max, ers6_max, frs6_max, intras6_max, hammings6_max, 
+                centroid6_max, noncentroid_success6_max, noncentroid_fail6_max,
+
                 crs6_min, ers6_min, frs6_min, intras6_min, hammings6_min, 
+                centroid6_min, noncentroid_success6_min, noncentroid_fail6_min,
+
                 fbs, use_xorcache, use_little_e, allow_immo, 
                 &create_rand_set_bdi);
         }
@@ -144,7 +207,8 @@ int main(int argc, char *argv[]){
     else {
         // no vanila in name
         
-        intracomp_t type = BDI;
+        // intracomp_t type = BDI;
+        intracomp_t type = BPC;
         bool banked = true;
 
         if (banked == true){
@@ -171,79 +235,79 @@ int main(int argc, char *argv[]){
 
         if (name.find("epc_word_labeling") != string::npos) {
             map_all(banked, defined_seeds, shift_bank, shift_set, num_banks, KB_per_bank, dir, 
-                crs6, ers6, frs6, intras6, hammings6, 
-                crs6_max, ers6_max, frs6_max, intras6_max, hammings6_max, 
-                crs6_min, ers6_min, frs6_min, intras6_min, hammings6_min, 
+                crs6, ers6, frs6, intras6, hammings6, centroid6, noncentroid_success6, noncentroid_fail6,
+                crs6_max, ers6_max, frs6_max, intras6_max, hammings6_max, centroid6_max, noncentroid_success6_max, noncentroid_fail6_max,
+                crs6_min, ers6_min, frs6_min, intras6_min, hammings6_min, centroid6_min, noncentroid_success6_min, noncentroid_fail6_min,
                 {24.0}, use_xorcache, use_little_e, allow_immo, type,
                 &create_hashfunctions_epc_word_labeling);
         } else if (name.find("strong_word_labeling") != string::npos) {
             map_all(banked, defined_seeds, shift_bank, shift_set, num_banks, KB_per_bank, dir, 
-                crs6, ers6, frs6, intras6, hammings6, 
-                crs6_max, ers6_max, frs6_max, intras6_max, hammings6_max, 
-                crs6_min, ers6_min, frs6_min, intras6_min, hammings6_min, 
+                crs6, ers6, frs6, intras6, hammings6, centroid6, noncentroid_success6, noncentroid_fail6,
+                crs6_max, ers6_max, frs6_max, intras6_max, hammings6_max, centroid6_max, noncentroid_success6_max, noncentroid_fail6_max,
+                crs6_min, ers6_min, frs6_min, intras6_min, hammings6_min, centroid6_min, noncentroid_success6_min, noncentroid_fail6_min,
                 {16.0}, use_xorcache, use_little_e, allow_immo, type,
                 &create_hashfunctions_strong_word_labeling);
         } else if (name.find("hycomp_word_labeling") != string::npos) {
             map_all(banked, defined_seeds, shift_bank, shift_set, num_banks, KB_per_bank, dir, 
-                crs6, ers6, frs6, intras6, hammings6, 
-                crs6_max, ers6_max, frs6_max, intras6_max, hammings6_max, 
-                crs6_min, ers6_min, frs6_min, intras6_min, hammings6_min, 
+                crs6, ers6, frs6, intras6, hammings6, centroid6, noncentroid_success6, noncentroid_fail6,
+                crs6_max, ers6_max, frs6_max, intras6_max, hammings6_max, centroid6_max, noncentroid_success6_max, noncentroid_fail6_max,
+                crs6_min, ers6_min, frs6_min, intras6_min, hammings6_min, centroid6_min, noncentroid_success6_min, noncentroid_fail6_min,
                 {24.0}, use_xorcache, use_little_e, allow_immo, type,
                 &create_hashfunctions_hycomp_word_labeling);
         } else if (name.find("semantic_word_labeling") != string::npos) {
             map_all(banked, defined_seeds, shift_bank, shift_set, num_banks, KB_per_bank, dir, 
-                crs6, ers6, frs6, intras6, hammings6, 
-                crs6_max, ers6_max, frs6_max, intras6_max, hammings6_max, 
-                crs6_min, ers6_min, frs6_min, intras6_min, hammings6_min, 
+                crs6, ers6, frs6, intras6, hammings6, centroid6, noncentroid_success6, noncentroid_fail6,
+                crs6_max, ers6_max, frs6_max, intras6_max, hammings6_max, centroid6_max, noncentroid_success6_max, noncentroid_fail6_max,
+                crs6_min, ers6_min, frs6_min, intras6_min, hammings6_min, centroid6_min, noncentroid_success6_min, noncentroid_fail6_min,
                 {24.0}, use_xorcache, use_little_e, allow_immo, type,
                 &create_hashfunctions_semantic_word_labeling);
         } else if (name.find("density_word_labeling") != string::npos) {
             map_all(banked, defined_seeds, shift_bank, shift_set, num_banks, KB_per_bank, dir, 
-                crs6, ers6, frs6, intras6, hammings6, 
-                crs6_max, ers6_max, frs6_max, intras6_max, hammings6_max, 
-                crs6_min, ers6_min, frs6_min, intras6_min, hammings6_min, 
+                crs6, ers6, frs6, intras6, hammings6, centroid6, noncentroid_success6, noncentroid_fail6,
+                crs6_max, ers6_max, frs6_max, intras6_max, hammings6_max, centroid6_max, noncentroid_success6_max, noncentroid_fail6_max,
+                crs6_min, ers6_min, frs6_min, intras6_min, hammings6_min, centroid6_min, noncentroid_success6_min, noncentroid_fail6_min,
                 {16.0}, use_xorcache, use_little_e, allow_immo, type,
                 &create_hashfunctions_density_word_labeling);
         } else if (name.find("averagebytemsb_word_labeling_32") != string::npos) {
             map_all(banked, defined_seeds, shift_bank, shift_set, num_banks, KB_per_bank, dir, 
-                crs6, ers6, frs6, intras6, hammings6, 
-                crs6_max, ers6_max, frs6_max, intras6_max, hammings6_max, 
-                crs6_min, ers6_min, frs6_min, intras6_min, hammings6_min, 
+                crs6, ers6, frs6, intras6, hammings6, centroid6, noncentroid_success6, noncentroid_fail6,
+                crs6_max, ers6_max, frs6_max, intras6_max, hammings6_max, centroid6_max, noncentroid_success6_max, noncentroid_fail6_max,
+                crs6_min, ers6_min, frs6_min, intras6_min, hammings6_min, centroid6_min, noncentroid_success6_min, noncentroid_fail6_min,
                 {32.0}, use_xorcache, use_little_e, allow_immo, type,
                 &create_hashfunctions_averagebytemsb_word_labeling_32);
         } else if (name.find("averagebytemsb_word_labeling_24") != string::npos) {
             map_all(banked, defined_seeds, shift_bank, shift_set, num_banks, KB_per_bank, dir, 
-                crs6, ers6, frs6, intras6, hammings6, 
-                crs6_max, ers6_max, frs6_max, intras6_max, hammings6_max, 
-                crs6_min, ers6_min, frs6_min, intras6_min, hammings6_min, 
+                crs6, ers6, frs6, intras6, hammings6, centroid6, noncentroid_success6, noncentroid_fail6,
+                crs6_max, ers6_max, frs6_max, intras6_max, hammings6_max, centroid6_max, noncentroid_success6_max, noncentroid_fail6_max,
+                crs6_min, ers6_min, frs6_min, intras6_min, hammings6_min, centroid6_min, noncentroid_success6_min, noncentroid_fail6_min,
                 {24.0}, use_xorcache, use_little_e, allow_immo, type,
                 &create_hashfunctions_averagebytemsb_word_labeling_24);
         } else if (name.find("averagebytemsb_word_labeling_16") != string::npos) {
             map_all(banked, defined_seeds, shift_bank, shift_set, num_banks, KB_per_bank, dir, 
-                crs6, ers6, frs6, intras6, hammings6, 
-                crs6_max, ers6_max, frs6_max, intras6_max, hammings6_max, 
-                crs6_min, ers6_min, frs6_min, intras6_min, hammings6_min, 
+                crs6, ers6, frs6, intras6, hammings6, centroid6, noncentroid_success6, noncentroid_fail6,
+                crs6_max, ers6_max, frs6_max, intras6_max, hammings6_max, centroid6_max, noncentroid_success6_max, noncentroid_fail6_max,
+                crs6_min, ers6_min, frs6_min, intras6_min, hammings6_min, centroid6_min, noncentroid_success6_min, noncentroid_fail6_min,
                 {16.0}, use_xorcache, use_little_e, allow_immo, type,
                 &create_hashfunctions_averagebytemsb_word_labeling_16);
         } else if (name.find("bdi_immo_line_labeling_4") != string::npos) {
             map_all(banked, defined_seeds, shift_bank, shift_set, num_banks, KB_per_bank, dir, 
-                crs6, ers6, frs6, intras6, hammings6, 
-                crs6_max, ers6_max, frs6_max, intras6_max, hammings6_max, 
-                crs6_min, ers6_min, frs6_min, intras6_min, hammings6_min, 
+                crs6, ers6, frs6, intras6, hammings6, centroid6, noncentroid_success6, noncentroid_fail6,
+                crs6_max, ers6_max, frs6_max, intras6_max, hammings6_max, centroid6_max, noncentroid_success6_max, noncentroid_fail6_max,
+                crs6_min, ers6_min, frs6_min, intras6_min, hammings6_min, centroid6_min, noncentroid_success6_min, noncentroid_fail6_min,
                 {4.0}, use_xorcache, use_little_e, allow_immo, type,
                 &create_hashfunctions_bdi_immo_line_labeling_4);
         } else if (name.find("bdi_line_labeling_4") != string::npos) {
             map_all(banked, defined_seeds, shift_bank, shift_set, num_banks, KB_per_bank, dir, 
-                crs6, ers6, frs6, intras6, hammings6, 
-                crs6_max, ers6_max, frs6_max, intras6_max, hammings6_max, 
-                crs6_min, ers6_min, frs6_min, intras6_min, hammings6_min, 
+                crs6, ers6, frs6, intras6, hammings6, centroid6, noncentroid_success6, noncentroid_fail6,
+                crs6_max, ers6_max, frs6_max, intras6_max, hammings6_max, centroid6_max, noncentroid_success6_max, noncentroid_fail6_max,
+                crs6_min, ers6_min, frs6_min, intras6_min, hammings6_min, centroid6_min, noncentroid_success6_min, noncentroid_fail6_min,
                 {4.0}, use_xorcache, use_little_e, allow_immo, type,
                 &create_hashfunctions_bdi_line_labeling_4);
         } else if (name.find("bpc_line_labeling_8") != string::npos) {
             map_all(banked, defined_seeds, shift_bank, shift_set, num_banks, KB_per_bank, dir, 
-                crs6, ers6, frs6, intras6, hammings6, 
-                crs6_max, ers6_max, frs6_max, intras6_max, hammings6_max, 
-                crs6_min, ers6_min, frs6_min, intras6_min, hammings6_min, 
+                crs6, ers6, frs6, intras6, hammings6, centroid6, noncentroid_success6, noncentroid_fail6,
+                crs6_max, ers6_max, frs6_max, intras6_max, hammings6_max, centroid6_max, noncentroid_success6_max, noncentroid_fail6_max,
+                crs6_min, ers6_min, frs6_min, intras6_min, hammings6_min, centroid6_min, noncentroid_success6_min, noncentroid_fail6_min,
                 {8.0}, use_xorcache, use_little_e, allow_immo, type,
                 &create_hashfunctions_bpc_line_labeling_8);
         } else {
@@ -279,9 +343,9 @@ int main(int argc, char *argv[]){
             }
 
             map_all(banked, defined_seeds, shift_bank, shift_set, num_banks, KB_per_bank, dir, 
-                crs6, ers6, frs6, intras6, hammings6, 
-                crs6_max, ers6_max, frs6_max, intras6_max, hammings6_max, 
-                crs6_min, ers6_min, frs6_min, intras6_min, hammings6_min, 
+                crs6, ers6, frs6, intras6, hammings6, centroid6, noncentroid_success6, noncentroid_fail6,
+                crs6_max, ers6_max, frs6_max, intras6_max, hammings6_max, centroid6_max, noncentroid_success6_max, noncentroid_fail6_max,
+                crs6_min, ers6_min, frs6_min, intras6_min, hammings6_min, centroid6_min, noncentroid_success6_min, noncentroid_fail6_min,
                 fbs, use_xorcache, use_little_e, allow_immo, type,
                 create_hash_functions_x);
         }
@@ -376,6 +440,57 @@ int main(int argc, char *argv[]){
     fprintf(hammings_file, "\n");
     fclose(hammings_file);
 
+    // print centroid to file dir/centroid.txt
+    string centroid_filename = dir + "/centroid-" + name + ".txt";
+    FILE * centroid_file = fopen(centroid_filename.c_str(), "w");
+    for (unsigned j = 0; j < centroid6.size(); j++){
+        fprintf(centroid_file, "%f ", centroid6[j]);
+    }
+    fprintf(centroid_file, "\n");
+    for (unsigned j = 0; j < centroid6_max.size(); j++){
+        fprintf(centroid_file, "%f ", centroid6_max[j]);
+    }
+    fprintf(centroid_file, "\n");
+    for (unsigned j = 0; j < centroid6_min.size(); j++){
+        fprintf(centroid_file, "%f ", centroid6_min[j]);
+    }
+    fprintf(centroid_file, "\n");
+    fclose(centroid_file);
+
+    // print noncentroid_success to file dir/noncentroid_success.txt
+    string noncentroid_success_filename = dir + "/noncentroid_success-" + name + ".txt";
+    FILE * noncentroid_success_file = fopen(noncentroid_success_filename.c_str(), "w");
+    for (unsigned j = 0; j < noncentroid_success6.size(); j++){
+        fprintf(noncentroid_success_file, "%f ", noncentroid_success6[j]);
+    }
+    fprintf(noncentroid_success_file, "\n");
+    for (unsigned j = 0; j < noncentroid_success6_max.size(); j++){
+        fprintf(noncentroid_success_file, "%f ", noncentroid_success6_max[j]);
+    }
+    fprintf(noncentroid_success_file, "\n");
+    for (unsigned j = 0; j < noncentroid_success6_min.size(); j++){
+        fprintf(noncentroid_success_file, "%f ", noncentroid_success6_min[j]);
+    }
+    fprintf(noncentroid_success_file, "\n");
+    fclose(noncentroid_success_file);
+
+    // print noncentroid_fail to file dir/noncentroid_fail.txt
+    string noncentroid_fail_filename = dir + "/noncentroid_fail-" + name + ".txt";
+    FILE * noncentroid_fail_file = fopen(noncentroid_fail_filename.c_str(), "w");
+    for (unsigned j = 0; j < noncentroid_fail6.size(); j++){
+        fprintf(noncentroid_fail_file, "%f ", noncentroid_fail6[j]);
+    }
+    fprintf(noncentroid_fail_file, "\n");
+    for (unsigned j = 0; j < noncentroid_fail6_max.size(); j++){
+        fprintf(noncentroid_fail_file, "%f ", noncentroid_fail6_max[j]);
+    }
+    fprintf(noncentroid_fail_file, "\n");
+    for (unsigned j = 0; j < noncentroid_fail6_min.size(); j++){
+        fprintf(noncentroid_fail_file, "%f ", noncentroid_fail6_min[j]);
+    }
+    fprintf(noncentroid_fail_file, "\n");
+    fclose(noncentroid_fail_file);
+
     // string plot_name = dir + "/" + name + ".pdf";
     // vector<vector<double>> datas = {crs6, ers6};
     // plot2dx2<double>(fbs, datas, name, {"Fingerprint size (bits)","Fingerprint size (bits)"}, {"inter comp. ratio", "entropy reduction"}, 
@@ -391,18 +506,27 @@ int main(int argc, char *argv[]){
     frs6.clear();
     intras6.clear();
     hammings6.clear();
+    centroid6.clear();
+    noncentroid_success6.clear();
+    noncentroid_fail6.clear();
 
     crs6_min.clear();
     ers6_min.clear();
     frs6_min.clear();
     intras6_min.clear();
     hammings6_min.clear();
+    centroid6_min.clear();
+    noncentroid_success6_min.clear();
+    noncentroid_fail6_min.clear();
 
     crs6_max.clear();
     ers6_max.clear();
     frs6_max.clear();
     intras6_max.clear();
     hammings6_max.clear();
+    centroid6_max.clear();
+    noncentroid_success6_max.clear();
+    noncentroid_fail6_max.clear();
 
     return 0;
 

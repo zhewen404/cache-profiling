@@ -7,7 +7,13 @@ using namespace std;
 void create_ideal_bank_bdi_shift(int shift_bank, int shift_set, int num_banks, int KB_per_bank, string dir, double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, double &hamming,
     bool use_little_endian, bool allow_immo);
 
+void create_ideal_bank_bpc_shift(int shift_bank, int shift_set, int num_banks, int KB_per_bank, string dir, double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, double &hamming,
+    bool use_little_endian, bool allow_immo);
+
 void create_ideal_set_bdi_shift(int shift_bank, int shift_set, int num_banks, int KB_per_bank, string dir, double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, double &hamming,
+    bool use_little_endian, bool allow_immo);
+
+void create_ideal_set_bpc_shift(int shift_bank, int shift_set, int num_banks, int KB_per_bank, string dir, double &cr, double &entropy_reduction, double &false_rate, double &intra_compression_ratio, double &hamming,
     bool use_little_endian, bool allow_immo);
 
 void ideal_x(int shift_bank, int shift_set, int num_banks, int KB_per_bank, string dir, 

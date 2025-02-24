@@ -81,6 +81,8 @@ class XORedLine : public BaseSuperLine
                 printf(", set: x");
             }
 
+            printf(", hamming weight b: %d, hamming weight B: %d", get_byte_hamming_weight(), get_bit_hamming_weight());
+
             printf(", segs: ");
 
             for (int i = 0; i < m_size; i++) {

@@ -253,5 +253,4 @@ void plot2dx3xn(std::vector<T> xvector, std::vector<std::vector<std::vector<T>>>
 }
 
 
-
 #endif

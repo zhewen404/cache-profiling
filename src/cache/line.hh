@@ -35,6 +35,8 @@ class Line
         void copyData(u_int8_t * data);
 
         vector<u_int8_t> get_byte_arrary() const;
+        int get_bit_hamming_weight() const;
+        int get_byte_hamming_weight() const;
 
         int m_size; // in byte
         int m_set;

@@ -496,8 +496,8 @@ HashDeltaCache::print() const
 }
 
 ////////////////////////////////////////////////////////
-double
-IdealBankXORCache::get_bit_entropy() const
+template <typename T> double
+IdealBankXORCache<T>::get_bit_entropy() const
 {
     unsigned num1s = 0;
     unsigned num0s = 0;
@@ -513,8 +513,8 @@ IdealBankXORCache::get_bit_entropy() const
     return entropy;
 }
 
-double
-IdealBankXORCache::get_hamming_distance() const
+template <typename T> double
+IdealBankXORCache<T>::get_hamming_distance() const
 {
     vector<int> hamming_distance;
 
@@ -527,8 +527,8 @@ IdealBankXORCache::get_hamming_distance() const
     return mean;
 }
 
-int 
-IdealBankXORCache::get_compressed_size() const
+template <typename T> int 
+IdealBankXORCache<T>::get_compressed_size() const
 {
     int size = 0;
     for (unsigned i = 0; i < m_lines.size(); i++) {
@@ -536,20 +536,20 @@ IdealBankXORCache::get_compressed_size() const
     }
     return size;
 }
-int
-IdealBankXORCache::get_uncompressed_size() const
+template <typename T> int
+IdealBankXORCache<T>::get_uncompressed_size() const
 {
     return m_uncompressed_size;
 }
-double 
-IdealBankXORCache::get_compression_ratio() const
+template <typename T> double 
+IdealBankXORCache<T>::get_compression_ratio() const
 {
     return (double)get_uncompressed_size() / (double)get_compressed_size();
 }
 
 
-vector<double> * 
-IdealBankXORCache::get_per_byte_entropy() const
+template <typename T> vector<double> * 
+IdealBankXORCache<T>::get_per_byte_entropy() const
 {
     vector<double> * entropies = new vector<double>();
     for (int b=0; b < m_lines[0]->m_size; b++) { // for every byte
@@ -571,8 +571,8 @@ IdealBankXORCache::get_per_byte_entropy() const
     }
     return entropies;
 }
-vector<double> * 
-IdealBankXORCache::get_per_byte_entropy_only_thoses_xored() const
+template <typename T> vector<double> * 
+IdealBankXORCache<T>::get_per_byte_entropy_only_thoses_xored() const
 {
     vector<double> * entropies = new vector<double>();
     for (int b=0; b < m_lines[0]->m_size; b++) { // for every byte
@@ -596,8 +596,8 @@ IdealBankXORCache::get_per_byte_entropy_only_thoses_xored() const
     return entropies;
 }
 
-vector<double> * 
-IdealBankXORCache::get_per_byte_hamming() const
+template <typename T> vector<double> * 
+IdealBankXORCache<T>::get_per_byte_hamming() const
 {
     vector<double> * hamming = new vector<double>();
     double hamming_byte = 0;
@@ -614,8 +614,8 @@ IdealBankXORCache::get_per_byte_hamming() const
     return hamming;
 }
 
-void 
-IdealBankXORCache::print() const
+template <typename T> void 
+IdealBankXORCache<T>::print() const
 {
     printf("IdealBankXORCache [ num_xored_lines: %d, bit_entropy: %f, inter_cr: %f ]\n", 
         m_num_xored_lines, get_bit_entropy(), get_compression_ratio());
@@ -776,8 +776,8 @@ IdealBankXORCacheThesaurus::print() const
 
 
 ////////////////////////////////////////////////////////
-double
-IdealSetXORCache::get_bit_entropy() const
+template <typename T> double
+IdealSetXORCache<T>::get_bit_entropy() const
 {
     unsigned num1s = 0;
     unsigned num0s = 0;
@@ -793,8 +793,8 @@ IdealSetXORCache::get_bit_entropy() const
     return entropy;
 }
 
-double
-IdealSetXORCache::get_hamming_distance() const
+template <typename T> double
+IdealSetXORCache<T>::get_hamming_distance() const
 {
     vector<int> hamming_distance;
 
@@ -807,8 +807,8 @@ IdealSetXORCache::get_hamming_distance() const
     return mean;
 }
 
-int 
-IdealSetXORCache::get_compressed_size() const
+template <typename T> int 
+IdealSetXORCache<T>::get_compressed_size() const
 {
     int size = 0;
     for (unsigned i = 0; i < m_lines.size(); i++) {
@@ -816,20 +816,20 @@ IdealSetXORCache::get_compressed_size() const
     }
     return size;
 }
-int
-IdealSetXORCache::get_uncompressed_size() const
+template <typename T> int
+IdealSetXORCache<T>::get_uncompressed_size() const
 {
     return m_uncompressed_size;
 }
-double 
-IdealSetXORCache::get_compression_ratio() const
+template <typename T> double 
+IdealSetXORCache<T>::get_compression_ratio() const
 {
     return (double)get_uncompressed_size() / (double)get_compressed_size();
 }
 
 
-vector<double> * 
-IdealSetXORCache::get_per_byte_entropy() const
+template <typename T> vector<double> * 
+IdealSetXORCache<T>::get_per_byte_entropy() const
 {
     vector<double> * entropies = new vector<double>();
     for (int b=0; b < m_lines[0]->m_size; b++) { // for every byte
@@ -851,8 +851,8 @@ IdealSetXORCache::get_per_byte_entropy() const
     }
     return entropies;
 }
-vector<double> * 
-IdealSetXORCache::get_per_byte_entropy_only_thoses_xored() const
+template <typename T> vector<double> * 
+IdealSetXORCache<T>::get_per_byte_entropy_only_thoses_xored() const
 {
     vector<double> * entropies = new vector<double>();
     for (int b=0; b < m_lines[0]->m_size; b++) { // for every byte
@@ -876,8 +876,8 @@ IdealSetXORCache::get_per_byte_entropy_only_thoses_xored() const
     return entropies;
 }
 
-vector<double> * 
-IdealSetXORCache::get_per_byte_hamming() const
+template <typename T> vector<double> * 
+IdealSetXORCache<T>::get_per_byte_hamming() const
 {
     vector<double> * hamming = new vector<double>();
     double hamming_byte = 0;
@@ -894,8 +894,8 @@ IdealSetXORCache::get_per_byte_hamming() const
     return hamming;
 }
 
-void 
-IdealSetXORCache::print() const
+template <typename T> void 
+IdealSetXORCache<T>::print() const
 {
     printf("IdealSetXORCache [ num_xored_lines: %d, bit_entropy: %f, inter_cr: %f ]\n", 
         m_num_xored_lines, get_bit_entropy(), get_compression_ratio());
